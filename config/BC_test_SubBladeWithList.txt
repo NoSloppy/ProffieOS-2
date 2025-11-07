@@ -1,0 +1,56 @@
+
+{ "Font", "",
+
+// Outer
+StylePtr<Layers<
+  Remap<InvertF<RampF>,ColorCycle<Black,0,1,Red,20,200,1000>>,
+  LockupL<Mix<SlowNoise<Int<3000>>,Red,White>,Mix<SlowNoise<Int<3000>>,Red,White>,Int<32768>,Int<32768>,Int<32768>>,
+  LockupTrL<Mix<SlowNoise<Int<3000>>,Red,White>,TrFade<300>,TrFade<300>,SaberBase::LOCKUP_MELT>,
+  TransitionEffectL<TrConcat<TrInstant,White,TrFade<300>>,EFFECT_CLASH>,
+  TransitionEffectL<TrConcat<TrInstant,White,TrFade<300>>,EFFECT_BLAST>,
+  InOutTrL<TrFade<300>,TrFade<300>,TransitionLoopL<TrConcat<TrDelay<1000>,TrFade<500>,Red,TrFade<500>,Black,TrInstant>>>>>(),
+
+
+// Middle
+StylePtr<Layers<
+  ColorCycle<Black,0,1,Red,20,200,1000>,
+  LockupL<Mix<SlowNoise<Int<3000>>,Red,White>,Mix<SlowNoise<Int<3000>>,Red,White>,Int<32768>,Int<32768>,Int<32768>>,
+  LockupTrL<Mix<SlowNoise<Int<3000>>,Red,White>,TrFade<300>,TrFade<300>,SaberBase::LOCKUP_MELT>,
+  TransitionEffectL<TrConcat<TrInstant,White,TrFade<300>>,EFFECT_CLASH>,
+  TransitionEffectL<TrConcat<TrInstant,White,TrFade<300>>,EFFECT_BLAST>,
+  InOutTrL<TrFade<300>,TrFade<300>,TransitionLoopL<TrConcat<TrDelay<500>,TrFade<500>,Red,TrFade<500>,Black,TrDelay<500>>>>>>(),
+
+
+// Inner
+StylePtr<Layers<
+  Pulsing<Red,Mix<Int<26000>,Red,Black>,400>,
+  LockupL<Mix<SlowNoise<Int<3000>>,Red,White>,Mix<SlowNoise<Int<3000>>,Red,White>,Int<32768>,Int<32768>,Int<32768>>,
+  LockupTrL<Mix<SlowNoise<Int<3000>>,Red,White>,TrFade<300>,TrFade<300>,SaberBase::LOCKUP_MELT>,
+  TransitionEffectL<TrConcat<TrInstant,White,TrFade<300>>,EFFECT_CLASH>,
+  TransitionEffectL<TrConcat<TrInstant,White,TrFade<300>>,EFFECT_BLAST>,
+  InOutTrL<TrFade<300>,TrFade<300>,TransitionLoopL<TrConcat<TrFade<500>,Red,TrFade<500>,Black,TrDelay<1000>>>>>>(),
+
+“GothCustomPCB1”}
+
+// more presets here
+
+
+
+BladeConfig blades[] = {
+  { 0,
+    // Main
+    SubBlade(31, 143, WS281XBladePtr<144, bladePin, Color8::GRB, PowerPINS<bladePowerPin2, bladePowerPin3>>()),
+
+    // Middle
+    SubBladeWithList<3, 7, 11, 14, 18, 22, 26, 29>(NULL),
+
+    // Inner
+    SubBladeWithList<0, 4, 8, 15, 19, 23>(NULL),
+
+    // Outer
+    SubBladeWithList<1, 2, 5, 6, 9, 10, 12, 13, 16, 17, 20, 21, 24, 25, 27, 28>(NULL),
+
+    CONFIGARRAY(presets)
+  }
+};
+

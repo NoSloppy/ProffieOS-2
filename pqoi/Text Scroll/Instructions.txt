@@ -1,0 +1,25 @@
+
+
+
+Pillow install if necessary:
+
+	1.	Create a Virtual Environment:
+	
+		python3 -m venv env
+	
+	2.	Activate the Virtual Environment:
+		
+		source env/bin/activate
+		
+	3.	Install the Dependencies:
+		
+		pip install Pillow numpy opencv-python
+		
+	4.	Run Your Script:
+		
+		python3 scroll.py
+		
+		
+		
+		
+	

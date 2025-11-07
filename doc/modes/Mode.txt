@@ -1,0 +1,10 @@
+Mode
+A “Mode” is a class/struct which can take over some input handling from the Prop temporarily. The Mode may do anything it wants with the input, but the primary purpose of Modes is to implement menus. Modes are stored in a linked list, so that when you exit one Mode, whatever Mode was active before becomes active.
+
+SPEC TEMPLATE
+To make it possible to customize menus, structs/classes in the mode/* don’t inherit directly from each other. If they did, they would form an unchangeable tree of classes, and if you wanted to make any changes, you would need to build an entirely new tree. The same thing applies for the tree that is formed by following the menu hierarchy; when you select “Settings”, it doesn’t directly go to the SettingsMenu class, instead it looks up which class to use in the SPEC TEMPLATE. The SPEC TEMPLATE is kind of like a phone book which holds all the things needed for a specific menu hierarchy to work. The power of this construct comes from the idea that you can inherit from any SPEC TEMPLATE and change one or more entries without having to touch the rest of them.
+
+SPEC vs. SPEC TEMPLATE
+From a more practical aspect, you can’t look things up in a template. ProffieOS uses something called the Curiously Recursive Template Pattern to turn a template into a regular class/struct in which we can look things up. We need to do this because otherwise the lookups would happen immediately, and inheriting and overriding entries in the SPEC TEMPLATE wouldn’t work. ProffieOS has a template called MKSPEC which actually does the work of converting a SPEC TEMPLATE into a SPEC.
+
+So the above terms are generic, MenuBase, SteppedMode, SelectCancel, etc. are all specific implementations that use the concepts above. I should of course document all of those too, but I think it’s more clear if we keep the generic terms separate from the specific implementations, so I’m going to stop here for now.

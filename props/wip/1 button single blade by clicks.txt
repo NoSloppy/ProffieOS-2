@@ -1,0 +1,151 @@
+1 button single blade by clicks
+
+
+OFF:
+1 click                 - turn blade ON
+                          turn blade ON bypass preon (pointing up)
+
+1 click long            - first preset (pointing up)
+                          next preset
+                          previous preset (pointing down)
+
+1 click held            - enter/exit scroll presets
+    then twist          - turn blade ON muted (back and forth twist)
+    then clash          - enter/exit BC volume menu * *
+    then rotate left    - user effect 5
+    then rotate right   - user effect 6
+
+2 clicks
+2 clicks long
+2 clicks held           - OS system menu
+                          (possibly BC direct to toggle blade length mode)
+
+3 clicks                - quote
+                          toggle sequential or random quotes (pointing down)
+3 clicks long           - on-demand battery level
+3 clicks held           - spoken battery level in percentage
+                          spoken battery level in volts (pointing down)
+
+4 clicks                - play / stop track
+4 clicks long
+4 clicks held           - turn ON main blade muted
+
+twist                   - turn blade ON (requires #define BC_TWIST_ON)
+
+- BC volume menu:
+    1 click held        - quick MAX volume
+    2 clicks held       - quick MIN volume
+
+- OS system menu (including ColorChange)
+    1 click             - select / save
+    2 clicks            - exit / cancel
+
+
+ON:
+1 click                 - blaster deflection
+1 click long
+1 click held            - turn blade OFF
+                          turn blade OFF bypass postoff (pointing up)
+    then twist          - first preset fast (pointing up)
+                          next preset fast
+                          previous preset fast (pointing down)
+    then clash          - lockup
+                          drag (pointing down)
+    then rotate left    - user effect 1
+    then rotate right   - user effect 2
+    then swing          - toggle battle mode
+
+2 clicks                - blaster deflection
+2 clicks long           - force
+2 clicks held           - lightning block (release to end)
+
+3 clicks                - quote
+                          toggle sequential or random quotes (pointing down)
+3 clicks long           - revert colorchange to config
+3 clicks held           - color change mode
+
+4 clicks                - play / stop track
+4 clicks long
+4 clicks held           - dim (pointing up)
+                          toggle spam blasts (pointing down)
+
+hit object              - clash
+twist                   - turn blade OFF (requires #define BC_TWIST_OFF)
+thrust (air)            - stab
+stab object             - melt
+push                    - force push
+
+
+cleaned up for post:
+1 button single blade by clicks
+
+
+OFF:
+1 click                 - turn blade ON
+                          turn blade ON bypass preon (pointing up)
+
+1 click long            - first preset (pointing up)
+                          next preset
+                          previous preset (pointing down)
+
+1 click held            - enter/exit scroll presets
+    then twist          - turn blade ON muted (back and forth twist)
+    then clash          - enter/exit BC volume menu * *
+    then rotate left    - user effect 5
+    then rotate right   - user effect 6
+
+2 clicks held           - blade length menu, or
+                          OS system menu instead (requires #define BC_ENABLE_OS_MENU)
+
+3 clicks                - quote
+                          toggle sequential or random quotes (pointing down)
+3 clicks long           - on-demand battery level
+3 clicks held           - spoken battery level in percentage
+                          spoken battery level in volts (pointing down)
+
+4 clicks                - play / stop track
+4 clicks held           - turn ON main blade muted
+
+twist                   - turn blade ON (requires #define BC_TWIST_ON)
+
+- BC volume menu:
+    1 click held        - quick MAX volume
+    2 clicks held       - quick MIN volume
+
+- OS system menu (including ColorChange)
+    1 click             - select / save
+    2 clicks            - exit / cancel
+
+ON:
+1 click                 - blaster deflection
+1 click long
+1 click held            - turn blade OFF
+                          turn blade OFF bypass postoff (pointing up)
+    then twist          - first preset fast (pointing up)
+                          next preset fast
+                          previous preset fast (pointing down)
+    then clash          - lockup
+                          drag (pointing down)
+    then rotate left    - user effect 1
+    then rotate right   - user effect 2
+    then swing          - toggle battle mode
+
+2 clicks                - blaster deflection
+2 clicks long           - force
+2 clicks held           - lightning block (release to end)
+
+3 clicks                - quote
+                          toggle sequential or random quotes (pointing down)
+3 clicks long           - revert colorchange to config
+3 clicks held           - color change mode
+
+4 clicks                - play / stop track
+4 clicks long
+4 clicks held           - dim (pointing up)
+                          toggle spam blasts (pointing down)
+
+hit object              - clash
+twist                   - turn blade OFF (requires #define BC_TWIST_OFF)
+thrust (air)            - stab
+stab object             - melt
+push                    - force push

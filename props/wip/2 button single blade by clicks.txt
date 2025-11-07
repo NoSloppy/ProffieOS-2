@@ -1,0 +1,215 @@
+2 button single blade by clicks
+
+OFF:
+
+1 click POW             - turn blade ON
+                          turn blade ON bypass preon (pointing up)
+
+1 click POW long        - play / stop track
+1 click POW held        - scroll presets
+    then twist          - turn blade ON muted (back and forth twist)
+    then clash
+    then rotate left    - user effect 5
+    then rotate right   - user effect 6
+
+1 click AUX             - first preset (pointing up)
+                          next preset
+                          previous preset (pointing down)
+1 click AUX long
+1 click AUX held
+    then rotate left    - user effect 7
+    then rotate right   - user effect 8
+
+2 clicks POW            - turn blade ON muted
+2 clicks POW long
+2 clicks POW held       - OS system menu
+                          (possibly BC direct to toggle blade length mode) * *
+
+2 clicks AUX
+2 clicks AUX long
+2 clicks AUX held
+
+3 clicks POW            - quote
+                          toggle sequential or random quotes (pointing down)
+3 clicks POW long
+3 clicks POW held
+
+3 clicks AUX
+3 clicks AUX long
+3 clicks AUX held
+
+4 clicks POW
+4 clicks POW long
+4 clicks POW hold
+
+4 clicks AUX
+4 clicks AUX long
+4 clicks AUX hold
+
+- BC Volume Menu
+    rotate right        - volume UP
+    rotate left         - volume DOWN
+    1 click POW held    - quick MAX volume
+    1 click AUX held    - quick MIN volume
+
+- OS system menu (including ColorChange)
+    rotate right/left   - choose options
+    1 click             - select / save
+    2 clicks            - exit / cancel
+
+
+OFF COMBOS:
+
+Hold AUX
+    then click POW      - spoken battery level in percentage
+                          spoken battery level in volts (pointing down)
+    then click POW long - on-demand battery level
+
+Hold POW
+    then click AUX      - enter/exit BC volume menu * *
+
+
+ON:
+
+1 click POW             - blaster deflection
+1 click POW long        - play / stop track
+1 click POW held        - turn blade OFF
+                          turn blade OFF bypass postoff (pointing up)
+    then clash          - lockup
+    then twist          - first preset fast (pointing up)
+                          next preset fast
+                          previous preset fast (pointing down)
+    then rotate left    - user effect 1
+    then rotate right   - user effect 2
+    then swing          - toggle battle mode
+
+1 click AUX             - blaster deflection
+1 click AUX long
+1 click AUX held
+    then clash          - lockup
+
+2 clicks POW            - blaster deflection
+2 clicks POW long       - force
+2 clicks POW held
+
+2 clicks AUX            - blaster deflection
+
+3 clicks POW            - quote
+                          toggle sequential or random quotes (pointing down)
+3 clicks POW long       - revert colorchange to config
+3 clicks POW held       - color change mode
+
+4 clicks POW held       - toggle spam blasts (pointing down)
+
+ON COMBOS:
+Hold POW
+    then click AUX      - lightning block (keep holding POW, release to end)
+    then twist          - first preset fast (pointing up)
+                          next preset fast
+                          previous preset fast (pointing down)
+Hold AUX
+    then twist          - dim (pointing up)
+
+hit object              - clash
+twist                   - turn blade OFF (requires #define BC_TWIST_OFF)
+thrust (air)            - stab
+stab object             - melt
+push                    - force push
+
+
+cleaned up version to post:
+
+---------------------------------------
+      2 button summary by clicks
+---------------------------------------
+
+OFF:
+1 click POW             - turn blade ON
+                          turn blade ON bypass preon (pointing up)
+
+1 click POW long        - play / stop track
+1 click POW held        - scroll presets
+    then twist          - turn blade ON muted (back and forth twist)
+    then clash
+    then rotate left    - user effect 5
+    then rotate right   - user effect 6
+
+1 click AUX             - first preset (pointing up)
+                          next preset
+                          previous preset (pointing down)
+1 click AUX held
+    then rotate left    - user effect 7
+    then rotate right   - user effect 8
+
+2 clicks POW            - turn blade ON muted
+2 clicks held           - blade length menu, or
+                          OS system menu instead (requires #define BC_ENABLE_OS_MENU)
+
+3 clicks POW            - quote
+                          toggle sequential or random quotes (pointing down)
+
+- BC Volume Menu
+    rotate right        - volume UP
+    rotate left         - volume DOWN
+    1 click POW held    - quick MAX volume
+    1 click AUX held    - quick MIN volume
+
+- OS system menu (including ColorChange)
+    rotate right/left   - choose options
+    1 click             - select / save
+    2 clicks            - exit / cancel
+
+
+OFF COMBOS:
+Hold AUX
+    then click POW      - spoken battery level in percentage
+                          spoken battery level in volts (pointing down)
+    then click POW long - on-demand battery level
+
+Hold POW
+    then click AUX      - enter/exit BC volume menu * *
+
+
+ON:
+1 click POW             - blaster deflection
+1 click POW long        - play / stop track
+1 click POW held        - turn blade OFF
+                          turn blade OFF bypass postoff (pointing up)
+    then clash          - lockup
+    then twist          - first preset fast (pointing up)
+                          next preset fast
+                          previous preset fast (pointing down)
+    then rotate left    - user effect 1
+    then rotate right   - user effect 2
+    then swing          - toggle battle mode
+
+1 click AUX             - blaster deflection
+1 click AUX held
+    then clash          - lockup
+
+2 clicks POW            - blaster deflection
+2 clicks POW long       - force
+
+2 clicks AUX            - blaster deflection
+
+3 clicks POW            - quote
+                          toggle sequential or random quotes (pointing down)
+3 clicks POW long       - revert colorchange to config
+3 clicks POW held       - color change mode
+
+4 clicks POW held       - toggle spam blasts (pointing down)
+
+ON COMBOS:
+Hold POW
+    then click AUX      - lightning block (keep holding POW, release to end)
+    then twist          - first preset fast (pointing up)
+                          next preset fast
+                          previous preset fast (pointing down)
+Hold AUX
+    then twist          - dim (pointing up)
+
+hit object              - clash
+twist                   - turn blade OFF (requires #define BC_TWIST_OFF)
+thrust (air)            - stab
+stab object             - melt
+push                    - force push

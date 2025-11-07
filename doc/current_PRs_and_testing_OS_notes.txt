@@ -1,0 +1,91 @@
+pr Vol Revamp
+
+declare:
+float current_menu_angle_
+
+
+add functions:
+VolumeMenu()
+DetectMenuTwist()
+
+add DetectMenuTurn() to Loop
+Change case Clash when off to just call VolumeMenu()
+
+move SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0); to inside volumeup() and VolumeDown() Functions instead of in cases (because less._)
+
+
+
+replace vol menu cycle-through with instant max or min instead.
+	line 32 description of on-thfly volume menu
+	 reformat Volume Up and Down adding Rotate, 
+	 add Quick MAX MIN controls to both 1 and 2 btn cntrls
+
+Add Quick functions, and add to case Turn Saber on, and on-demand gbattery level
+
+Change sound_library.Say volmin, volmax, volup, voldown use to good ol' PlayPolyphonic to allow for overlap from quick adjustments.
+-------
+pr - BC prop - add bypass postoff option
+add Off(OFF_FAST) to off if pointing up. in TWIST_OFF, Normal OFF, and add EFFECT_FAST_OFF to SB_Effect
+Also in abstract_blade.h, add       case OFF_FAST: to SB_Off2(OffType off_type)
+--------
+pr - BC prop - #ifdef whitespace cleanup
+
+clean up #if whitespace at front of lines
+-----
+pr - BC prop - remove SWING_ON delay
+remove SWING_ON delay
+-----
+
+
+audio underflows. see OS7 Pre-Alpha thread.
+
+
+motion timeout in 20 seconds. MOTION_TIMEOUT ignored?
+
+Nov28 - fine
+
+Dec2 - fine
+
+Dec4 - fine
+
+Dec4pt2 - fine
+
+Dec5 - fine
+
+Dec11 - static_assert(sizeof(T) < 4, "Atomic must be 32 bits or less."); no compile - trying fix as of 13th
+Applied fixes from 
+
+Dec13 - all weird audio. delay when next / prev preset. Also shows next font playing, but same font.wav sound played no matter which preset.
+Then no sound while still showing sounds playing....stopped accepting commands. just kept playing sounds but no actual output.
+powercycled, then also doing next preset played in.wav, no further audio output, but still showing sounds playing. However, truncated messages, as in normal shows 
+`unit = 4 vol = 0.50, Playing aa_NoSloppy/Crushed/in/in01.wav`
+but these were just `Playing aa_NoSloppy/Crushed/swingh/swingh04.wav` no unit no volume.
+
+Dec16 -  fix stop : audio underflows start here
+
+
+
+
+
+
+25e3666 - no issues except it thinks i'ts still playing sounds after retraction.
+
+
+
+----
+documentation
+------
+
+Using videotoblc
+MacOS:
+pre-req: Developer tools installed.
+  `xcode-select --install`
+install Homebrew
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+`brew install ffmpeg`
+
+cd to videotoblc directory.
+make
+PATH=/usr/local/bin:. ./videotoblc spectrum_song.mp4 >humm.blc
+unless PATH is already established
+
