@@ -26,19 +26,19 @@ TransitionEffectL<..., TrDelayX<WavLen<>>, EFFECT_USER1>  // ❌ WavLen is 0
 
 ## Solution
 
-Implement effect queueing (similar to SOUNDQ) where:
+Integrate effect triggering directly into SOUNDQ where:
 
-1. **EFFECT_USERn triggers immediately** - Fires right away for instant response
-2. **EFFECT_USERn_STEP2 auto-queues** - Added to effect queue automatically  
-3. **Queue waits for sound** - Uses actual sound_length to wait
-4. **STEP2 triggers with sound** - Effect and sound happen together
+1. **Sound queued with effect tag** - `SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2))`
+2. **SOUNDQ processes queue** - Other sounds may play first (normal queue behavior)
+3. **When sound plays** - SOUNDQ triggers the associated effect automatically
+4. **Effect and sound sync** - They happen at exactly the same time
 5. **WavLen<> works correctly** - Returns accurate sound duration
 
 ```cpp
-// Trigger USER1
-SaberBase::DoEffect(EFFECT_USER1, 0.0);
-// → EFFECT_USER1 fires immediately
-// → EFFECT_USER1_STEP2 auto-queued
+// Queue sound with STEP2 effect
+SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+// → Sound queued to SOUNDQ
+// → When sound actually plays, STEP2 triggers automatically
 
 // In blade style
 TransitionEffectL<..., TrDelayX<WavLen<EFFECT_USER1_STEP2>>, EFFECT_USER1_STEP2>
@@ -61,62 +61,65 @@ DEFINE_EFFECT(USER7_STEP2)
 DEFINE_EFFECT(USER8_STEP2)
 ```
 
-### 2. Effect Queue System (saber_base.h)
+### 2. Sound Queue Integration (sound_queue.h)
 
-Created `EffectQueue<QueueLength>` template class:
-- Similar structure to `SoundQueue`
-- Queues `EffectToTrigger` structs
-- Processes sequentially with timing based on sound_length
-- 10ms buffer after each sound for safety
+Modified `SoundToPlay` struct to support effect triggering:
+- Added `effect_to_trigger_` field (defaults to `EFFECT_NONE`)
+- Added constructors: `SoundToPlay(Effect*, EffectType)` and `SoundToPlay(const char*, EffectType)`
+- Modified `PollSoundQueue()` to trigger associated effect when sound starts playing
 
-Key methods:
-- `Queue(EffectType, EffectLocation)` - Add effect to queue
-- `PollEffectQueue()` - Process queue (call from Loop)
-- `clear()` - Clear all queued effects
-
-### 3. Automatic Queueing (saber_base.h - PushEffect)
-
-When USER effects are pushed, automatically queue STEP2:
 ```cpp
-case EFFECT_USER1:
-  effect_queue_.Queue(EFFECT_USER1_STEP2, location);
-  break;
-// ... same for USER2-USER8
+struct SoundToPlay {
+  const char* filename_;
+  Effect::FileID file_id_;
+  EffectType effect_to_trigger_;  // New field
+
+  // New constructors
+  SoundToPlay(Effect* effect, EffectType trigger_effect);
+  SoundToPlay(const char* file, EffectType trigger_effect);
+};
 ```
 
-### 4. Sound File Support (effect.h)
-
-Added effect declarations with fallback:
+When SOUNDQ plays a sound (in `PollSoundQueue()`):
 ```cpp
-EFFECT(user1);
-EFFECT(user2);
-// ... through user8
+queue_[0].Play(player.get());
 
-EFFECT2(user1s2, user1);  // Falls back to user1 if user1s2 not found
-EFFECT2(user2s2, user2);
-// ... through user8s2
-```
-
-### 5. Sound Playback (hybrid_font.h)
-
-Added handlers for all USER and STEP2 effects:
-```cpp
-case EFFECT_USER1: PlayCommon(&SFX_user1); return;
-case EFFECT_USER1_STEP2: PlayCommon(&SFX_user1s2); return;
-// ... same for USER2-USER8
-```
-
-### 6. Queue Processing
-
-Props must call this in their Loop():
-```cpp
-void Loop() override {
-  SaberBase::ProcessEffectQueue();
-  // ... rest of loop
+// Trigger associated effect when sound starts playing
+if (queue_[0].effect_to_trigger_ != EFFECT_NONE) {
+  SaberBase::DoEffect(queue_[0].effect_to_trigger_, 0);
 }
 ```
 
+### 3. Backward Compatibility
+
+All existing `SoundToPlay` constructors default `effect_to_trigger_` to `EFFECT_NONE`, ensuring existing code continues to work:
+```cpp
+SoundToPlay(Effect* effect) : ... effect_to_trigger_(EFFECT_NONE) {}
+```
+
+Existing calls remain unchanged:
+- `SOUNDQ->Play(&SFX_health)` ✅ Works (no effect triggered)
+- `SOUNDQ->Play("file.wav")` ✅ Works (no effect triggered)
+
+### 4. Sound Playback (hybrid_font.h)
+
+STEP2 effects are handled through the normal hybrid_font effect system. When triggered by SOUNDQ, they play their associated sound and set sound_length for WavLen<>.
+
+No special handlers needed - STEP2 effects work like any other effect type.
+
 ## Usage Example (HEV Health Warning)
+
+### Prop Integration
+
+Update the `SB_Effect` handler to queue sound with STEP2 effect:
+
+```cpp
+case EFFECT_USER1:
+  SFX_health.SelectFloat(health_ / 100.0);
+  // Queue sound with STEP2 - effect triggers when sound plays!
+  SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+  return;
+```
 
 ### Blade Style
 ```cpp
@@ -136,51 +139,42 @@ TransitionEffectL<
 ```
 
 ### Sound Files
-- `health.wav` - "Warning: Health at 40"
-- `user1s2.wav` - Alert beep or tone (Cylon displays for this duration)
+- `user1.wav` - The sound that will be played (e.g., health voice line)
+- No separate s2 files needed - props control what sound plays
 
 ### Timeline
-1. Health drops → `DoEffect(EFFECT_USER1, 0)`
-2. Health voice plays via SOUNDQ
-3. EFFECT_USER1_STEP2 auto-queues
-4. After voice completes, STEP2 triggers
-5. Cylon displays for `WavLen<EFFECT_USER1_STEP2>` duration
-6. Perfect sync between visual and audio!
+1. Health drops → Prop calls `SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2))`
+2. Sound queued to SOUNDQ (may wait behind other sounds)
+3. When health sound actually plays → EFFECT_USER1_STEP2 triggers automatically
+4. Cylon displays for `WavLen<EFFECT_USER1_STEP2>` duration
+5. Perfect sync - visual appears exactly when voice plays!
 
 ## Files Modified
 
-1. **common/saber_base.h** (130 lines added)
-   - EFFECT_USERn_STEP2 definitions
-   - EffectToTrigger struct
-   - EffectQueue<> template class
-   - Automatic STEP2 queueing in PushEffect
-   - ProcessEffectQueue() method
-   - Template implementation after SaberBase definition
+1. **common/saber_base.h**
+   - EFFECT_USERn_STEP2 definitions (8 new effect types)
 
-2. **sound/effect.h** (20 lines added)
-   - EFFECT(user1) through EFFECT(user8)
-   - EFFECT2(user1s2, user1) through EFFECT2(user8s2, user8)
+2. **sound/sound_queue.h**
+   - Added `effect_to_trigger_` field to `SoundToPlay`
+   - Added new constructors with effect parameter
+   - Modified `PollSoundQueue()` to trigger effects when sounds play
 
-3. **sound/hybrid_font.h** (16 lines added)
-   - case EFFECT_USER1 through EFFECT_USER8
-   - case EFFECT_USER1_STEP2 through EFFECT_USER8_STEP2
-   - All use PlayCommon() for mono/poly compatibility
+3. **sound/effect.h**
+   - No changes needed - sound files can be played without pre-declaration
 
-4. **.gitignore** (25 lines added)
-   - Exclude test artifacts from commits
+4. **sound/hybrid_font.h**
+   - No changes needed - STEP2 effects handled like any other effect
 
-5. **doc/USER_STEP2_EFFECTS.md** (210 lines added)
+5. **doc/USER_STEP2_EFFECTS.md**
    - Comprehensive usage documentation
    - Technical specifications
    - Examples and best practices
 
-6. **doc/HEV_STEP2_EXAMPLE.md** (306 lines added)
+6. **doc/HEV_STEP2_EXAMPLE.md**
    - Real-world HEV prop example
    - Actual Cylon/WavLen use case
    - Sound file strategies
    - Troubleshooting guide
-
-**Total: 707 lines added**
 
 ## Testing
 
@@ -201,70 +195,59 @@ HEV prop health warning system is the primary test case.
 ## Integration Requirements
 
 **For Prop Files:**
+Update `SB_Effect` handlers to queue sounds with STEP2 effects:
 ```cpp
-void Loop() override {
-  SaberBase::ProcessEffectQueue();  // Required!
-  // ... rest of loop
-}
+case EFFECT_USER1:
+  SFX_health.SelectFloat(health_ / 100.0);
+  SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+  return;
 ```
 
+No Loop() processing needed - SOUNDQ handles effect triggering automatically.
+
 **For Sound Files:**
-- Place `user1.wav` through `user8.wav` in font directory
-- Optionally add `user1s2.wav` through `user8s2.wav`
-- If s2 files don't exist, falls back to userN.wav
+- Place `user1.wav` through `user8.wav` in font directory (or any sound file name)
+- Props control which sounds play for which effects
 
 **For Blade Styles:**
-- Use `EFFECT_USERn` for immediate effects
-- Use `EFFECT_USERn_STEP2` for timed effects with WavLen<>
+- Use `EFFECT_USERn_STEP2` for effects synchronized with SOUNDQ sounds
+- WavLen<EFFECT_USERn_STEP2> returns accurate sound duration
 
 ## Benefits
 
-1. **Accurate timing** - WavLen<> returns real sound duration
-2. **No hardcoded delays** - Visual effects automatically match audio
-3. **Sequential effects** - Multiple alerts queue properly without overlap
-4. **Backward compatible** - Existing code continues to work unchanged
-5. **Flexible** - Can use immediate or queued effects as needed
-6. **Simple integration** - Just call ProcessEffectQueue() in Loop()
+1. **Perfect synchronization** - Effects trigger exactly when sounds play
+2. **Accurate timing** - WavLen<> returns real sound duration
+3. **No hardcoded delays** - Visual effects automatically match audio
+4. **Works with queue delays** - Handles other sounds playing first
+5. **Backward compatible** - Existing code continues to work unchanged
+6. **Simple integration** - Just use new SoundToPlay constructor
 
 ## Design Decisions
 
-### Why Auto-Queue?
-Automatically queueing STEP2 when USERn triggers ensures:
-- Users don't forget to queue manually
-- Consistent behavior across all props
-- Simpler API (just trigger USERn as normal)
+### Why Integrate with SOUNDQ?
+Triggering effects from SOUNDQ when sounds actually play ensures:
+- Perfect synchronization even when other sounds are queued first
+- Accurate WavLen<> because sound is playing when effect triggers
+- No separate queue processing needed
 
 ### Why Separate STEP2 Effects?
 Having distinct EFFECT_USERn_STEP2 types allows:
-- Blade styles to react differently to immediate vs queued
-- Different visual effects for step 1 vs step 2
+- Blade styles to create sound-synchronized effects
+- Props to control when effects trigger (immediate vs when sound plays)
 - Clear intent in blade style code
 
-### Why Template Implementation After Class?
-The EffectQueue template needs to call SaberBase methods, so the implementation must come after SaberBase is fully defined. This is a common C++ pattern for templates that reference the containing class.
-
-### Why 10ms Buffer?
-After each sound completes, we add 10ms before triggering the next queued effect. This prevents edge cases where:
-- Sound player hasn't fully released
-- Timing is too tight and effects overlap
-- Small inaccuracies in sound_length measurement
-
-## Future Enhancements
-
-Possible improvements (not implemented):
-
-1. **Manual queuing** - `SaberBase::QueueEffect(type, location, delay_ms)`
-2. **Queue inspection** - Methods to check queue state
-3. **Priority system** - High-priority effects bypass queue
-4. **Conditional queueing** - Only queue STEP2 if sound exists
-5. **Queue events** - Callbacks when effects are queued/triggered
+### Why New Constructor Instead of Auto-Queueing?
+Using `SoundToPlay(Effect*, EffectType)` gives props control over:
+- Which effects trigger with which sounds
+- Whether to use STEP2 at all
+- Maximum flexibility for different use cases
 
 ## Credits
 
-Implementation based on Fredrik Hubinette's suggestion to queue effects (not just sounds) so effects and sounds trigger together, enabling accurate sound_length (wavlen) access.
+Implementation based on Fredrik Hubinette's suggestion to trigger effects when sounds play (not separately) so effects and sounds happen together, enabling accurate sound_length (wavlen) access.
 
-Primary use case from HEV prop by James Nash, which needed accurate timing for health announcement visual effects.
+Primary use case from HEV prop by James Nash, which needed accurate timing for health announcement visual effects synchronized with voice lines.
 
 ## Summary
 
-This feature solves a fundamental timing problem in ProffieOS where effects and queued sounds couldn't be synchronized. By implementing an effect queue that works alongside the sound queue, visual effects can now accurately match sound durations using WavLen<>, eliminating the need for hardcoded delays and enabling rich, synchronized audio-visual effects.
+This feature solves a fundamental timing problem in ProffieOS where effects and queued sounds couldn't be synchronized. By integrating effect triggering directly into SOUNDQ, visual effects can now trigger exactly when sounds play and accurately match sound durations using WavLen<>, eliminating the need for hardcoded delays and enabling rich, synchronized audio-visual effects.
