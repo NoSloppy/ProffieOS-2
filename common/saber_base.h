@@ -265,6 +265,57 @@ struct BladeEffect {
   int wavnum;
 };
 
+// Queued effect for sequential triggering (similar to sound queue)
+struct EffectToTrigger {
+  EffectType type;
+  EffectLocation location;
+  
+  EffectToTrigger() : type(EFFECT_NONE), location(0) {}
+  EffectToTrigger(EffectType t, EffectLocation loc) : type(t), location(loc) {}
+  
+  bool isSet() const { return type != EFFECT_NONE; }
+};
+
+// Forward declaration
+class SaberBase;
+
+// Effect queue class - works like SOUNDQ but triggers effects sequentially
+template<int QueueLength>
+class EffectQueue {
+public:
+  EffectQueue() : effects_(0), busy_(false), wait_until_micros_(0) {}
+  
+  bool Queue(EffectToTrigger e) {
+    if (effects_ < QueueLength) {
+      queue_[effects_++] = e;
+      return true;
+    }
+    return false;
+  }
+  
+  bool Queue(EffectType type, EffectLocation location) {
+    return Queue(EffectToTrigger(type, location));
+  }
+  
+  // Called from Loop() - processes the effect queue
+  void PollEffectQueue();  // Implementation after SaberBase is defined
+  
+  bool busy() const { return busy_; }
+  
+  void clear() {
+    effects_ = 0;
+    busy_ = false;
+  }
+  
+  int size() const { return effects_; }
+  
+private:
+  int effects_;
+  bool busy_;
+  uint32_t wait_until_micros_;
+  EffectToTrigger queue_[QueueLength];
+};
+
 
 extern int GetBladeNumber(BladeBase *blade);
 
@@ -503,6 +554,12 @@ public:
   static void DoNewFont() { DoEffect(EFFECT_NEWFONT, 0); }
   static void DoLowBatt() { DoEffect(EFFECT_LOW_BATTERY, 0); }
 
+  // Process effect queue - should be called from Loop()
+  // This processes STEP2 effects that were queued when USERn effects were triggered
+  static void ProcessEffectQueue() {
+    effect_queue_.PollEffectQueue();
+  }
+
   static float clash_strength_;
 
   // Note, the full clash strength might not be known
@@ -638,6 +695,31 @@ private:
           default: return;
         }
         break;
+      // When USERn effects are triggered, automatically queue their STEP2 variants
+      case EFFECT_USER1:
+        effect_queue_.Queue(EFFECT_USER1_STEP2, location);
+        break;
+      case EFFECT_USER2:
+        effect_queue_.Queue(EFFECT_USER2_STEP2, location);
+        break;
+      case EFFECT_USER3:
+        effect_queue_.Queue(EFFECT_USER3_STEP2, location);
+        break;
+      case EFFECT_USER4:
+        effect_queue_.Queue(EFFECT_USER4_STEP2, location);
+        break;
+      case EFFECT_USER5:
+        effect_queue_.Queue(EFFECT_USER5_STEP2, location);
+        break;
+      case EFFECT_USER6:
+        effect_queue_.Queue(EFFECT_USER6_STEP2, location);
+        break;
+      case EFFECT_USER7:
+        effect_queue_.Queue(EFFECT_USER7_STEP2, location);
+        break;
+      case EFFECT_USER8:
+        effect_queue_.Queue(EFFECT_USER8_STEP2, location);
+        break;
       case EFFECT_CLASH_UPDATE:
         // Not stored in queue
         return;
@@ -656,6 +738,7 @@ private:
 
   static size_t num_effects_;
   static BladeEffect effects_[10];
+  static EffectQueue<8> effect_queue_;  // Queue for STEP2 effects
   static BladeSet on_;
   static uint32_t current_variation_;
   static ColorChangeMode color_change_mode_;
@@ -664,6 +747,7 @@ private:
 
 size_t SaberBase::num_effects_ = 0;
 BladeEffect SaberBase::effects_[10];
+EffectQueue<8> SaberBase::effect_queue_;
 EffectLocation SaberBase::location;
 BladeSet SaberBase::on_ = BladeSet();
 BladeSet SaberBase::lockup_blades_ = BladeSet();
@@ -671,5 +755,42 @@ BladeSet SaberBase::lockup_blades_ = BladeSet();
 constexpr BladeSet const EffectLocation::ALL_BLADES;
 constexpr BladeSet const EffectLocation::MOST_BLADES;
 ONCEPERBLADE(DECLARE_BLADE_BITS);
+
+// Implementation of EffectQueue::PollEffectQueue (after SaberBase is fully defined)
+template<int QueueLength>
+void EffectQueue<QueueLength>::PollEffectQueue() {
+  uint32_t now = micros();
+  
+  // If we're waiting for a sound to finish, check if we're done waiting
+  if (busy_ && now >= wait_until_micros_) {
+    busy_ = false;
+  }
+  
+  // If not busy and there are effects in the queue, trigger the next one
+  if (!busy_ && effects_ > 0) {
+    busy_ = true;
+    
+    // Trigger the effect and capture sound length
+    SaberBase::DoEffect(queue_[0].type, queue_[0].location);
+    
+    // Get the sound length from the effect that was just triggered
+    float sound_len = SaberBase::sound_length;
+    
+    // If there's a sound, wait for it to complete (convert to microseconds)
+    // Add a small buffer (10ms) to ensure sound completes
+    if (sound_len > 0) {
+      wait_until_micros_ = now + (uint32_t)(sound_len * 1000000.0f) + 10000;
+    } else {
+      // No sound, can process next effect immediately
+      wait_until_micros_ = now;
+    }
+    
+    // Remove the processed effect from queue
+    effects_--;
+    for (int i = 0; i < effects_; i++) {
+      queue_[i] = queue_[i+1];
+    }
+  }
+}
 
 #endif
