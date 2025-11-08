@@ -11,8 +11,7 @@ const unsigned int maxLedsPerStrip = 144;
 #define IDLE_OFF_TIME 9999999
 // #define HEV_RANDOM_EVENT_INTERVAL_MS 10000
 // #define HEV_RANDOM_HAZARD_CHANCE 95
-//#define HEV_HEALTH_ANNOUNCEMENT_CHANCE 70  // defaults to 50%
-#define LIGHTS_ON_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
+#define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100  // defaults to 50%
 #define MOUNT_SD_SETTING
 
 #endif
@@ -36,6 +35,7 @@ StylePtr<Layers<
   TransitionEffectL<TrSelect<EffectRandomF<EFFECT_CLASH>,TrConcat<TrSparkX<Red,Int<100>,Int<200>>,TrSparkX<Red,Int<100>,Int<300>>>,TrConcat<TrInstant,BrownNoiseFlicker<Black,Red,50>,TrFadeX<WavLen<EFFECT_CLASH>>>,TrConcat<TrInstant,BlinkingX<Red,Black,Scale<RandomF,Int<300>,Int<700>>,Scale<RandomF,Int<0>,Int<1000>>>,TrFadeX<WavLen<EFFECT_CLASH>>>>,EFFECT_CLASH>,
   // Environmental Damage
   TransitionEffectL<TrConcat<TrInstant,ColorSelect<AltF,TrInstant,Mix<Int<16384>,Moccasin,Black>,Blinking<Black,Green,200,400>,Blinking<Yellow,Black,180,400>,Blinking<Yellow,Orange,200,400>,Blinking<ViolentViolet,Flamingo,200,400>,Blinking<SafetyOrange,Red,200,400>,Blinking<Cyan,BlueRibbon,200,400>>,TrJoin<TrFade<500>,TrBoing<500,4>>>,EFFECT_STUN>,
+
   // Armor Readout
   TransitionEffectL<TrConcat<TrInstant,Orange,TrFade<240>,Black,TrInstant,Orange,TrFade<240>,Black,TrFade<1000>,
     Layers<Black,AlphaL<Gradient<Orange,Blue>,SmoothStep<Variation,Int<-1>>>>,TrFade<1000>,Black,TrFade<1000>,
@@ -43,8 +43,10 @@ StylePtr<Layers<
   // Health Warning Beeps
   TransitionEffectL<TrConcat<TrInstant,Red,TrDelay<400>,Black,TrDelay<50>,Yellow,TrDelay<400>,Black,TrDelay<50>,Red,TrDelay<400>,Black,TrDelay<100>>,EFFECT_USER1_STEP2>,
   // Health Alert
+  // TransitionEffectL<TrConcat<TrDelay<1400>,Black,TrFade<300>,Cylon<Red,5,20,Gradient<Red,Red,Green>,33,50,1>,TrDelayX<Int<4000>>,TrFade<300>,Black,TrFade<300>>,EFFECT_USER1>,
   TransitionEffectL<TrConcat<TrDelay<1400>,Black,TrFade<300>,Cylon<Red,5,20,Gradient<Red,Red,Green>,33,50,1>,TrDelayX<Percentage<WavLen<EFFECT_USER1_STEP2>,70>>,TrFade<300>,Black,TrFade<300>>,EFFECT_USER1_STEP2>,
   // Armor Compromised
+  // TransitionEffectL<TrConcat<TrInstant,Cylon<Red,20,150,Red,20,150,1>,TrDelayX<Int<2500>>>,EFFECT_USER2>,
   TransitionEffectL<TrConcat<TrInstant,Cylon<Red,20,150,Red,20,150,1>,TrDelayX<WavLen<EFFECT_USER2_STEP2>>>,EFFECT_USER2_STEP2>,
   // Healing
   LockupTrL<StripesX<Int<200>,Int<3000>,

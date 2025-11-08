@@ -493,7 +493,30 @@ public:
     int new_tens = health_ / 10;
     if (tens != new_tens && health_ != 0 && health_ < 50) {
       if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
-        SaberBase::DoEffect(EFFECT_USER1, 0.0);
+        // Map health ranges to announcements
+        int health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
+        const char* health_message = (health_range == 3) ? "Seek Medical Attention" : 
+                                     (health_range == 2) ? "Vital Signs Critical" : 
+                                     "User Death Imminent";
+        
+        PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << health_range 
+                     << " (" << health_message << ")\n";
+        PVLOG_NORMAL << "  Selecting health" << health_range << "\n";
+        PVLOG_NORMAL << "  Selected. About to DoEffect(EFFECT_USER1)\n";
+        SaberBase::DoEffect(EFFECT_USER1, 0.0, health_range);  // Pass health_range as sound_number
+        PVLOG_NORMAL << "  DoEffect returned\n";
+        
+        // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
+        int roll = random(100);
+        PVLOG_NORMAL << "  Append roll: " << roll << " (50% threshold)\n";
+        if (health_range < 3 && roll < 50) {
+          PVLOG_NORMAL << "  + Appending health3 (Seek Medical Attention)\n";
+          PVLOG_NORMAL << "  + Selecting and queuing health3 directly\n";
+          SFX_health.Select(3);
+          SOUNDQ->Play(SoundToPlay(&SFX_health));
+        } else if (health_range < 3) {
+          PVLOG_NORMAL << "  + No append (failed 50% roll)\n";
+        }
       }
     }
 
@@ -672,10 +695,8 @@ public:
     switch (EVENTID(button, event, modifiers)) {
       // On/Off long-click
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
-#ifdef LIGHTS_ON_RESETS_HEALTH_ARMOR
-        health_ = 100;
-        armor_ = 100;
-#endif
+        health_ = 60;
+        armor_ = 30;
         On();
         return true;
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_ON):
@@ -805,10 +826,11 @@ public:
       // (HEV VOICE LINE) Health Alert
       case EFFECT_USER1:
         if (health_ == 0) return; // Don't queue health sounds if dead
-        SFX_health.SelectFloat(health_ / 100.0);
-        // Queue sound with STEP2 effect which triggers when sound actually plays.
-        PVLOG_NORMAL << "******** Queueing health sound with STEP2 trigger\n";
-        SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+        PVLOG_NORMAL << "  [SB_Effect] Queueing health sound_number=" << SaberBase::sound_number << "\n";
+        if (SaberBase::sound_number >= 0) {
+          SFX_health.Select(SaberBase::sound_number);
+          SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+        }
         return;
 
       case EFFECT_USER1_STEP2: {
@@ -817,13 +839,13 @@ public:
         if (tmp) {
           SaberBase::sound_length = tmp->length();
         }
-        PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
+        // PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
         return;
       }
 
       // (HEV VOICE LINE) Armor Compromised
       case EFFECT_USER2:
-        PVLOG_NORMAL << "******** Queueing SFX_armor_compromised sound with STEP2 trigger\n";
+        // PVLOG_NORMAL << "******** Queueing SFX_armor_compromised sound with STEP2 trigger\n";
         SOUNDQ->Play(SoundToPlay(&SFX_armor_compromised, EFFECT_USER2_STEP2));
         return;
 
@@ -832,7 +854,7 @@ public:
         if (tmp) {
           SaberBase::sound_length = tmp->length();
         }
-        PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
+        // PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
         return;
       }
 

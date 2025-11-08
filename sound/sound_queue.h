@@ -80,10 +80,10 @@ public:
 
         // "Manually" trigger STEP2 (if it exists) at the delayed queue time.
         bool played = queue_[0].Play(player.get());
-        PVLOG_NORMAL << "******** SOUNDQ Play result: " << played << " effect_to_trigger: " << (int)queue_[0].effect_to_trigger_ << "\n";
+        // PVLOG_NORMAL << "******** SOUNDQ Play result: " << played << " effect_to_trigger: " << (int)queue_[0].effect_to_trigger_ << "\n";
         if (played) {
           if (queue_[0].effect_to_trigger_ != EFFECT_NONE) {
-            PVLOG_NORMAL << "******** SOUNDQ: Triggering effect " << (int)queue_[0].effect_to_trigger_ << "\n";
+            // PVLOG_NORMAL << "******** SOUNDQ: Triggering effect " << (int)queue_[0].effect_to_trigger_ << "\n";
             SaberBase::DoEffect(queue_[0].effect_to_trigger_, 0);
           }
         }
