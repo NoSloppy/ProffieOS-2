@@ -501,21 +501,16 @@ public:
         
         PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << health_range 
                      << " (" << health_message << ")\n";
-        PVLOG_NORMAL << "  Selecting health" << health_range << "\n";
-        PVLOG_NORMAL << "  Selected. About to DoEffect(EFFECT_USER1)\n";
         SaberBase::DoEffect(EFFECT_USER1, 0.0, health_range);  // Pass health_range as sound_number
-        PVLOG_NORMAL << "  DoEffect returned\n";
         
         // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
         int roll = random(100);
-        PVLOG_NORMAL << "  Append roll: " << roll << " (50% threshold)\n";
         if (health_range < 3 && roll < 50) {
           PVLOG_NORMAL << "  + Appending health3 (Seek Medical Attention)\n";
-          PVLOG_NORMAL << "  + Selecting and queuing health3 directly\n";
           SFX_health.Select(3);
           SOUNDQ->Play(SoundToPlay(&SFX_health));
         } else if (health_range < 3) {
-          PVLOG_NORMAL << "  + No append (failed 50% roll)\n";
+          PVLOG_NORMAL << "  + NO append health3 (failed 50% chance roll)\n";
         }
       }
     }
@@ -823,15 +818,16 @@ public:
         hybrid_font.PlayCommon(&SFX_stun);
         return;
 
-      // (HEV VOICE LINE) Health Alert
-      case EFFECT_USER1:
-        if (health_ == 0) return; // Don't queue health sounds if dead
-        PVLOG_NORMAL << "  [SB_Effect] Queueing health sound_number=" << SaberBase::sound_number << "\n";
-        if (SaberBase::sound_number >= 0) {
-          SFX_health.Select(SaberBase::sound_number);
-          SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
-        }
-        return;
+       // (HEV VOICE LINE) Health Alert
+       case EFFECT_USER1:
+         if (health_ == 0) return; // Don't queue health sounds if dead
+         if (SaberBase::sound_number >= 0) {
+           // Files are 1-indexed (health01.wav, health02.wav,health03.wav) but selection is 0-indexed
+           SoundToPlay stp(&SFX_health, (int)SaberBase::sound_number - 1);
+           stp.effect_to_trigger_ = EFFECT_USER1_STEP2;
+           SOUNDQ->Play(stp);
+         }
+         return;
 
       case EFFECT_USER1_STEP2: {
         // Get the sound length when the effect actually triggers for WavLen use.

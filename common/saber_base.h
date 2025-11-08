@@ -106,8 +106,7 @@ extern SaberBase* saberbases;
     DEFINE_EFFECT(USER6)                        \
     DEFINE_EFFECT(USER7)                        \
     DEFINE_EFFECT(USER8)                        \
-    /* user step 2 effects */                   \
-    /* allows WavLen with SOUNDQ */             \
+    /* user step 2 effects - allows WavLen with SOUNDQ */                                                          \
     DEFINE_EFFECT(USER1_STEP2)                  \
     DEFINE_EFFECT(USER2_STEP2)                  \
     DEFINE_EFFECT(USER3_STEP2)                  \
