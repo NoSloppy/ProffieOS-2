@@ -489,7 +489,7 @@ public:
     // (HEV VOICE LINE) Logic for Health Alert
     // Only plays when Health enters a new multiple of 10
     // and only if alive and health is less than 50. (avoid 50 silent wavs)
-    // Configurable chance to announce and reduce spam
+    // Configurable chance to announce and reduce spam.
     int new_tens = health_ / 10;
     if (tens != new_tens && health_ != 0 && health_ < 50) {
       if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
@@ -672,8 +672,10 @@ public:
     switch (EVENTID(button, event, modifiers)) {
       // On/Off long-click
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
-        health_ = 60;
-        armor_ = 30;
+#ifdef LIGHTS_ON_RESETS_HEALTH_ARMOR
+        health_ = 100;
+        armor_ = 100;
+#endif
         On();
         return true;
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_ON):
