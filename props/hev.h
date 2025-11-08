@@ -326,6 +326,9 @@
 #ifndef HEV_ARMOR_INCREASE_MS
 #define HEV_ARMOR_INCREASE_MS 100
 #endif
+#ifndef HEV_HEALTH_ANNOUNCEMENT_CHANCE
+#define HEV_HEALTH_ANNOUNCEMENT_CHANCE 50
+#endif
 
 #include "prop_base.h"
 #include <cmath>
@@ -486,9 +489,12 @@ public:
     // (HEV VOICE LINE) Logic for Health Alert
     // Only plays when Health enters a new multiple of 10
     // and only if alive and health is less than 50. (avoid 50 silent wavs)
+    // Configurable chance to announce and reduce spam
     int new_tens = health_ / 10;
     if (tens != new_tens && health_ != 0 && health_ < 50) {
-      SaberBase::DoEffect(EFFECT_USER1, 0.0);
+      if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
+        SaberBase::DoEffect(EFFECT_USER1, 0.0);
+      }
     }
 
     // Print Damage, Health and Armor
@@ -794,6 +800,39 @@ public:
         hybrid_font.PlayCommon(&SFX_stun);
         return;
 
+      // (HEV VOICE LINE) Health Alert
+      case EFFECT_USER1:
+        if (health_ == 0) return; // Don't queue health sounds if dead
+        SFX_health.SelectFloat(health_ / 100.0);
+        // Queue sound with STEP2 effect which triggers when sound actually plays.
+        PVLOG_NORMAL << "******** Queueing health sound with STEP2 trigger\n";
+        SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+        return;
+
+      case EFFECT_USER1_STEP2: {
+        // Get the sound length when the effect actually triggers for WavLen use.
+        RefPtr<BufferedWavPlayer> tmp = GetWavPlayerPlaying(&SFX_health);
+        if (tmp) {
+          SaberBase::sound_length = tmp->length();
+        }
+        PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
+        return;
+      }
+
+      // (HEV VOICE LINE) Armor Compromised
+      case EFFECT_USER2:
+        PVLOG_NORMAL << "******** Queueing SFX_armor_compromised sound with STEP2 trigger\n";
+        SOUNDQ->Play(SoundToPlay(&SFX_armor_compromised, EFFECT_USER2_STEP2));
+        return;
+
+      case EFFECT_USER2_STEP2: {
+        RefPtr<BufferedWavPlayer> tmp = GetWavPlayerPlaying(&SFX_armor_compromised);
+        if (tmp) {
+          SaberBase::sound_length = tmp->length();
+        }
+        PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
+        return;
+      }
 
       // (HEV UI SOUNDS) Death Sound
       case EFFECT_EMPTY:
@@ -808,42 +847,6 @@ public:
   void SB_Effect2(EffectType effect, EffectLocation location) override {
     switch (effect) {
       default: return;
-
-      // (HEV VOICE LINE) Health Alert
-      case EFFECT_USER1:
-        if (health_ == 0) return; // Don't queue health sounds if dead
-        SFX_health.SelectFloat(health_ / 100.0);
-        // SOUNDQ->Play(&SFX_health);
-        // Queue sound with STEP2 effect which triggers when sound actually plays, enabling WavLen use.
-        PVLOG_NORMAL << "******** Queueing health sound with STEP2 trigger\n";
-        SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
-        return;
-
-      case EFFECT_USER1_STEP2: {
-        // Re-fetch the sound length when the effect actually triggers
-        RefPtr<BufferedWavPlayer> tmp = GetWavPlayerPlaying(&SFX_health);
-        if (tmp) {
-          SaberBase::sound_length = tmp->length();
-        }
-        PVLOG_NORMAL << "******** STEP2 effect triggered! SaberBase::sound_length = " << SaberBase::sound_length << "\n";
-        return;
-      }
-
-      // (HEV VOICE LINE) Armor Compromised
-      case EFFECT_USER2:
-        // SOUNDQ->Play(&SFX_armor_compromised);
-        PVLOG_NORMAL << "******** Queueing SFX_armor_compromised sound with STEP2 trigger\n";
-        SOUNDQ->Play(SoundToPlay(&SFX_armor_compromised, EFFECT_USER2_STEP2));
-        return;
-
-      case EFFECT_USER2_STEP2: {
-        RefPtr<BufferedWavPlayer> tmp = GetWavPlayerPlaying(&SFX_armor_compromised);
-        if (tmp) {
-          SaberBase::sound_length = tmp->length();
-        }
-        PVLOG_NORMAL << "******** STEP2 effect triggered! SaberBase::sound_length = " << SaberBase::sound_length << "\n";
-        return;
-      }
 
       // (HEV VOICE LINE) Hazard Alert
       case EFFECT_ALT_SOUND:

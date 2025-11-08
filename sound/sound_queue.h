@@ -4,15 +4,14 @@
 struct SoundToPlay {
   const char* filename_;
   Effect::FileID file_id_;
-  EffectType effect_to_trigger_;  // Effect to trigger when sound starts playing
+  EffectType effect_to_trigger_;  // STEP2 effect to trigger when sound starts playing.
 
   SoundToPlay() :filename_(nullptr), file_id_(nullptr, 0xffff, 0, 0), effect_to_trigger_(EFFECT_NONE)  {}
   explicit SoundToPlay(const char* file) : filename_(file), effect_to_trigger_(EFFECT_NONE) {  }
   SoundToPlay(Effect* effect) : filename_(nullptr), file_id_(effect->RandomFile()), effect_to_trigger_(EFFECT_NONE) {}
   SoundToPlay(Effect* effect, int selection) : filename_(nullptr), file_id_((effect->Select(selection),effect->RandomFile())), effect_to_trigger_(EFFECT_NONE) {}
   SoundToPlay(uint8_t R, uint8_t G, uint8_t B) :filename_(nullptr), file_id_(nullptr, R, G, B), effect_to_trigger_(EFFECT_NONE) {}
-  
-  // Constructor with effect to trigger when sound plays
+
   SoundToPlay(Effect* effect, EffectType trigger_effect) : filename_(nullptr), file_id_(effect->RandomFile()), effect_to_trigger_(trigger_effect) {}
   SoundToPlay(const char* file, EffectType trigger_effect) : filename_(file), effect_to_trigger_(trigger_effect) {}
 
@@ -79,9 +78,9 @@ public:
         }
         player->set_volume_now(1.0f);
 
+        // "Manually" trigger STEP2 (if it exists) at the delayed queue time.
         bool played = queue_[0].Play(player.get());
         PVLOG_NORMAL << "******** SOUNDQ Play result: " << played << " effect_to_trigger: " << (int)queue_[0].effect_to_trigger_ << "\n";
-        
         if (played) {
           if (queue_[0].effect_to_trigger_ != EFFECT_NONE) {
             PVLOG_NORMAL << "******** SOUNDQ: Triggering effect " << (int)queue_[0].effect_to_trigger_ << "\n";
