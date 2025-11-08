@@ -808,7 +808,6 @@ EFFECT(endauto); // Doesn't exist in fonts, but I expect there may be use for au
 
 EFFECT(blast); // Not to be confused with "blst" and "blaster" as blocking sounds in sabers
 
-
 // battery low
 EFFECT(lowbatt);  // battery low
 
