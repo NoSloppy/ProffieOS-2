@@ -2,59 +2,64 @@
 
 ## Overview
 
-The USERn_STEP2 feature provides a two-step effect system for USER1 through USER8 effects. This allows for sequential effect triggering where STEP2 effects automatically queue and wait for the first effect's sound to complete before triggering.
+The USERn_STEP2 feature provides a two-step effect system for USER1 through USER8 effects. STEP2 effects trigger when their associated sound actually starts playing from SOUNDQ, enabling perfect synchronization between visual effects and audio, with accurate WavLen<> timing.
 
 ## How It Works
 
-### Automatic Queueing
+### Sound-Synchronized Triggering
 
-When you trigger any USERn effect (USER1-USER8), the system automatically:
-1. **Immediately triggers** the USERn effect (sound + visual)
-2. **Queues** the corresponding USERn_STEP2 effect
-3. **Waits** for the USERn sound to complete
-4. **Triggers** the USERn_STEP2 effect
+When you queue a sound to SOUNDQ with an associated STEP2 effect:
+1. **Sound queues** to SOUNDQ (may wait behind other sounds)
+2. **When sound actually plays**, STEP2 effect triggers automatically
+3. **Visual effect syncs** perfectly with the audio
+4. **WavLen<>** returns accurate sound duration
 
 ### Sound Files
 
 Place sound files in your font directory with these naming conventions:
 
-- `user1.wav` through `user8.wav` - Primary effects
+- `user1.wav` through `user8.wav` - Primary sounds for STEP2 effects
 - `user1s2.wav` through `user8s2.wav` - Step 2 effects (optional)
 
 If `userNs2.wav` files are not found, they will fall back to playing the corresponding `userN.wav` file.
 
 ## Usage in Prop Files
 
-### Basic Example
+### Basic Example with SOUNDQ
 
 ```cpp
-// Trigger USER1 effect (will automatically queue USER1_STEP2)
+// In SB_Effect handler
+case EFFECT_USER1:
+  // Queue sound with STEP2 effect to trigger when sound plays
+  SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+  return;
+```
+
+When SOUNDQ processes the queue:
+1. Other sounds might play first (normal queue behavior)
+2. When `SFX_health` actually starts playing, EFFECT_USER1_STEP2 triggers
+3. Blade animation appears exactly when the voice line plays
+4. WavLen<EFFECT_USER1_STEP2> returns the correct sound duration
+
+### Alternative: Immediate Effect + STEP2
+
+You can also trigger an immediate effect, then queue the STEP2 for later:
+
+```cpp
+// Immediate visual feedback
 SaberBase::DoEffect(EFFECT_USER1, 0);
+
+// Queue sound that will trigger STEP2 when it plays
+SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
 ```
 
-When this line executes:
-1. EFFECT_USER1 triggers immediately
-2. `user1.wav` plays
-3. EFFECT_USER1_STEP2 is automatically queued
-4. After `user1.wav` completes, EFFECT_USER1_STEP2 triggers
-5. `user1s2.wav` plays (or `user1.wav` if not found)
-
-### With SOUNDQ
-
-If your prop uses SOUNDQ for queuing sounds, the effect queue works independently:
-
-```cpp
-// Queue multiple sounds with their effects
-SOUNDQ->Play(&SFX_user1);
-SaberBase::DoEffect(EFFECT_USER1, 0);  // Queues USER1_STEP2
-
-SOUNDQ->Play(&SFX_user2);
-SaberBase::DoEffect(EFFECT_USER2, 0);  // Queues USER2_STEP2
-```
+This gives you both:
+- Instant visual response (EFFECT_USER1)
+- Sound-synchronized animation (EFFECT_USER1_STEP2)
 
 ## Usage in Blade Styles
 
-Blade styles can react to either the immediate effect or the queued STEP2 effect:
+Blade styles can react to either the immediate effect or the sound-synchronized STEP2 effect:
 
 ### Immediate Effect (EFFECT_USERn)
 Use these for instant visual responses:
@@ -63,82 +68,67 @@ Use these for instant visual responses:
 TransitionEffectL<TrInstant, EFFECT_USER1, AlphaL<Red, Int<16384>>>
 ```
 
-### Queued Effect (EFFECT_USERn_STEP2)
-Use these for sequential effects:
+### Sound-Synchronized Effect (EFFECT_USERn_STEP2)
+Use these for animations that sync with sounds:
 
 ```cpp
-TransitionEffectL<TrFade<300>, EFFECT_USER1_STEP2, AlphaL<Blue, Int<16384>>>
+// Animation displays exactly when sound plays, for the sound's duration
+TransitionEffectL<
+  TrConcat<TrInstant, Red, TrFadeX<WavLen<EFFECT_USER1_STEP2>>>,
+  EFFECT_USER1_STEP2
+>
 ```
 
 ### Combined Example
 
 ```cpp
-// Blade reacts to both step 1 and step 2
+// Blade reacts to both immediate trigger and sound playback
 Layers<
   // Base blade color
   Blue,
-  // Flash red immediately on USER1
-  TransitionEffectL<TrInstant, EFFECT_USER1, AlphaL<Red, Int<32768>>>,
-  // Flash green after USER1 sound completes
-  TransitionEffectL<TrFade<300>, EFFECT_USER1_STEP2, AlphaL<Green, Int<32768>>>
+  // Flash white immediately when event happens
+  TransitionEffectL<TrInstant, EFFECT_USER1, AlphaL<White, Int<32768>>>,
+  // Pulsing red when sound actually plays, lasting the sound's duration
+  TransitionEffectL<
+    TrConcat<TrInstant, Pulsing<Red, Black, 200>, TrFadeX<WavLen<EFFECT_USER1_STEP2>>>,
+    EFFECT_USER1_STEP2
+  >
 >
 ```
 
-## Processing the Effect Queue
+## No Loop Required
 
-The effect queue must be processed in a Loop(). The recommended approach is to call it from the main loop:
-
-```cpp
-void Loop() override {
-  SaberBase::ProcessEffectQueue();
-  // ... other loop code
-}
-```
-
-Alternatively, create a dedicated Looper:
-
-```cpp
-class EffectQueueProcessor : public Looper {
-public:
-  const char* name() override { return "EffectQueueProcessor"; }
-  void Loop() override {
-    SaberBase::ProcessEffectQueue();
-  }
-};
-
-EffectQueueProcessor effect_queue_processor;
-```
+Unlike traditional effect queueing systems, STEP2 effects trigger automatically when SOUNDQ plays the associated sound. No special Loop() processing is needed - SOUNDQ handles everything.
 
 ## Technical Details
 
-### Effect Queue Specifications
+### How Sound-Triggered Effects Work
 
-- **Queue Size:** 8 effects
-- **Processing:** Sequential (one at a time)
-- **Timing:** Based on actual sound lengths (wavlen)
-- **Buffer:** 10ms added after each sound for safety
+1. **Queue Sound with Effect:** `SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2))`
+2. **SOUNDQ Processes Queue:** Other sounds may play first
+3. **Sound Starts Playing:** When `SFX_health` reaches the front of the queue
+4. **Effect Triggers:** SOUNDQ calls `SaberBase::DoEffect(EFFECT_USER1_STEP2, 0)`
+5. **WavLen Works:** Effect has correct sound_length because sound is playing
 
 ### Supported Effects
 
-All USER effects automatically queue their STEP2 variants:
+Any effect can be triggered when a sound plays:
 
-- EFFECT_USER1 → EFFECT_USER1_STEP2
-- EFFECT_USER2 → EFFECT_USER2_STEP2
-- EFFECT_USER3 → EFFECT_USER3_STEP2
-- EFFECT_USER4 → EFFECT_USER4_STEP2
-- EFFECT_USER5 → EFFECT_USER5_STEP2
-- EFFECT_USER6 → EFFECT_USER6_STEP2
-- EFFECT_USER7 → EFFECT_USER7_STEP2
-- EFFECT_USER8 → EFFECT_USER8_STEP2
+- EFFECT_USER1_STEP2 through EFFECT_USER8_STEP2
+- Can also use for other effects if needed
 
-### Effect Lifecycle
+### SoundToPlay Constructors
 
-1. **Trigger:** EFFECT_USERn is triggered via DoEffect()
-2. **Sound:** Sound system plays `userN.wav` and sets SaberBase::sound_length
-3. **Queue:** EFFECT_USERn_STEP2 is automatically added to the effect queue
-4. **Wait:** Effect queue monitors time, waiting for sound to complete
-5. **Trigger Step2:** After sound_length expires, EFFECT_USERn_STEP2 is triggered
-6. **Repeat:** If more effects are queued, process the next one
+```cpp
+// Basic sound, no effect
+SOUNDQ->Play(&SFX_health);
+
+// Sound with STEP2 effect trigger
+SOUNDQ->Play(SoundToPlay(&SFX_health, EFFECT_USER1_STEP2));
+
+// Filename with effect trigger
+SOUNDQ->Play(SoundToPlay("health.wav", EFFECT_USER1_STEP2));
+```
 
 ## Examples
 

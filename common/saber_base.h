@@ -695,31 +695,6 @@ private:
           default: return;
         }
         break;
-      // When USERn effects are triggered, automatically queue their STEP2 variants
-      case EFFECT_USER1:
-        effect_queue_.Queue(EFFECT_USER1_STEP2, location);
-        break;
-      case EFFECT_USER2:
-        effect_queue_.Queue(EFFECT_USER2_STEP2, location);
-        break;
-      case EFFECT_USER3:
-        effect_queue_.Queue(EFFECT_USER3_STEP2, location);
-        break;
-      case EFFECT_USER4:
-        effect_queue_.Queue(EFFECT_USER4_STEP2, location);
-        break;
-      case EFFECT_USER5:
-        effect_queue_.Queue(EFFECT_USER5_STEP2, location);
-        break;
-      case EFFECT_USER6:
-        effect_queue_.Queue(EFFECT_USER6_STEP2, location);
-        break;
-      case EFFECT_USER7:
-        effect_queue_.Queue(EFFECT_USER7_STEP2, location);
-        break;
-      case EFFECT_USER8:
-        effect_queue_.Queue(EFFECT_USER8_STEP2, location);
-        break;
       case EFFECT_CLASH_UPDATE:
         // Not stored in queue
         return;
