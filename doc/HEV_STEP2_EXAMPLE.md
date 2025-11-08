@@ -32,6 +32,46 @@ Now, when EFFECT_USER1 is triggered:
 3. After the health voice line completes, EFFECT_USER1_STEP2 triggers
 4. EFFECT_USER1_STEP2 has access to accurate sound_length via WavLen<>
 
+## Real HEV Prop Example (From Actual Use)
+
+Here's the actual blade style layer currently used in the HEV prop:
+
+### Before STEP2 (Current - Fixed Timing)
+```cpp
+TransitionEffectL<
+  TrConcat<
+    TrDelay<1400>,
+    Black,
+    TrFade<300>,
+    Cylon<Red,5,20,Gradient<Red,Red,Green>,33,50,1>,
+    TrDelayX<Int<4000>>,  // ❌ Fixed 4 second delay
+    TrFade<300>,
+    Black,
+    TrFade<300>
+  >,
+  EFFECT_USER1
+>
+```
+
+### After STEP2 (Dynamic Timing with WavLen)
+```cpp
+TransitionEffectL<
+  TrConcat<
+    TrDelay<1400>,
+    Black,
+    TrFade<300>,
+    Cylon<Red,5,20,Gradient<Red,Red,Green>,33,50,1>,
+    TrDelayX<WavLen<EFFECT_USER1_STEP2>>,  // ✅ Delay matches actual sound duration!
+    TrFade<300>,
+    Black,
+    TrFade<300>
+  >,
+  EFFECT_USER1_STEP2  // Changed from EFFECT_USER1
+>
+```
+
+**Key Difference:** The Cylon warning now displays for exactly the duration of the health alert sound, instead of a fixed 4 seconds. If the voice line is 2.5 seconds, the Cylon displays for 2.5 seconds. If it's 3.8 seconds, the Cylon displays for 3.8 seconds.
+
 ## Example Blade Style
 
 Here's a practical blade style for the HEV suit that uses both effects:
@@ -144,20 +184,67 @@ HEVEffectProcessor hev_effect_processor;
 
 Place these in your font directory:
 
+### For Health Alerts (EFFECT_USER1)
 - `health.wav` or `health1.wav` through `health50.wav` - Health alert voice lines
-- `health1s2.wav` through `health50s2.wav` - Optional follow-up sounds (fallback to health.wav if not present)
-- `armor_compromised.wav` - Armor alert
-- `armor_compromiseds2.wav` - Optional follow-up (fallback to armor_compromised.wav)
+- `user1s2.wav` - Follow-up sound for STEP2 timing control
+
+**Sound Strategy Options:**
+
+**Option 1: Actual Follow-up Sounds**
+- `user1s2.wav` - Alert beep, warning tone, or acknowledgment sound
+- The Cylon effect will display for the duration of this sound
+- Most immersive option
+
+**Option 2: Silent/Minimal Sound for Timing**
+- `user1s2.wav` - Very quiet ambient or short beep of desired duration
+- Use this to control exactly how long the Cylon displays
+- Clean visual timing control
+
+**Option 3: Simple Fallback**
+- Don't create `user1s2.wav` at all
+- STEP2 will fallback to playing `user1.wav` (health voice line)
+- Cylon will display for voice line duration
+- Simplest option but might sound repetitive
+
+### For Armor Alerts (EFFECT_USER2)
+- `armor_compromised.wav` - Armor alert voice
+- `user2s2.wav` - Optional follow-up (fallback to armor_compromised.wav)
 
 ## Testing
 
 1. **Setup:** Install the blade style on your HEV prop config
 2. **Damage yourself:** Use clashes or hazards to reduce health below 50
 3. **Observe:** 
-   - White flash should appear immediately
-   - Voice line plays
-   - Red pulsing appears and fades over the voice duration
-4. **Verify timing:** The pulsing should last exactly as long as the voice line
+   - Health voice line plays ("Warning: Health at 40")
+   - After 1.4s delay, Cylon effect fades in
+   - Cylon displays for the duration of the STEP2 sound
+   - Cylon fades out
+4. **Verify timing:** The Cylon duration should match the `user1s2.wav` duration exactly
+
+### Debugging WavLen
+
+If the Cylon doesn't display at all or displays for 0 seconds:
+
+1. **Check ProcessEffectQueue() is running:**
+   - Add `PVLOG_DEBUG << "Effect queue size: " << SaberBase::effect_queue_.size() << "\n";` in your Loop()
+   - Should see the queue increase when USER1 triggers
+
+2. **Check STEP2 effect triggers:**
+   - Add debug in hybrid_font.h case EFFECT_USER1_STEP2
+   - Should see it trigger after USER1 sound completes
+
+3. **Check sound file exists:**
+   - `user1s2.wav` must exist OR `user1.wav` must exist as fallback
+   - If neither exists, no sound plays and WavLen returns 0
+
+4. **Check sound plays:**
+   - Listen for the STEP2 sound playing
+   - If you hear it, WavLen should work
+
+5. **Verify WavLen usage:**
+   - Make sure you're using `WavLen<EFFECT_USER1_STEP2>` not `WavLen<EFFECT_USER1>`
+   - EFFECT_USER1 has no sound associated directly (it uses SOUNDQ)
+   - EFFECT_USER1_STEP2 has the sound when it triggers
 
 ## Advanced: Multiple Sequential Warnings
 
