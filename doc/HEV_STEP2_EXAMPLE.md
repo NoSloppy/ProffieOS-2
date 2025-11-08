@@ -193,20 +193,18 @@ No Loop() processing needed - SOUNDQ handles everything automatically!
 
 Place these in your font directory:
 
-### For Health Alerts (EFFECT_USER1_STEP2)
-- `user1.wav` or `health.wav` - Health alert voice line played by STEP2
-- `user1s2.wav` - Optional separate sound (falls back to user1.wav if not present)
+### For Health Alerts
+- `health.wav` or `health1.wav` through `health50.wav` - Health alert voice lines
 
-**Note:** When STEP2 triggers, it plays the `user1` sound effect through hybrid_font. The HEV prop queues the health sound to SOUNDQ, and when SOUNDQ plays it, STEP2 triggers with its own sound.
+**Note:** The HEV prop queues the health sound to SOUNDQ with the STEP2 effect tag. When SOUNDQ plays the health sound, it automatically triggers EFFECT_USER1_STEP2. The sound file just needs to exist in the font - no special naming required.
+
+### For Armor Alerts
+- `armor_compromised.wav` - Armor alert voice
 
 **Sound Strategy:**
-- The SOUNDQ health sound and the STEP2 sound can be the same file or different
-- For simplest setup: Just have `health.wav` in font - it will be used for both
-- For dual sounds: Have both `health.wav` (queued to SOUNDQ) and `user1.wav` (played by STEP2)
-
-### For Armor Alerts (EFFECT_USER2_STEP2)
-- `armor_compromised.wav` - Armor alert voice
-- `user2.wav` or `user2s2.wav` - Played by STEP2 effect
+- Use your existing sound files
+- No special "step2" files needed
+- Props control which effects trigger with which sounds via `SoundToPlay(&SFX_name, EFFECT_TYPE)`
 
 ## Testing
 
@@ -228,16 +226,15 @@ If the Cylon doesn't appear when the voice plays:
    - Not just `SOUNDQ->Play(&SFX_health)`
 
 2. **Check STEP2 effect triggers:**
-   - Add debug in hybrid_font.h case EFFECT_USER1_STEP2
-   - Should trigger when SOUNDQ plays the sound
+   - STEP2 should trigger when SOUNDQ plays the sound
+   - Check that sound is actually playing from SOUNDQ
 
 3. **Check sound file exists:**
-   - `user1.wav` must exist for STEP2 sound
-   - Or `user1s2.wav` with fallback to user1.wav
+   - Sound file must exist in font directory (e.g., `health.wav`)
 
 4. **Verify WavLen usage:**
    - Make sure you're using `WavLen<EFFECT_USER1_STEP2>` not `WavLen<EFFECT_USER1>`
-   - EFFECT_USER1_STEP2 has the sound when it triggers from SOUNDQ
+   - EFFECT_USER1_STEP2 triggers when sound plays, so WavLen returns correct duration
 
 ## How SOUNDQ Queueing Works
 

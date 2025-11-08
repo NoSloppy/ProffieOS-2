@@ -16,12 +16,7 @@ When you queue a sound to SOUNDQ with an associated STEP2 effect:
 
 ### Sound Files
 
-Place sound files in your font directory with these naming conventions:
-
-- `user1.wav` through `user8.wav` - Primary sounds for STEP2 effects
-- `user1s2.wav` through `user8s2.wav` - Step 2 effects (optional)
-
-If `userNs2.wav` files are not found, they will fall back to playing the corresponding `userN.wav` file.
+Sound files just need to exist in your font directory. No special naming required - props specify which sounds to play with which effects.
 
 ## Usage in Prop Files
 
@@ -159,35 +154,33 @@ Layers<
 ### Example 2: Sequential Activation
 
 ```cpp
-// Trigger a sequence of effects
-SaberBase::DoEffect(EFFECT_USER1, 0);  // Triggers immediately, queues STEP2
-SaberBase::DoEffect(EFFECT_USER2, 0);  // Triggers immediately, queues STEP2
-SaberBase::DoEffect(EFFECT_USER3, 0);  // Triggers immediately, queues STEP2
+// Queue multiple sounds with STEP2 effects
+SOUNDQ->Play(SoundToPlay(&SFX_sound1, EFFECT_USER1_STEP2));
+SOUNDQ->Play(SoundToPlay(&SFX_sound2, EFFECT_USER2_STEP2));
+SOUNDQ->Play(SoundToPlay(&SFX_sound3, EFFECT_USER3_STEP2));
 
 // Timeline:
-// - All USER1, USER2, USER3 trigger immediately
-// - USER1_STEP2 triggers after user1.wav completes
-// - USER2_STEP2 triggers after user2.wav completes  
-// - USER3_STEP2 triggers after user3.wav completes
+// - sound1 plays → USER1_STEP2 triggers
+// - sound2 plays → USER2_STEP2 triggers  
+// - sound3 plays → USER3_STEP2 triggers
+// Each effect triggers when its sound actually plays
 ```
 
 ## Troubleshooting
 
 ### STEP2 Effects Don't Trigger
 
-1. Ensure `ProcessEffectQueue()` is being called from Loop()
-2. Verify sound files exist and are playing correctly
-3. Check that SaberBase::sound_length is being set properly
+1. Verify you're using `SoundToPlay(&SFX_name, EFFECT_USERn_STEP2)` constructor
+2. Check that sound files exist in font directory
+3. Confirm SOUNDQ is actually playing the sounds
 
-### Effects Trigger Too Fast
+### Effects Not Synchronized
 
-- The queue adds a 10ms buffer after each sound
-- If sounds are very short, effects may appear nearly simultaneous
-- Use longer sound files for more noticeable separation
+- Make sure to use the new `SoundToPlay` constructor with effect parameter
+- Verify the effect type matches (e.g., EFFECT_USER1_STEP2)
+- Check that sounds are playing from SOUNDQ
 
-### Queue Overflow
-
-- Maximum 8 effects can be queued
+## Best Practices
 - If queue is full, effects trigger immediately instead of queuing
 - This is a safety fallback to ensure effects aren't lost
 
