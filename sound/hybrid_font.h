@@ -654,22 +654,6 @@ public:
       case EFFECT_BLADEOUT:
         SB_BladeDetect(SFX_bladeout);
         break;
-      case EFFECT_USER1: PlayCommon(&SFX_user1); return;
-      case EFFECT_USER2: PlayCommon(&SFX_user2); return;
-      case EFFECT_USER3: PlayCommon(&SFX_user3); return;
-      case EFFECT_USER4: PlayCommon(&SFX_user4); return;
-      case EFFECT_USER5: PlayCommon(&SFX_user5); return;
-      case EFFECT_USER6: PlayCommon(&SFX_user6); return;
-      case EFFECT_USER7: PlayCommon(&SFX_user7); return;
-      case EFFECT_USER8: PlayCommon(&SFX_user8); return;
-      case EFFECT_USER1_STEP2: PlayCommon(&SFX_user1s2); return;
-      case EFFECT_USER2_STEP2: PlayCommon(&SFX_user2s2); return;
-      case EFFECT_USER3_STEP2: PlayCommon(&SFX_user3s2); return;
-      case EFFECT_USER4_STEP2: PlayCommon(&SFX_user4s2); return;
-      case EFFECT_USER5_STEP2: PlayCommon(&SFX_user5s2); return;
-      case EFFECT_USER6_STEP2: PlayCommon(&SFX_user6s2); return;
-      case EFFECT_USER7_STEP2: PlayCommon(&SFX_user7s2); return;
-      case EFFECT_USER8_STEP2: PlayCommon(&SFX_user8s2); return;
       case EFFECT_BOOM:
         if (monophonic_hum_) {
           if (SFX_boom) PlayMonophonic(getNext(hum_player_, &SFX_boom), NULL);
