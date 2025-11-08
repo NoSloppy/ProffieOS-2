@@ -65,7 +65,7 @@ class Effect {
       if (effect_ &&
           effect_->paired_ &&
           effect_->files_found() == effect->files_found() &&
-          effect_->selected_ == -1) {
+          effect->selected_ == -1) {
         return FileID(effect, file_, effect->random_subid(file_));
       } else {
         return effect->RandomFile();
