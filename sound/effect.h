@@ -808,6 +808,26 @@ EFFECT(endauto); // Doesn't exist in fonts, but I expect there may be use for au
 
 EFFECT(blast); // Not to be confused with "blst" and "blaster" as blocking sounds in sabers
 
+// user effects
+EFFECT(user1);
+EFFECT(user2);
+EFFECT(user3);
+EFFECT(user4);
+EFFECT(user5);
+EFFECT(user6);
+EFFECT(user7);
+EFFECT(user8);
+
+// user step2 effects - these can be separate sound files
+EFFECT2(user1s2, user1);  // user1s2 falls back to user1 if not found
+EFFECT2(user2s2, user2);
+EFFECT2(user3s2, user3);
+EFFECT2(user4s2, user4);
+EFFECT2(user5s2, user5);
+EFFECT2(user6s2, user6);
+EFFECT2(user7s2, user7);
+EFFECT2(user8s2, user8);
+
 // battery low
 EFFECT(lowbatt);  // battery low
 
