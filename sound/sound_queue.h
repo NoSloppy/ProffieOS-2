@@ -4,6 +4,12 @@
 struct SoundToPlay {
   const char* filename_;
   Effect::FileID file_id_;
+  // SoundToPlay() :filename_(nullptr), file_id_(nullptr, 0xffff, 0, 0)  {}
+  // explicit SoundToPlay(const char* file) : filename_(file) {  }
+  // SoundToPlay(Effect* effect) : filename_(nullptr), file_id_(effect->RandomFile()) {}
+  // SoundToPlay(Effect* effect, int selection) : filename_(nullptr), file_id_((effect->Select(selection),effect->RandomFile())) {}
+  // SoundToPlay(uint8_t R, uint8_t G, uint8_t B) :filename_(nullptr), file_id_(nullptr, R, G, B) {}
+
   EffectType effect_to_trigger_;  // Effect to trigger when sound starts playing
 
   SoundToPlay() :filename_(nullptr), file_id_(nullptr, 0xffff, 0, 0), effect_to_trigger_(EFFECT_NONE)  {}
@@ -77,13 +83,18 @@ public:
           if (!player) return;
         }
         player->set_volume_now(1.0f);
-        queue_[0].Play(player.get());
+        // queue_[0].Play(player.get());
+
+        bool played = queue_[0].Play(player.get());
+        PVLOG_NORMAL << "******** SOUNDQ Play result: " << played << " effect_to_trigger: " << (int)queue_[0].effect_to_trigger_ << "\n";
         
-        // Trigger associated effect when sound starts playing
-        if (queue_[0].effect_to_trigger_ != EFFECT_NONE) {
-          SaberBase::DoEffect(queue_[0].effect_to_trigger_, 0);
+        if (played) {
+          if (queue_[0].effect_to_trigger_ != EFFECT_NONE) {
+            PVLOG_NORMAL << "******** SOUNDQ: Triggering effect " << (int)queue_[0].effect_to_trigger_ << "\n";
+            SaberBase::DoEffect(queue_[0].effect_to_trigger_, 0);
+          }
         }
-        
+
         sounds_--;
         for (int i = 0; i < sounds_; i++) queue_[i] = queue_[i+1];
       } else {

@@ -12,7 +12,6 @@
 class SaberBase;
 extern SaberBase* saberbases;
 
-
 // An effect is a one-shot trigger for something
 // Effects may have a location, but do not generally have a "duration".
 // However, durations may be derived from blade styles or sound effect durations
@@ -34,7 +33,7 @@ extern SaberBase* saberbases;
     DEFINE_EFFECT(IGNITION)                     \
     DEFINE_EFFECT(RETRACTION)                   \
     DEFINE_EFFECT(CHANGE)                       \
-    /* just for resetting things, not meant for triggering effects, use NEWFONT/BLADEIN/BLADEOUT instead */ \
+    /* just for resetting things, not meant for triggering effects, use NEWFONT/BLADEIN/BLADEOUT instead */        \
     DEFINE_EFFECT(CHDIR)                        \
     DEFINE_EFFECT(NEWFONT)                      \
     DEFINE_EFFECT(BLADEIN)                      \
@@ -46,13 +45,13 @@ extern SaberBase* saberbases;
     DEFINE_EFFECT(ACCENT_SWING)                 \
     DEFINE_EFFECT(ACCENT_SLASH)                 \
     DEFINE_EFFECT(SPIN)                         \
-    /* Allows style to turn blade ON for interactive effects if prop/style support, FAST_ON skips PREON. */         \
+    /* Allows style to turn blade ON for interactive effects if prop/style support, FAST_ON skips PREON. */        \
     DEFINE_EFFECT(ON)                           \
     DEFINE_EFFECT(FAST_ON)                      \
     DEFINE_EFFECT(QUOTE)                        \
     DEFINE_EFFECT(SECONDARY_IGNITION)           \
     DEFINE_EFFECT(SECONDARY_RETRACTION)         \
-    /* Allows style to turn blade OFF for interactive effects if prop/style support, FAST_OFF skips POSTOFF. */     \
+    /* Allows style to turn blade OFF for interactive effects if prop/style support, FAST_OFF skips POSTOFF. */    \
     DEFINE_EFFECT(OFF)                          \
     DEFINE_EFFECT(FAST_OFF)                     \
     DEFINE_EFFECT(OFF_CLASH)                    \
@@ -107,7 +106,8 @@ extern SaberBase* saberbases;
     DEFINE_EFFECT(USER6)                        \
     DEFINE_EFFECT(USER7)                        \
     DEFINE_EFFECT(USER8)                        \
-    /* user-definable step 2 effects */         \
+    /* user step 2 effects */                   \
+    /* allows WavLen with SOUNDQ */             \
     DEFINE_EFFECT(USER1_STEP2)                  \
     DEFINE_EFFECT(USER2_STEP2)                  \
     DEFINE_EFFECT(USER3_STEP2)                  \
@@ -181,18 +181,23 @@ public:
   constexpr BladeSet operator|(const BladeSet& other) const {
     return BladeSet(blades_ | other.blades_);
   }
+
   constexpr BladeSet operator&(const BladeSet& other) const {
     return BladeSet(blades_ & other.blades_);
   }
+
   constexpr BladeSet operator~() const {
     return BladeSet(~blades_);
   }
+
   constexpr bool operator[](int blade) const {
     return (blades_ & (1 << blade)) != 0;
   }
+
   constexpr bool off() const {
     return blades_ == 0;
   }
+
   // Should this be if "other" is on, or if anything is on?
   // Right now it's if anything is on.
   constexpr bool on() const {
@@ -205,6 +210,7 @@ public:
   void operator|=(const BladeSet& other) {
     blades_ |= other.blades_;
   }
+
   void operator&=(const BladeSet& other) {
     blades_ &= other.blades_;
   }
@@ -238,9 +244,11 @@ public:
   static EffectLocation rnd() {
     return EffectLocation(65535 + random(22937), BladeSet::all());
   }
+
   static EffectLocation rnd(BladeSet blades) {
     return EffectLocation(65535 + random(22937), blades);
   }
+
   BladeSet blades() const { return blades_; }
   bool on_blade(int bladenum) const { return blades_[bladenum]; }
   uint16_t fixed() const { return location_; }
@@ -250,6 +258,7 @@ public:
     p.write('@');
     blades_.printTo(p);
   }
+
 private:
   friend class SaberBase;
   uint16_t location_;
@@ -265,7 +274,6 @@ struct BladeEffect {
   int wavnum;
 };
 
-
 extern int GetBladeNumber(BladeBase *blade);
 
 class SaberBase {
@@ -278,6 +286,7 @@ protected:
     interrupts();
     CHECK_LL(SaberBase, saberbases, next_saber_);
   }
+
   void Unlink(const SaberBase* x) {
     CHECK_LL(SaberBase, saberbases, next_saber_);
     for (SaberBase** i = &saberbases; *i; i = &(*i)->next_saber_) {
@@ -308,12 +317,14 @@ public:
     // Right now it's if anything is on.
     return on_.on();
   }
+
   static bool BladeIsOn(int blade) { return on_[blade]; }
   static BladeSet OnBlades() { return on_; }
   static void TurnOn() {
     on_ = EffectLocation::ALL_BLADES;
     SaberBase::DoOn(0);
   }
+
   static void TurnOn(EffectLocation location) {
     PVLOG_DEBUG << "TurnOn " << location << "\n";
     // You can't turn on a blade that's already on.
@@ -324,11 +335,13 @@ public:
     on_ |= location.blades();
     SaberBase::DoOn(location);
   }
+
   static void TurnOff(OffType off_type) {
     on_ = BladeSet();
     last_motion_request_ = millis();
     SaberBase::DoOff(off_type, 0);
   }
+
   static void TurnOff(OffType off_type, EffectLocation location) {
     PVLOG_DEBUG << "TurnOff " << location << "\n";
     location.blades_ &= on_; // can only turn off blades which are on
@@ -347,6 +360,7 @@ public:
     return IsOn() || (millis() - last_motion_request_) < 20000;
 #endif
   }
+
   static void RequestMotion() {
     last_motion_request_ = millis();
   }
@@ -366,6 +380,7 @@ public:
     LOCKUP_MELT,             // For cutting through doors...
     LOCKUP_LIGHTNING_BLOCK,  // Lightning block lockup
   };
+
   static LockupType lockup_;
   static BladeSet lockup_blades_;
   static LockupType Lockup() { return lockup_; }
@@ -373,6 +388,7 @@ public:
     if (!lockup_blades_[blade]) return LOCKUP_NONE;
     return lockup_;
   }
+
   static void SetLockup(LockupType lockup, BladeSet blades = BladeSet::all()) {
     lockup_ = lockup;
     lockup_blades_ = blades;
@@ -431,22 +447,24 @@ public:                                                         \
 
   SABERBASEFUNCTIONS();
 
-
 private:
   static void DoEffectInternal2(EffectType effect, EffectLocation location) {
     DoEffectInternal(effect, location);
     PushEffect(effect, location);
   }
+
 public:
   static void DoEffect(EffectType effect, EffectLocation location) {
     ClearSoundInfo();
     DoEffectInternal2(effect, location);
   }
+
   static void DoOn(EffectLocation location) {
     ClearSoundInfo();
     DoOnInternal(location);
     DoEffectInternal2(EFFECT_IGNITION, location);
   }
+
   static void DoOff(OffType off_type, EffectLocation location) {
     ClearSoundInfo();
     DoOffInternal(off_type, location);
@@ -463,8 +481,8 @@ public:
         // do nothing
         break;
     }
-
   }
+
   static void DoBladeDetect(bool detected) {
     ClearSoundInfo();
     if (detected) {
@@ -473,14 +491,17 @@ public:
       DoEffect(EFFECT_BLADEOUT, 0);
     }
   }
+
   static void DoChange(ChangeType change_type) {
     ClearSoundInfo();
     DoChangeInternal(change_type);
   }
+
   static void DoTop(uint64_t total_cycles) {
     ClearSoundInfo();
     DoTopInternal(total_cycles);
   }
+
   static void DoIsOn(bool* on) {
     ClearSoundInfo();
     DoIsOnInternal(on);
@@ -491,6 +512,7 @@ public:
     sound_number = N;
     DoEffectInternal2(e, location);
   }
+
   static void DoEffectR(EffectType e) { DoEffect(e, EffectLocation::rnd()); }
   static void DoBlast() { DoEffectR(EFFECT_BLAST); }
   static void DoForce() { DoEffectR(EFFECT_FORCE); }
@@ -518,12 +540,15 @@ public:
   void SetClashStrength(float strength) {
     clash_strength_ = strength;
   }
+
   static void DoClash() {
     DoEffectR(EFFECT_CLASH);
   }
+
   static void DoStab() {
     DoEffect(EFFECT_STAB, 1.0f);
   }
+
   static void UpdateClashStrength(float strength) {
     if (strength > clash_strength_) {
       clash_strength_ = strength;
@@ -544,6 +569,7 @@ public:
     }
     CHECK_LL(SaberBase, saberbases, next_saber_);
   }
+
   virtual void SB_Motion(const Vec3& gyro, bool clear) {}
 
   /* Acceleration in g */
@@ -557,6 +583,7 @@ public:
     }
     CHECK_LL(SaberBase, saberbases, next_saber_);
   }
+
   virtual void SB_Accel(const Vec3& gyro, bool clear) {}
 
   static uint32_t GetCurrentVariation() {
@@ -568,6 +595,7 @@ public:
     current_variation_ += delta;
     DoChange(CHANGE_COLOR);
   }
+
   // For smooth updates or restore.
   static void SetVariation(uint32_t v) {
     current_variation_ = v;
@@ -605,7 +633,6 @@ public:
     }
     return num_effects_;
   }
-
 
   // Not private for debugging purposes only.
   static uint32_t last_motion_request_;
@@ -653,7 +680,6 @@ private:
     num_effects_ = std::min(num_effects_ + 1, NELEM(effects_));
   }
 
-
   static size_t num_effects_;
   static BladeEffect effects_[10];
   static BladeSet on_;
@@ -672,4 +698,4 @@ constexpr BladeSet const EffectLocation::ALL_BLADES;
 constexpr BladeSet const EffectLocation::MOST_BLADES;
 ONCEPERBLADE(DECLARE_BLADE_BITS);
 
-#endif
+#endif  // COMMON_SABER_BASE_H

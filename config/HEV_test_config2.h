@@ -5,12 +5,12 @@
 #define NUM_BUTTONS 2
 #define VOLUME 150
 const unsigned int maxLedsPerStrip = 144;
-#define CLASH_THRESHOLD_G 3.0
+#define CLASH_THRESHOLD_G 2.0
 //If not disabled, Armor Readout play back floats around current Armor value.
 #define DISABLE_NO_REPEAT_RANDOM
 #define IDLE_OFF_TIME 9999999
-#define HEV_RANDOM_EVENT_INTERVAL_MS 10000
-#define HEV_RANDOM_HAZARD_CHANCE 95
+// #define HEV_RANDOM_EVENT_INTERVAL_MS 10000
+// #define HEV_RANDOM_HAZARD_CHANCE 95
 #define MOUNT_SD_SETTING
 
 #endif
@@ -40,11 +40,13 @@ StylePtr<Layers<
     Layers<Black,AlphaL<Gradient<Orange,Blue>,SmoothStep<Variation,Int<-1>>>>,TrFade<1000>,Black,TrFade<1000>,
     Layers<Black,AlphaL<Gradient<Orange,Blue>,SmoothStep<Variation,Int<-1>>>>,TrFade<1000>>,EFFECT_USER8>,
   // Health Warning Beeps
-  TransitionEffectL<TrConcat<TrInstant,Red,TrDelay<400>,Black,TrDelay<50>,Yellow,TrDelay<400>,Black,TrDelay<50>,Red,TrDelay<400>,Black,TrDelay<100>>,EFFECT_USER1>,
+  TransitionEffectL<TrConcat<TrInstant,Red,TrDelay<400>,Black,TrDelay<50>,Yellow,TrDelay<400>,Black,TrDelay<50>,Red,TrDelay<400>,Black,TrDelay<100>>,EFFECT_USER1_STEP2>,
   // Health Alert
-  TransitionEffectL<TrConcat<TrDelay<1400>,Black,TrFade<300>,Cylon<Red,5,20,Gradient<Red,Red,Green>,33,50,1>,TrDelayX<Int<4000>>,TrFade<300>,Black,TrFade<300>>,EFFECT_USER1>,
+  // TransitionEffectL<TrConcat<TrDelay<1400>,Black,TrFade<300>,Cylon<Red,5,20,Gradient<Red,Red,Green>,33,50,1>,TrDelayX<Int<4000>>,TrFade<300>,Black,TrFade<300>>,EFFECT_USER1>,
+  TransitionEffectL<TrConcat<TrDelay<1400>,Black,TrFade<300>,Cylon<Red,5,20,Gradient<Red,Red,Green>,33,50,1>,TrDelayX<Percentage<WavLen<EFFECT_USER1_STEP2>,70>>,TrFade<300>,Black,TrFade<300>>,EFFECT_USER1_STEP2>,
   // Armor Compromised
-  TransitionEffectL<TrConcat<TrInstant,Cylon<Red,20,150,Red,20,150,1>,TrDelayX<Int<4000>>>,EFFECT_USER2>,
+  // TransitionEffectL<TrConcat<TrInstant,Cylon<Red,20,150,Red,20,150,1>,TrDelayX<Int<2500>>>,EFFECT_USER2>,
+  TransitionEffectL<TrConcat<TrInstant,Cylon<Red,20,150,Red,20,150,1>,TrDelayX<WavLen<EFFECT_USER2_STEP2>>>,EFFECT_USER2_STEP2>,
   // Healing
   LockupTrL<StripesX<Int<200>,Int<3000>,
       White,White,Green,Green,Mix<Int<26000>,Cyan,Black>,Mix<Int<26000>,Cyan,Black>,Mix<Int<26000>,Cyan,Black>,Mix<Int<26000>,Cyan,Black>,
