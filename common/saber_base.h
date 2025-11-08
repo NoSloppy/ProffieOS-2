@@ -415,6 +415,7 @@ private:                                                        \
     }                                                           \
     CHECK_LL(SaberBase, saberbases, next_saber_);               \
   }                                                             \
+                                                                \
 public:                                                         \
   virtual void SB_##NAME TYPED_ARGS {}                          \
   virtual void SB_##NAME##2 TYPED_ARGS {}
@@ -424,6 +425,7 @@ public:                                                         \
   SABERFUN(On, (EffectLocation location), (location));                                  \
   SABERFUN(Off, (OffType off_type, EffectLocation location), (off_type, location));     \
   SABERFUN(Change, (ChangeType change_type), (change_type));                            \
+                                                                                        \
   SABERFUN(Top, (uint64_t total_cycles), (total_cycles));                               \
   SABERFUN(IsOn, (bool* on), (on));
 
