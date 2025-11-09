@@ -654,10 +654,13 @@ private:
         switch (SaberBase::Lockup()) {
           case LOCKUP_LIGHTNING_BLOCK:
             type = EFFECT_LB_BEGIN;
+            break;
           case LOCKUP_MELT:
             type = EFFECT_MELT_BEGIN;
+            break;
           case LOCKUP_DRAG:
             type = EFFECT_DRAG_BEGIN;
+            break;
           case LOCKUP_NORMAL:
             break;
           default: return;
@@ -667,10 +670,13 @@ private:
         switch (SaberBase::Lockup()) {
           case LOCKUP_LIGHTNING_BLOCK:
             type = EFFECT_LB_END;
+            break;
           case LOCKUP_MELT:
             type = EFFECT_MELT_END;
+            break;
           case LOCKUP_DRAG:
             type = EFFECT_DRAG_END;
+            break;
           case LOCKUP_NORMAL:
             break;
           default: return;
