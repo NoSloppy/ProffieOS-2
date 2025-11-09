@@ -3366,7 +3366,17 @@ keeping this for possible get sound length use in future:
   }
 #endif
 
+*** another use
 
+      case EFFECT_USER2_STEP2: {
+        RefPtr<BufferedWavPlayer> tmp = GetWavPlayerPlaying(&SFX_armor_compromised);
+        if (tmp) {
+          SaberBase::sound_length = tmp->length();
+        }
+        PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
+        return;
+      }
+      
 
 
 -----------------

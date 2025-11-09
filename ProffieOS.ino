@@ -48,7 +48,7 @@
 //#define CONFIG_FILE "config/Bunker_Bomb_config.h"
 
 
- #define CONFIG_FILE "config/HEV_test_config2.h"
+ #define CONFIG_FILE "config/HEV_test_config2BC.h"
 
 //#define CONFIG_FILE "config/default_proffieboard_config.h"
 

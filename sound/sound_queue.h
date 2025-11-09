@@ -4,6 +4,12 @@
 struct SoundToPlay {
   const char* filename_;
   Effect::FileID file_id_;
+  // SoundToPlay() :filename_(nullptr), file_id_(nullptr, 0xffff, 0, 0)  {}
+  // explicit SoundToPlay(const char* file) : filename_(file) {  }
+  // SoundToPlay(Effect* effect) : filename_(nullptr), file_id_(effect->RandomFile()) {}
+  // SoundToPlay(Effect* effect, int selection) : filename_(nullptr), file_id_((effect->Select(selection),effect->RandomFile())) {}
+  // SoundToPlay(uint8_t R, uint8_t G, uint8_t B) :filename_(nullptr), file_id_(nullptr, R, G, B) {}
+
   EffectType effect_to_trigger_;  // STEP2 effect to trigger when sound starts playing.
 
   SoundToPlay() :filename_(nullptr), file_id_(nullptr, 0xffff, 0, 0), effect_to_trigger_(EFFECT_NONE)  {}
@@ -77,6 +83,7 @@ public:
           if (!player) return;
         }
         player->set_volume_now(1.0f);
+        // queue_[0].Play(player.get());
 
         // "Manually" trigger STEP2 (if it exists) at the delayed queue time.
         bool played = queue_[0].Play(player.get());

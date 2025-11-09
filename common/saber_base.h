@@ -28,6 +28,10 @@ extern SaberBase* saberbases;
     DEFINE_EFFECT(LOCKUP_END)                   \
     DEFINE_EFFECT(DRAG_BEGIN)                   \
     DEFINE_EFFECT(DRAG_END)                     \
+    DEFINE_EFFECT(MELT_BEGIN)                   \
+    DEFINE_EFFECT(MELT_END)                     \
+    DEFINE_EFFECT(LB_BEGIN)                     \
+    DEFINE_EFFECT(LB_END)                       \
     DEFINE_EFFECT(PREON)                        \
     DEFINE_EFFECT(POSTOFF)                      \
     DEFINE_EFFECT(IGNITION)                     \
@@ -648,6 +652,10 @@ private:
 
       case EFFECT_LOCKUP_BEGIN:
         switch (SaberBase::Lockup()) {
+          case LOCKUP_LIGHTNING_BLOCK:
+            type = EFFECT_LB_BEGIN;
+          case LOCKUP_MELT:
+            type = EFFECT_MELT_BEGIN;
           case LOCKUP_DRAG:
             type = EFFECT_DRAG_BEGIN;
           case LOCKUP_NORMAL:
@@ -657,6 +665,10 @@ private:
         break;
       case EFFECT_LOCKUP_END:
         switch (SaberBase::Lockup()) {
+          case LOCKUP_LIGHTNING_BLOCK:
+            type = EFFECT_LB_END;
+          case LOCKUP_MELT:
+            type = EFFECT_MELT_END;
           case LOCKUP_DRAG:
             type = EFFECT_DRAG_END;
           case LOCKUP_NORMAL:

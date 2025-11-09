@@ -690,8 +690,10 @@ public:
     switch (EVENTID(button, event, modifiers)) {
       // On/Off long-click
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
-        health_ = 60;
-        armor_ = 30;
+#ifdef LIGHTS_ON_RESETS_HEALTH_ARMOR
+        health_ = 100;
+        armor_ = 100;
+#endif
         On();
         return true;
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_ON):
