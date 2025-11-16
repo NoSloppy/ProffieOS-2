@@ -48,13 +48,19 @@
 //     - Single-click AUX (or double-click POWER) to exit menu         //
 //                                                                     //
 // - Settings:                                                         //
-//     1. Hazards             - Enable/disable random hazard events    //
-//     2. Health Alerts       - Enable/disable health voice alerts     //
-//     3. Armor Alerts        - Enable/disable armor voice alerts      //
-//     4. Clash Damage        - Enable/disable physical clash damage   //
+//     1. Hazards             - Disables hazard voice alerts           //
+//                              (hazards still occur, just silent)     //
+//     2. Health Alerts       - Disables health voice announcements    //
+//                              (health still changes, just silent)    //
+//     3. Armor Alerts        - Disables armor voice/alarm sounds      //
+//                              (armor still changes, just silent)     //
+//     4. Clash Damage        - Disables physical clash damage         //
+//                              (actually prevents damage application) //
 //                                                                     //
-// Note: All settings default to ENABLED. Changes are not saved        //
-//       between power cycles (they reset to defaults on startup).     //
+// Note: Settings 1-3 only control audio/visual feedback. The         //
+//       underlying systems (health, armor, hazards) continue to       //
+//       function normally. Setting 4 actually disables damage.        //
+//       All settings default to ENABLED and reset on power cycle.    //
 //                                                                     //
 //---------------------------------------------------------------------//
 //                          COMBAT MODE                                //
@@ -66,8 +72,11 @@
 //                                                                     //
 // - Toggle: Hold POWER + Click AUX (while suit is ON)                //
 // - Effect: Disables all HEV voice lines and effects                  //
+// - State Preservation:                                               //
+//     * Entering Combat Mode saves current Health and Armor values    //
+//     * Exiting Combat Mode restores the saved values                 //
+//     * Allows you to "pause" damage tracking during combat           //
 // - Persists: Until toggled off or suit is powered off                //
-// - Visual damage/health/armor tracking continues normally            //
 //                                                                     //
 //---------------------------------------------------------------------//
 //              PHYSICAL DAMAGE & HAZARD DAMAGE LOGIC                  //
@@ -472,6 +481,10 @@ public:
   int health_ = 100;
   int armor_ = 100;
 
+  // Combat Mode saved state
+  int saved_health_ = 100;
+  int saved_armor_ = 100;
+
   enum DamageType {
     DAMAGE_PHYSICAL,
     DAMAGE_HAZARD,
@@ -598,33 +611,28 @@ public:
 
   // Clashes
   void Clash(bool stab, float strength) override {
-    // Don't process clashes if dead, during cooldown, or if clash damage is disabled.
+    // Don't process clashes if dead or during cooldown
     if (!SaberBase::IsOn() || health_ == 0 || (timer_clash_.active_ && !timer_clash_.check())) {
       return;
     }
 
     PropBase::Clash(false, strength);
 
-    // Only apply damage if clash damage is enabled
+    int damage = std::min((int)(strength * 4), 50);
+    float v = (strength - GetCurrentClashThreshold()) / 3;
+
+    SFX_clash.SelectFloat(v);
+    SFX_clsh.SelectFloat(v);
+    SFX_stab.SelectFloat(v);
+
+    // Only play alarm if armor alerts are enabled and not in combat mode
+    if (damage >= 30 && hev_settings::armor_alerts_enabled && !hev_settings::combat_mode) {
+      hybrid_font.PlayPolyphonic(&SFX_armor_alarm);
+    }
+
+    // Apply damage if clash_damage_enabled (this one actually controls damage application)
     if (hev_settings::clash_damage_enabled) {
-      int damage = std::min((int)(strength * 4), 50);
-      float v = (strength - GetCurrentClashThreshold()) / 3;
-
-      SFX_clash.SelectFloat(v);
-      SFX_clsh.SelectFloat(v);
-      SFX_stab.SelectFloat(v);
-
-      if (damage >= 30 && hev_settings::armor_alerts_enabled && !hev_settings::combat_mode) {
-        hybrid_font.PlayPolyphonic(&SFX_armor_alarm);
-      }
-
       DoDamage(damage, true);
-    } else {
-      // Still play clash sound even if damage is disabled
-      float v = (strength - GetCurrentClashThreshold()) / 3;
-      SFX_clash.SelectFloat(v);
-      SFX_clsh.SelectFloat(v);
-      SFX_stab.SelectFloat(v);
     }
     
     timer_clash_.start();
@@ -637,8 +645,9 @@ public:
 
   // Random Hazards
   void CheckRandomEvent() {
-    // Skip Hazard check if OFF, dead, during revive cooldown, or if hazards are disabled
-    if (!SaberBase::IsOn() || health_ == 0 || !timer_hazard_after_revive_.check() || !hev_settings::hazards_enabled) {
+    // Skip Hazard check if OFF, dead, during revive cooldown
+    // Note: hazards_enabled only affects audio/visual, not the actual hazard system
+    if (!SaberBase::IsOn() || health_ == 0 || !timer_hazard_after_revive_.check()) {
       return;
     }
 
@@ -655,7 +664,8 @@ public:
       if (random(100) < HEV_RANDOM_HAZARD_CHANCE) {
         PVLOG_NORMAL << "Activating Hazard.\n";
         current_hazard_ = (Hazard)(1 + random(6));
-        if (!hev_settings::combat_mode) {
+        // Play hazard sound if not in combat mode and hazard alerts are enabled
+        if (!hev_settings::combat_mode && hev_settings::hazards_enabled) {
           SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
         }
       } else {
@@ -860,9 +870,17 @@ public:
       case EVENTID(BUTTON_AUX, EVENT_CLICK_SHORT, MODE_ON | BUTTON_POWER):
         hev_settings::combat_mode = !hev_settings::combat_mode;
         if (hev_settings::combat_mode) {
+          // Entering Combat Mode - save current state
+          saved_health_ = health_;
+          saved_armor_ = armor_;
           PVLOG_NORMAL << "Combat Mode: ENABLED (voice/effects disabled)\n";
+          PVLOG_NORMAL << "  Saved state - Health: " << saved_health_ << ", Armor: " << saved_armor_ << "\n";
         } else {
+          // Exiting Combat Mode - restore saved state
+          health_ = saved_health_;
+          armor_ = saved_armor_;
           PVLOG_NORMAL << "Combat Mode: DISABLED (voice/effects enabled)\n";
+          PVLOG_NORMAL << "  Restored state - Health: " << health_ << ", Armor: " << armor_ << "\n";
         }
         return true;
 
