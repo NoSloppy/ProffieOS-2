@@ -82,9 +82,10 @@ The board will provide audio feedback:
 
 ## Important Notes
 
-- **Settings are not saved**: When you power cycle the device, all settings reset to their defaults (all enabled)
+- **Settings are saved**: Settings are automatically saved to the SD card in `hev.ini` (or `hev.tmp`) and persist across power cycles
 - **Menu access**: The menu can only be accessed when the suit is OFF
 - **No impact on performance**: Disabled features are completely skipped, so disabling features you don't use can be beneficial
+- **Storage location**: Settings file is stored in the root directory of the SD card, similar to `global.ini` and `presets.ini`
 
 ## Technical Details
 
@@ -98,20 +99,26 @@ namespace hev_settings {
   bool health_alerts_enabled = true;
   bool armor_alerts_enabled = true;
   bool clash_damage_enabled = true;
+  
+  // Persistent storage
+  HevSettingsFile saved_settings;
+  void SaveSettings();  // Writes to hev.ini
+  void LoadSettings();  // Reads from hev.ini
 }
 ```
+
+**Persistence Implementation:**
+- Settings are saved to `hev.ini` (or `hev.tmp`) on the SD card root directory
+- Uses ProffieOS's `ConfigFile` system (same as `global.ini` and `presets.ini`)
+- Settings are automatically saved when changed via menu
+- Settings are automatically loaded on prop initialization
+- Uses alternating `.ini` and `.tmp` files for data integrity
 
 The menu system is implemented using ProffieOS's mode system:
 - Menu specification: `modes/hev_menu.h`
 - BoolSetting classes for each toggleable feature
 - Integration with prop file via pushMode/popMode
-
-### Adding Persistent Settings (Future Enhancement)
-
-To make settings persistent across power cycles, you would need to:
-1. Add save/load functionality using ProffieOS's config save system
-2. Store settings in EEPROM or on the SD card
-3. Load settings during prop initialization
+- Save/Load hooks integrated into setting change handlers
 
 ## Troubleshooting
 

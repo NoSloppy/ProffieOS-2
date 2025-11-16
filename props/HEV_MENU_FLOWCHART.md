@@ -98,12 +98,14 @@ Double-click POWER  | Exit menu (alternate)
 
 ### Settings Overview
 ```
-#  | Setting        | Controls              | Default
----|----------------|-----------------------|--------
-1  | Hazards        | Random hazard events  | ON
-2  | Health Alerts  | Health voice warnings | ON
-3  | Armor Alerts   | Armor voice warnings  | ON
-4  | Clash Damage   | Physical damage       | ON
+#  | Setting        | Controls              | Default | Saved
+---|----------------|-----------------------|---------|-------
+1  | Hazards        | Random hazard events  | ON      | Yes
+2  | Health Alerts  | Health voice warnings | ON      | Yes
+3  | Armor Alerts   | Armor voice warnings  | ON      | Yes
+4  | Clash Damage   | Physical damage       | ON      | Yes
+
+Settings are saved to hev.ini on SD card and persist across power cycles.
 ```
 
 ## Button Summary

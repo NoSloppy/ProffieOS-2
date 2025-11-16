@@ -60,7 +60,8 @@
 // Note: Settings 1-3 only control audio/visual feedback. The         //
 //       underlying systems (health, armor, hazards) continue to       //
 //       function normally. Setting 4 actually disables damage.        //
-//       All settings default to ENABLED and reset on power cycle.    //
+//       All settings default to ENABLED and are SAVED to SD card      //
+//       (hev.ini) - they persist across power cycles.                //
 //                                                                     //
 //---------------------------------------------------------------------//
 //                          COMBAT MODE                                //
@@ -384,7 +385,23 @@
 
 #include "prop_base.h"
 #include "../modes/hev_menu.h"
+#include "../common/config_file.h"
 #include <cmath>
+
+// HEV Settings Config File for persistent storage
+class HevSettingsFile : public ConfigFile {
+public:
+  void iterateVariables(VariableOP *op) override {
+    CONFIG_VARIABLE2(hazards_enabled, 1);
+    CONFIG_VARIABLE2(health_alerts_enabled, 1);
+    CONFIG_VARIABLE2(armor_alerts_enabled, 1);
+    CONFIG_VARIABLE2(clash_damage_enabled, 1);
+  }
+  int hazards_enabled;
+  int health_alerts_enabled;
+  int armor_alerts_enabled;
+  int clash_damage_enabled;
+};
 
 // Global HEV settings (toggleable via menu)
 namespace hev_settings {
@@ -393,6 +410,29 @@ namespace hev_settings {
   bool armor_alerts_enabled = true;
   bool clash_damage_enabled = true;
   bool combat_mode = false;  // Real-time toggle: disables voice lines and effects
+  
+  HevSettingsFile saved_settings;
+  
+  void SaveSettings() {
+    PVLOG_STATUS << "Saving HEV Settings\n";
+    saved_settings.hazards_enabled = hazards_enabled ? 1 : 0;
+    saved_settings.health_alerts_enabled = health_alerts_enabled ? 1 : 0;
+    saved_settings.armor_alerts_enabled = armor_alerts_enabled ? 1 : 0;
+    saved_settings.clash_damage_enabled = clash_damage_enabled ? 1 : 0;
+    saved_settings.WriteToRootDir("hev");
+  }
+  
+  void LoadSettings() {
+    if (saved_settings.ReadINIFromRootDir("hev") == ConfigFile::ReadStatus::READ_END) {
+      PVLOG_STATUS << "Loaded HEV Settings\n";
+      hazards_enabled = saved_settings.hazards_enabled != 0;
+      health_alerts_enabled = saved_settings.health_alerts_enabled != 0;
+      armor_alerts_enabled = saved_settings.armor_alerts_enabled != 0;
+      clash_damage_enabled = saved_settings.clash_damage_enabled != 0;
+    } else {
+      PVLOG_STATUS << "Using default HEV Settings\n";
+    }
+  }
 }
 
 // HEV VOICE LINES
@@ -474,7 +514,16 @@ public:
     timer_hazard_after_revive_.configure(HEV_HAZARD_AFTER_REVIVE_MS);
     timer_health_increase_.configure(HEV_HEALTH_INCREASE_MS);
     timer_armor_increase_.configure(HEV_ARMOR_INCREASE_MS);
+    
+    // Load saved HEV settings from SD card
+    hev_settings::LoadSettings();
   }
+
+#ifndef MENU_SPEC_TEMPLATE
+  void Setup() override {
+    MKSPEC<mode::HevMenuSpec>::SoundLibrary::init();
+  }
+#endif
 
   const char* name() override { return "Hev"; }
 
@@ -990,6 +1039,7 @@ bool HazardEnabledSetting<SPEC>::get() {
 template<class SPEC>
 void HazardEnabledSetting<SPEC>::set(bool value) {
   hev_settings::hazards_enabled = value;
+  hev_settings::SaveSettings();
 }
 
 template<class SPEC>
@@ -1000,6 +1050,7 @@ bool HealthAlertsEnabledSetting<SPEC>::get() {
 template<class SPEC>
 void HealthAlertsEnabledSetting<SPEC>::set(bool value) {
   hev_settings::health_alerts_enabled = value;
+  hev_settings::SaveSettings();
 }
 
 template<class SPEC>
@@ -1010,6 +1061,7 @@ bool ArmorAlertsEnabledSetting<SPEC>::get() {
 template<class SPEC>
 void ArmorAlertsEnabledSetting<SPEC>::set(bool value) {
   hev_settings::armor_alerts_enabled = value;
+  hev_settings::SaveSettings();
 }
 
 template<class SPEC>
@@ -1020,6 +1072,7 @@ bool ClashDamageEnabledSetting<SPEC>::get() {
 template<class SPEC>
 void ClashDamageEnabledSetting<SPEC>::set(bool value) {
   hev_settings::clash_damage_enabled = value;
+  hev_settings::SaveSettings();
 }
 
 }  // namespace mode
