@@ -456,6 +456,16 @@ EFFECT(medkit);
 // ENVIRONMENTAL EFFECTS
 EFFECT(stun);
 
+// HEV MENU SOUNDS (for settings toggles)
+EFFECT(atmospherics_on);
+EFFECT(atmospherics_off);
+EFFECT(automedic_on);
+EFFECT(automedic_off);
+EFFECT(powerarmor_on);
+EFFECT(powerarmor_off);
+EFFECT(vitalsigns_on);
+EFFECT(vitalsigns_off);
+
 struct HEVTimerBase {
   uint32_t start_ = 0;
 

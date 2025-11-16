@@ -112,14 +112,29 @@ struct HazardEnabledSetting : public BoolSetting {
   bool get();
   void set(bool value);
   void say() { 
-    // Play "Hazards" sound
+    // This is called to announce the menu item name
     getSL<SPEC>()->SaySelect(); 
   }
 };
 
-// Menu entry for Hazard toggle
+// Custom menu entry for Hazard toggle with custom on/off sounds
 template<class SPEC>
-class HevHazardEntry : public DirectBoolEntry<SPEC, HazardEnabledSetting<SPEC>> {};
+class HevHazardEntry : public MenuEntry {
+public:
+  void say(int entry) {
+    // Play atmospherics_on or atmospherics_off based on current state
+    getPtr<HazardEnabledSetting<SPEC>>()->say();
+    if (getPtr<HazardEnabledSetting<SPEC>>()->get()) {
+      hybrid_font.PlayCommon(&SFX_atmospherics_on);
+    } else {
+      hybrid_font.PlayCommon(&SFX_atmospherics_off);
+    }
+  }
+  void select(int entry) {
+    getPtr<HazardEnabledSetting<SPEC>>()->set(!getPtr<HazardEnabledSetting<SPEC>>()->get());
+    say(entry);
+  }
+};
 
 // BoolSetting for enabling/disabling health alerts
 template<class SPEC>
@@ -131,9 +146,24 @@ struct HealthAlertsEnabledSetting : public BoolSetting {
   }
 };
 
-// Menu entry for Health Alerts toggle
+// Custom menu entry for Health Alerts toggle with custom on/off sounds
 template<class SPEC>
-class HevHealthAlertsEntry : public DirectBoolEntry<SPEC, HealthAlertsEnabledSetting<SPEC>> {};
+class HevHealthAlertsEntry : public MenuEntry {
+public:
+  void say(int entry) {
+    // Play vitalsigns_on or vitalsigns_off based on current state
+    getPtr<HealthAlertsEnabledSetting<SPEC>>()->say();
+    if (getPtr<HealthAlertsEnabledSetting<SPEC>>()->get()) {
+      hybrid_font.PlayCommon(&SFX_vitalsigns_on);
+    } else {
+      hybrid_font.PlayCommon(&SFX_vitalsigns_off);
+    }
+  }
+  void select(int entry) {
+    getPtr<HealthAlertsEnabledSetting<SPEC>>()->set(!getPtr<HealthAlertsEnabledSetting<SPEC>>()->get());
+    say(entry);
+  }
+};
 
 // BoolSetting for enabling/disabling armor alerts
 template<class SPEC>
@@ -145,9 +175,24 @@ struct ArmorAlertsEnabledSetting : public BoolSetting {
   }
 };
 
-// Menu entry for Armor Alerts toggle
+// Custom menu entry for Armor Alerts toggle with custom on/off sounds
 template<class SPEC>
-class HevArmorAlertsEntry : public DirectBoolEntry<SPEC, ArmorAlertsEnabledSetting<SPEC>> {};
+class HevArmorAlertsEntry : public MenuEntry {
+public:
+  void say(int entry) {
+    // Play powerarmor_on or powerarmor_off based on current state
+    getPtr<ArmorAlertsEnabledSetting<SPEC>>()->say();
+    if (getPtr<ArmorAlertsEnabledSetting<SPEC>>()->get()) {
+      hybrid_font.PlayCommon(&SFX_powerarmor_on);
+    } else {
+      hybrid_font.PlayCommon(&SFX_powerarmor_off);
+    }
+  }
+  void select(int entry) {
+    getPtr<ArmorAlertsEnabledSetting<SPEC>>()->set(!getPtr<ArmorAlertsEnabledSetting<SPEC>>()->get());
+    say(entry);
+  }
+};
 
 // BoolSetting for enabling/disabling clash damage
 template<class SPEC>
@@ -159,9 +204,25 @@ struct ClashDamageEnabledSetting : public BoolSetting {
   }
 };
 
-// Menu entry for Clash Damage toggle
+// Custom menu entry for Clash Damage toggle with custom on/off sounds
+// Note: Using automedic sounds as user indicated morphine/antidotes
 template<class SPEC>
-class HevClashDamageEntry : public DirectBoolEntry<SPEC, ClashDamageEnabledSetting<SPEC>> {};
+class HevClashDamageEntry : public MenuEntry {
+public:
+  void say(int entry) {
+    // Play automedic_on or automedic_off based on current state
+    getPtr<ClashDamageEnabledSetting<SPEC>>()->say();
+    if (getPtr<ClashDamageEnabledSetting<SPEC>>()->get()) {
+      hybrid_font.PlayCommon(&SFX_automedic_on);
+    } else {
+      hybrid_font.PlayCommon(&SFX_automedic_off);
+    }
+  }
+  void select(int entry) {
+    getPtr<ClashDamageEnabledSetting<SPEC>>()->set(!getPtr<ClashDamageEnabledSetting<SPEC>>()->get());
+    say(entry);
+  }
+};
 
 // Main HEV Settings Menu - combines all setting entries
 template<class SPEC>
