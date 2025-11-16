@@ -125,9 +125,9 @@ public:
     // Play atmospherics_on or atmospherics_off based on current state
     getPtr<HazardEnabledSetting<SPEC>>()->say();
     if (getPtr<HazardEnabledSetting<SPEC>>()->get()) {
-      SaberBase::DoEffect(EFFECT_USER3, EFFECT_ALT_SOUND);  // ON
+      hybrid_font.PlayCommon(&SFX_atmospherics_on);
     } else {
-      SaberBase::DoEffect(EFFECT_USER3, 0);  // OFF
+      hybrid_font.PlayCommon(&SFX_atmospherics_off);
     }
   }
   void select(int entry) {
@@ -154,9 +154,9 @@ public:
     // Play vitalsigns_on or vitalsigns_off based on current state
     getPtr<HealthAlertsEnabledSetting<SPEC>>()->say();
     if (getPtr<HealthAlertsEnabledSetting<SPEC>>()->get()) {
-      SaberBase::DoEffect(EFFECT_USER4, EFFECT_ALT_SOUND);  // ON
+      hybrid_font.PlayCommon(&SFX_vitalsigns_on);
     } else {
-      SaberBase::DoEffect(EFFECT_USER4, 0);  // OFF
+      hybrid_font.PlayCommon(&SFX_vitalsigns_off);
     }
   }
   void select(int entry) {
@@ -183,9 +183,9 @@ public:
     // Play powerarmor_on or powerarmor_off based on current state
     getPtr<ArmorAlertsEnabledSetting<SPEC>>()->say();
     if (getPtr<ArmorAlertsEnabledSetting<SPEC>>()->get()) {
-      SaberBase::DoEffect(EFFECT_USER5, EFFECT_ALT_SOUND);  // ON
+      hybrid_font.PlayCommon(&SFX_powerarmor_on);
     } else {
-      SaberBase::DoEffect(EFFECT_USER5, 0);  // OFF
+      hybrid_font.PlayCommon(&SFX_powerarmor_off);
     }
   }
   void select(int entry) {
@@ -213,9 +213,9 @@ public:
     // Play automedic_on or automedic_off based on current state
     getPtr<ClashDamageEnabledSetting<SPEC>>()->say();
     if (getPtr<ClashDamageEnabledSetting<SPEC>>()->get()) {
-      SaberBase::DoEffect(EFFECT_USER6, EFFECT_ALT_SOUND);  // ON
+      hybrid_font.PlayCommon(&SFX_automedic_on);
     } else {
-      SaberBase::DoEffect(EFFECT_USER6, 0);  // OFF
+      hybrid_font.PlayCommon(&SFX_automedic_off);
     }
   }
   void select(int entry) {

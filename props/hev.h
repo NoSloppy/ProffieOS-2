@@ -1034,23 +1034,6 @@ public:
       case EFFECT_ALT_SOUND:
         SOUNDQ->Play(SoundToPlay(&SFX_hazard));
         return;
-      
-      // HEV Menu setting toggle sounds
-      case EFFECT_USER3:  // Hazards setting
-        hybrid_font.PlayCommon(location == EFFECT_ALT_SOUND ? &SFX_atmospherics_on : &SFX_atmospherics_off);
-        return;
-      
-      case EFFECT_USER4:  // Health Alerts setting
-        hybrid_font.PlayCommon(location == EFFECT_ALT_SOUND ? &SFX_vitalsigns_on : &SFX_vitalsigns_off);
-        return;
-      
-      case EFFECT_USER5:  // Armor Alerts setting
-        hybrid_font.PlayCommon(location == EFFECT_ALT_SOUND ? &SFX_powerarmor_on : &SFX_powerarmor_off);
-        return;
-      
-      case EFFECT_USER6:  // Clash Damage setting
-        hybrid_font.PlayCommon(location == EFFECT_ALT_SOUND ? &SFX_automedic_on : &SFX_automedic_off);
-        return;
     }
   }
 };
