@@ -1252,6 +1252,9 @@ public:
 
       // (HEV VOICE LINE) Injury Detected (Laceration/Fracture)
       case EFFECT_USER3: {
+        // Respect combat mode setting
+        if (hev_settings::combat_mode) return;
+
         int injury_type = injury_; // 0 = Laceration, 1 = Fracture
         int impact = impact_;      // 0 = Minor, 1 = Major
 
