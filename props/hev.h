@@ -28,6 +28,10 @@
 //     - Triple-click         - Previous preset                        //
 //     - Quad-click (OFF)     - Enter Settings Menu                    //
 //                                                                     //
+// - SIMULTANEOUS BUTTONS:                                             //
+//     - Hold POWER + Click AUX (ON) - Toggle Combat Mode              //
+//       (Disables all voice lines and effects in real-time)           //
+//                                                                     //
 //---------------------------------------------------------------------//
 //                         SETTINGS MENU                               //
 //---------------------------------------------------------------------//
@@ -51,6 +55,19 @@
 //                                                                     //
 // Note: All settings default to ENABLED. Changes are not saved        //
 //       between power cycles (they reset to defaults on startup).     //
+//                                                                     //
+//---------------------------------------------------------------------//
+//                          COMBAT MODE                                //
+//---------------------------------------------------------------------//
+//                                                                     //
+// Combat Mode is a real-time toggle that disables all voice lines    //
+// and sound effects while keeping the suit functional. This is ideal  //
+// for combat scenarios where audio feedback would be distracting.     //
+//                                                                     //
+// - Toggle: Hold POWER + Click AUX (while suit is ON)                //
+// - Effect: Disables all HEV voice lines and effects                  //
+// - Persists: Until toggled off or suit is powered off                //
+// - Visual damage/health/armor tracking continues normally            //
 //                                                                     //
 //---------------------------------------------------------------------//
 //              PHYSICAL DAMAGE & HAZARD DAMAGE LOGIC                  //
@@ -366,6 +383,7 @@ namespace hev_settings {
   bool health_alerts_enabled = true;
   bool armor_alerts_enabled = true;
   bool clash_damage_enabled = true;
+  bool combat_mode = false;  // Real-time toggle: disables voice lines and effects
 }
 
 // HEV VOICE LINES
@@ -507,16 +525,16 @@ public:
 
     // (HEV VOICE LINE) Logic for Armor Compromised
     // if (previous_armor > 0 && armor_ == 0 && health_ == 0) {
-    if (previous_armor > 0 && armor_ == 0 && hev_settings::armor_alerts_enabled) {
+    if (previous_armor > 0 && armor_ == 0 && hev_settings::armor_alerts_enabled && !hev_settings::combat_mode) {
       SaberBase::DoEffect(EFFECT_USER2, 0.0);
       PVLOG_NORMAL << "Armor Compromised!\n";
     }
 
     // (ENVIRONMENTAL FX) Damage Sounds
-    if (!quiet) SaberBase::DoEffect(EFFECT_STUN, 0.0);
+    if (!quiet && !hev_settings::combat_mode) SaberBase::DoEffect(EFFECT_STUN, 0.0);
     
     // (HEV UI SOUNDS) Logic for Death Sound
-    if (health_ == 0 && previous_health > 0) {
+    if (health_ == 0 && previous_health > 0 && !hev_settings::combat_mode) {
       SaberBase::DoEffect(EFFECT_EMPTY, 0.0);
       return;
     }
@@ -526,7 +544,7 @@ public:
     // and only if alive and health is less than 50. (avoid 50 silent wavs)
     // Configurable chance to announce and reduce spam.
     int new_tens = health_ / 10;
-    if (tens != new_tens && health_ != 0 && health_ < 50 && hev_settings::health_alerts_enabled) {
+    if (tens != new_tens && health_ != 0 && health_ < 50 && hev_settings::health_alerts_enabled && !hev_settings::combat_mode) {
       if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
         // Map health ranges to announcements
         int health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
@@ -596,7 +614,7 @@ public:
       SFX_clsh.SelectFloat(v);
       SFX_stab.SelectFloat(v);
 
-      if (damage >= 30 && hev_settings::armor_alerts_enabled) {
+      if (damage >= 30 && hev_settings::armor_alerts_enabled && !hev_settings::combat_mode) {
         hybrid_font.PlayPolyphonic(&SFX_armor_alarm);
       }
 
@@ -637,8 +655,9 @@ public:
       if (random(100) < HEV_RANDOM_HAZARD_CHANCE) {
         PVLOG_NORMAL << "Activating Hazard.\n";
         current_hazard_ = (Hazard)(1 + random(6));
-        SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
-
+        if (!hev_settings::combat_mode) {
+          SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
+        }
       } else {
         PVLOG_NORMAL << "Skipping Hazard.\n";
         timer_random_event_.start();
@@ -836,6 +855,16 @@ public:
           return true;
         }
         break;
+
+      // Toggle Combat Mode (AUX click while POWER held)
+      case EVENTID(BUTTON_AUX, EVENT_CLICK_SHORT, MODE_ON | BUTTON_POWER):
+        hev_settings::combat_mode = !hev_settings::combat_mode;
+        if (hev_settings::combat_mode) {
+          PVLOG_NORMAL << "Combat Mode: ENABLED (voice/effects disabled)\n";
+        } else {
+          PVLOG_NORMAL << "Combat Mode: DISABLED (voice/effects enabled)\n";
+        }
+        return true;
 
 #ifdef BLADE_DETECT_PIN
       case EVENTID(BUTTON_BLADE_DETECT, EVENT_LATCH_ON, MODE_ANY_BUTTON | MODE_ON):
