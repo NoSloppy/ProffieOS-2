@@ -13,7 +13,8 @@ To enter the settings menu:
 ## Navigating the Menu
 
 Once in the menu, you can:
-- **Rotate the board** to scroll through the available settings
+- **Hold POWER (medium hold)** to navigate forward through the available settings
+- **Hold AUX (medium hold)** to navigate backward through the available settings
 - **Single-click POWER** to toggle the selected setting ON/OFF
 - **Single-click AUX** (or double-click POWER) to exit the menu
 
@@ -90,9 +91,9 @@ To make settings persistent across power cycles, you would need to:
 - Remember that settings reset to defaults on power cycle
 
 **Board doesn't respond in menu:**
-- Try rotating the board more firmly
-- Ensure your motion sensors are working properly
-- Try using button navigation if rotation isn't working
+- Make sure you're holding the button long enough (medium hold)
+- Try holding POWER to go forward or AUX to go backward
+- The board is in a static position, so button holds are used instead of rotation
 
 ## Example Usage Scenarios
 
@@ -108,9 +109,9 @@ If you're doing a performance and want consistent behavior without random hazard
 If you want visual effects only without voice announcements:
 1. Turn suit OFF
 2. Enter menu (quad-click)
-3. Navigate to "Health Alerts" (rotate board once)
+3. Navigate to "Health Alerts" (hold POWER once)
 4. Toggle OFF (single-click POWER)
-5. Navigate to "Armor Alerts" (rotate board once more)
+5. Navigate to "Armor Alerts" (hold POWER once more)
 6. Toggle OFF (single-click POWER)
 7. Exit menu (single-click AUX)
 
@@ -118,7 +119,7 @@ If you want visual effects only without voice announcements:
 If you want to practice movements without worrying about damage:
 1. Turn suit OFF
 2. Enter menu (quad-click)
-3. Navigate through to "Clash Damage" (rotate 3 times)
+3. Navigate through to "Clash Damage" (hold POWER 3 times)
 4. Toggle OFF (single-click POWER)
 5. Exit menu (single-click AUX)
 6. You can now clash all you want without taking damage!

@@ -19,13 +19,13 @@
 │  └───────────────────────────────────────────────────────┘      │
 │                                                                 │
 │  Navigation:                                                    │
-│  • Rotate Board Clockwise    → Next setting                     │
-│  • Rotate Board Counter-CW   → Previous setting                 │
+│  • Hold POWER (medium)       → Next setting                     │
+│  • Hold AUX (medium)         → Previous setting                 │
 │  • Single-click POWER        → Toggle current setting           │
 │  • Single-click AUX          → Exit menu                        │
 └─────────────────────────────────────────────────────────────────┘
                              ↓
-                     (Rotate Board)
+                     (Hold POWER Medium)
                              ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │  ┌───────────────────────────────────────────────────────┐      │
@@ -34,7 +34,7 @@
 │                    (Audio: Tick sound)                          │
 └─────────────────────────────────────────────────────────────────┘
                              ↓
-                     (Rotate Board)
+                     (Hold POWER Medium)
                              ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │  ┌───────────────────────────────────────────────────────┐      │
@@ -43,7 +43,7 @@
 │                    (Audio: Tick sound)                          │
 └─────────────────────────────────────────────────────────────────┘
                              ↓
-                     (Rotate Board)
+                     (Hold POWER Medium)
                              ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │  ┌───────────────────────────────────────────────────────┐      │
@@ -89,8 +89,8 @@ Result:      Enter settings menu
 ```
 Action              | Result
 --------------------|----------------------------------
-Rotate Clockwise    | Next setting (with tick sound)
-Rotate Counter-CW   | Previous setting (with tick sound)
+Hold POWER (medium) | Next setting (with tick sound)
+Hold AUX (medium)   | Previous setting (with tick sound)
 Click POWER         | Toggle setting ON/OFF
 Click AUX           | Exit menu
 Double-click POWER  | Exit menu (alternate)
@@ -119,6 +119,7 @@ Double-click POWER  | Exit menu (alternate)
 │              │ Quad-click:    Enter Settings Menu (OFF)    │
 │              │                                             │
 │              │ IN MENU:                                    │
+│              │ Hold (medium): Navigate forward             │
 │              │ Single-click:  Toggle setting               │
 │              │ Double-click:  Exit menu                    │
 ├──────────────┼─────────────────────────────────────────────┤
@@ -129,6 +130,7 @@ Double-click POWER  | Exit menu (alternate)
 │              │ Quad-click:    Enter Settings Menu (OFF)    │
 │              │                                             │
 │              │ IN MENU:                                    │
+│              │ Hold (medium): Navigate backward            │
 │              │ Single-click:  Exit menu                    │
 └──────────────┴─────────────────────────────────────────────┘
 ```
@@ -161,8 +163,8 @@ Exit Menu               | Cancel/Exit sound
     │  │   [Hazards / Health / etc.]    │     │
     │  └────────────────────────────────┘     │
     │                                          │
-    │  Rotate ↻ → Next setting                │
-    │  Rotate ↺ → Previous setting            │
+    │  Hold POWER ⚡ → Next setting            │
+    │  Hold AUX ⚡ → Previous setting          │
     │  Click ⚡ → Toggle setting               │
     │  Click ✕ → Exit menu                    │
     └──────────────────────────────────────────┘

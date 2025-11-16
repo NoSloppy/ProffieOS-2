@@ -35,7 +35,8 @@
 // - Entering Menu:                                                    //
 //     - Quad-click POWER or AUX while the suit is OFF                 //
 // - Navigating Menu:                                                  //
-//     - Rotate board to scroll through menu options                   //
+//     - Hold POWER (medium) to navigate forward through options       //
+//     - Hold AUX (medium) to navigate backward through options        //
 //     - Options: Hazards, Health Alerts, Armor Alerts, Clash Damage   //
 // - Toggling Settings:                                                //
 //     - Single-click POWER to toggle selected setting ON/OFF          //
