@@ -331,6 +331,7 @@
 #endif
 
 #include "prop_base.h"
+#include "../modes/hev_menu.h"
 #include <cmath>
 
 // HEV VOICE LINES
@@ -419,6 +420,12 @@ public:
   int health_ = 100;
   int armor_ = 100;
 
+  // HEV Settings (toggleable via menu)
+  bool hazards_enabled_ = true;
+  bool health_alerts_enabled_ = true;
+  bool armor_alerts_enabled_ = true;
+  bool clash_damage_enabled_ = true;
+
   enum DamageType {
     DAMAGE_PHYSICAL,
     DAMAGE_HAZARD,
@@ -472,7 +479,7 @@ public:
 
     // (HEV VOICE LINE) Logic for Armor Compromised
     // if (previous_armor > 0 && armor_ == 0 && health_ == 0) {
-    if (previous_armor > 0 && armor_ == 0) {
+    if (previous_armor > 0 && armor_ == 0 && armor_alerts_enabled_) {
       SaberBase::DoEffect(EFFECT_USER2, 0.0);
       PVLOG_NORMAL << "Armor Compromised!\n";
     }
@@ -491,7 +498,7 @@ public:
     // and only if alive and health is less than 50. (avoid 50 silent wavs)
     // Configurable chance to announce and reduce spam.
     int new_tens = health_ / 10;
-    if (tens != new_tens && health_ != 0 && health_ < 50) {
+    if (tens != new_tens && health_ != 0 && health_ < 50 && health_alerts_enabled_) {
       if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
         // Map health ranges to announcements
         int health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
@@ -545,25 +552,35 @@ public:
 
   // Clashes
   void Clash(bool stab, float strength) override {
-    // Don't process clashes if dead or during cooldown.
+    // Don't process clashes if dead, during cooldown, or if clash damage is disabled.
     if (!SaberBase::IsOn() || health_ == 0 || (timer_clash_.active_ && !timer_clash_.check())) {
       return;
     }
 
     PropBase::Clash(false, strength);
 
-    int damage = std::min((int)(strength * 4), 50);
-    float v = (strength - GetCurrentClashThreshold()) / 3;
+    // Only apply damage if clash damage is enabled
+    if (clash_damage_enabled_) {
+      int damage = std::min((int)(strength * 4), 50);
+      float v = (strength - GetCurrentClashThreshold()) / 3;
 
-    SFX_clash.SelectFloat(v);
-    SFX_clsh.SelectFloat(v);
-    SFX_stab.SelectFloat(v);
+      SFX_clash.SelectFloat(v);
+      SFX_clsh.SelectFloat(v);
+      SFX_stab.SelectFloat(v);
 
-    if (damage >= 30) {
-      hybrid_font.PlayPolyphonic(&SFX_armor_alarm);
+      if (damage >= 30 && armor_alerts_enabled_) {
+        hybrid_font.PlayPolyphonic(&SFX_armor_alarm);
+      }
+
+      DoDamage(damage, true);
+    } else {
+      // Still play clash sound even if damage is disabled
+      float v = (strength - GetCurrentClashThreshold()) / 3;
+      SFX_clash.SelectFloat(v);
+      SFX_clsh.SelectFloat(v);
+      SFX_stab.SelectFloat(v);
     }
-
-    DoDamage(damage, true);
+    
     timer_clash_.start();
   }
 
@@ -574,8 +591,8 @@ public:
 
   // Random Hazards
   void CheckRandomEvent() {
-    // Skip Hazard check if OFF, dead, or during revive cooldown
-    if (!SaberBase::IsOn() || health_ == 0 || !timer_hazard_after_revive_.check()) {
+    // Skip Hazard check if OFF, dead, during revive cooldown, or if hazards are disabled
+    if (!SaberBase::IsOn() || health_ == 0 || !timer_hazard_after_revive_.check() || !hazards_enabled_) {
       return;
     }
 
@@ -783,6 +800,15 @@ public:
         }
         break;
 
+      // Quad-click POWER or AUX to enter HEV Settings Menu (when OFF)
+      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
+      case EVENTID(BUTTON_AUX, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
+        if (current_mode == this) {
+          pushMode<MKSPEC<mode::HevMenuSpec>::HevSettingsMenu>();
+          return true;
+        }
+        break;
+
 #ifdef BLADE_DETECT_PIN
       case EVENTID(BUTTON_BLADE_DETECT, EVENT_LATCH_ON, MODE_ANY_BUTTON | MODE_ON):
       case EVENTID(BUTTON_BLADE_DETECT, EVENT_LATCH_ON, MODE_ANY_BUTTON | MODE_OFF):
@@ -877,5 +903,50 @@ public:
     }
   }
 };
+
+// Implementation of HEV menu BoolSetting methods
+namespace mode {
+
+template<class SPEC>
+bool HazardEnabledSetting<SPEC>::get() {
+  return static_cast<Hev*>(prop)->hazards_enabled_;
+}
+
+template<class SPEC>
+void HazardEnabledSetting<SPEC>::set(bool value) {
+  static_cast<Hev*>(prop)->hazards_enabled_ = value;
+}
+
+template<class SPEC>
+bool HealthAlertsEnabledSetting<SPEC>::get() {
+  return static_cast<Hev*>(prop)->health_alerts_enabled_;
+}
+
+template<class SPEC>
+void HealthAlertsEnabledSetting<SPEC>::set(bool value) {
+  static_cast<Hev*>(prop)->health_alerts_enabled_ = value;
+}
+
+template<class SPEC>
+bool ArmorAlertsEnabledSetting<SPEC>::get() {
+  return static_cast<Hev*>(prop)->armor_alerts_enabled_;
+}
+
+template<class SPEC>
+void ArmorAlertsEnabledSetting<SPEC>::set(bool value) {
+  static_cast<Hev*>(prop)->armor_alerts_enabled_ = value;
+}
+
+template<class SPEC>
+bool ClashDamageEnabledSetting<SPEC>::get() {
+  return static_cast<Hev*>(prop)->clash_damage_enabled_;
+}
+
+template<class SPEC>
+void ClashDamageEnabledSetting<SPEC>::set(bool value) {
+  static_cast<Hev*>(prop)->clash_damage_enabled_ = value;
+}
+
+}  // namespace mode
 
 #endif
