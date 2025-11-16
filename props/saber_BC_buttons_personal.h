@@ -777,7 +777,7 @@ push                    - force push
 |                           spoken battery level in volts (pointing down)
 | 4 clicks                - play / stop track
 | 4 clicks long           - turn second blade ON first muted
-||||||||| NOT AVAILABLE     4 clicks long           - manually trigger blade ID scan
+||||||||| NOT AVAILABLE Trigger Blade ID Scan     4 clicks long     - manually trigger blade ID scan
 | 4 clicks held           - manually switch to next blade array
 | - BC Volume menu:
 |     rotate right        - volume UP
