@@ -20,11 +20,36 @@
 //     - Hold                 - Recharge Armor                         //
 //     - Double-click         - Toggle track                           //
 //     - Triple-click         - Next preset                            //
+//     - Quad-click (OFF)     - Enter Settings Menu                    //
 // - AUX Button:                                                       //
 //     - Hold                 - Recharge Health                        //
 //     - Single-click         - Deactivate Hazard                      //
 //     - Double-click         - Armor Readout                          //
 //     - Triple-click         - Previous preset                        //
+//     - Quad-click (OFF)     - Enter Settings Menu                    //
+//                                                                     //
+//---------------------------------------------------------------------//
+//                         SETTINGS MENU                               //
+//---------------------------------------------------------------------//
+//                                                                     //
+// - Entering Menu:                                                    //
+//     - Quad-click POWER or AUX while the suit is OFF                 //
+// - Navigating Menu:                                                  //
+//     - Rotate board to scroll through menu options                   //
+//     - Options: Hazards, Health Alerts, Armor Alerts, Clash Damage   //
+// - Toggling Settings:                                                //
+//     - Single-click POWER to toggle selected setting ON/OFF          //
+// - Exiting Menu:                                                     //
+//     - Single-click AUX (or double-click POWER) to exit menu         //
+//                                                                     //
+// - Settings:                                                         //
+//     1. Hazards             - Enable/disable random hazard events    //
+//     2. Health Alerts       - Enable/disable health voice alerts     //
+//     3. Armor Alerts        - Enable/disable armor voice alerts      //
+//     4. Clash Damage        - Enable/disable physical clash damage   //
+//                                                                     //
+// Note: All settings default to ENABLED. Changes are not saved        //
+//       between power cycles (they reset to defaults on startup).     //
 //                                                                     //
 //---------------------------------------------------------------------//
 //              PHYSICAL DAMAGE & HAZARD DAMAGE LOGIC                  //
