@@ -2,7 +2,42 @@
 
 ## Overview
 
-The HEV (Hazardous Environment Suit) prop file now includes a settings menu system that allows users to toggle various features on and off without needing to modify code or configuration files.
+The HEV (Hazardous Environment Suit) prop file now includes a settings menu system that allows users to toggle various features on and off without needing to modify code or configuration files. Additionally, a real-time **Combat Mode** provides instant audio control during operation.
+
+## Combat Mode (Real-Time Toggle)
+
+Combat Mode allows you to instantly disable all voice lines and sound effects while the suit is running, perfect for combat scenarios where audio feedback would be distracting.
+
+### Activating Combat Mode
+
+**While the suit is ON:**
+1. **Hold** the POWER button
+2. While holding POWER, **click** the AUX button
+3. Combat Mode toggles on/off instantly
+
+### What Combat Mode Does
+
+**When ENABLED:**
+- ✓ Disables all HEV voice announcements (health, armor, hazard alerts)
+- ✓ Disables armor alarm sounds
+- ✓ Disables environmental damage sounds
+- ✓ Disables death sound effects
+- ✓ All damage tracking continues normally (health, armor, hazards)
+- ✓ Visual effects remain active
+- ✓ Clash sounds still play (handled by base prop)
+- ✓ User-triggered sounds still work (armor readout via double-click AUX)
+
+**When DISABLED:**
+- All voice lines and effects function normally according to menu settings
+
+### Use Cases for Combat Mode
+
+- **Active Combat**: Focus on fighting without audio distractions
+- **Stealth Situations**: Minimize audio signatures
+- **Recording/Streaming**: Clean audio for video content
+- **Performance**: Quick audio muting during shows
+
+---
 
 ## Accessing the Menu
 

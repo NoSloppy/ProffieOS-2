@@ -132,7 +132,26 @@ Double-click POWER  | Exit menu (alternate)
 │              │ IN MENU:                                    │
 │              │ Hold (medium): Navigate backward            │
 │              │ Single-click:  Exit menu                    │
+├──────────────┼─────────────────────────────────────────────┤
+│ SIMULTANEOUS │ Hold POWER + Click AUX (ON):                │
+│              │   Toggle Combat Mode (real-time)            │
+│              │   Disables all voice/effects                │
 └──────────────┴─────────────────────────────────────────────┘
+```
+
+## Combat Mode
+
+Combat Mode is a real-time toggle available while the suit is ON:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    COMBAT MODE                          │
+├─────────────────────────────────────────────────────────┤
+│ Activation:  Hold POWER + Click AUX (while ON)         │
+│ Effect:      Disables all voice lines and effects      │
+│ Duration:    Until toggled off or suit powers off      │
+│ Preserves:   Damage tracking, visual effects, clash    │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ## Audio Feedback
