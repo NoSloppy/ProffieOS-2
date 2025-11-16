@@ -334,6 +334,14 @@
 #include "../modes/hev_menu.h"
 #include <cmath>
 
+// Global HEV settings (toggleable via menu)
+namespace hev_settings {
+  bool hazards_enabled = true;
+  bool health_alerts_enabled = true;
+  bool armor_alerts_enabled = true;
+  bool clash_damage_enabled = true;
+}
+
 // HEV VOICE LINES
 EFFECT(armor);
 EFFECT(health);
@@ -420,12 +428,6 @@ public:
   int health_ = 100;
   int armor_ = 100;
 
-  // HEV Settings (toggleable via menu)
-  bool hazards_enabled_ = true;
-  bool health_alerts_enabled_ = true;
-  bool armor_alerts_enabled_ = true;
-  bool clash_damage_enabled_ = true;
-
   enum DamageType {
     DAMAGE_PHYSICAL,
     DAMAGE_HAZARD,
@@ -479,7 +481,7 @@ public:
 
     // (HEV VOICE LINE) Logic for Armor Compromised
     // if (previous_armor > 0 && armor_ == 0 && health_ == 0) {
-    if (previous_armor > 0 && armor_ == 0 && armor_alerts_enabled_) {
+    if (previous_armor > 0 && armor_ == 0 && hev_settings::armor_alerts_enabled) {
       SaberBase::DoEffect(EFFECT_USER2, 0.0);
       PVLOG_NORMAL << "Armor Compromised!\n";
     }
@@ -498,7 +500,7 @@ public:
     // and only if alive and health is less than 50. (avoid 50 silent wavs)
     // Configurable chance to announce and reduce spam.
     int new_tens = health_ / 10;
-    if (tens != new_tens && health_ != 0 && health_ < 50 && health_alerts_enabled_) {
+    if (tens != new_tens && health_ != 0 && health_ < 50 && hev_settings::health_alerts_enabled) {
       if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
         // Map health ranges to announcements
         int health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
@@ -560,7 +562,7 @@ public:
     PropBase::Clash(false, strength);
 
     // Only apply damage if clash damage is enabled
-    if (clash_damage_enabled_) {
+    if (hev_settings::clash_damage_enabled) {
       int damage = std::min((int)(strength * 4), 50);
       float v = (strength - GetCurrentClashThreshold()) / 3;
 
@@ -568,7 +570,7 @@ public:
       SFX_clsh.SelectFloat(v);
       SFX_stab.SelectFloat(v);
 
-      if (damage >= 30 && armor_alerts_enabled_) {
+      if (damage >= 30 && hev_settings::armor_alerts_enabled) {
         hybrid_font.PlayPolyphonic(&SFX_armor_alarm);
       }
 
@@ -592,7 +594,7 @@ public:
   // Random Hazards
   void CheckRandomEvent() {
     // Skip Hazard check if OFF, dead, during revive cooldown, or if hazards are disabled
-    if (!SaberBase::IsOn() || health_ == 0 || !timer_hazard_after_revive_.check() || !hazards_enabled_) {
+    if (!SaberBase::IsOn() || health_ == 0 || !timer_hazard_after_revive_.check() || !hev_settings::hazards_enabled) {
       return;
     }
 
@@ -909,42 +911,42 @@ namespace mode {
 
 template<class SPEC>
 bool HazardEnabledSetting<SPEC>::get() {
-  return static_cast<Hev*>(prop)->hazards_enabled_;
+  return hev_settings::hazards_enabled;
 }
 
 template<class SPEC>
 void HazardEnabledSetting<SPEC>::set(bool value) {
-  static_cast<Hev*>(prop)->hazards_enabled_ = value;
+  hev_settings::hazards_enabled = value;
 }
 
 template<class SPEC>
 bool HealthAlertsEnabledSetting<SPEC>::get() {
-  return static_cast<Hev*>(prop)->health_alerts_enabled_;
+  return hev_settings::health_alerts_enabled;
 }
 
 template<class SPEC>
 void HealthAlertsEnabledSetting<SPEC>::set(bool value) {
-  static_cast<Hev*>(prop)->health_alerts_enabled_ = value;
+  hev_settings::health_alerts_enabled = value;
 }
 
 template<class SPEC>
 bool ArmorAlertsEnabledSetting<SPEC>::get() {
-  return static_cast<Hev*>(prop)->armor_alerts_enabled_;
+  return hev_settings::armor_alerts_enabled;
 }
 
 template<class SPEC>
 void ArmorAlertsEnabledSetting<SPEC>::set(bool value) {
-  static_cast<Hev*>(prop)->armor_alerts_enabled_ = value;
+  hev_settings::armor_alerts_enabled = value;
 }
 
 template<class SPEC>
 bool ClashDamageEnabledSetting<SPEC>::get() {
-  return static_cast<Hev*>(prop)->clash_damage_enabled_;
+  return hev_settings::clash_damage_enabled;
 }
 
 template<class SPEC>
 void ClashDamageEnabledSetting<SPEC>::set(bool value) {
-  static_cast<Hev*>(prop)->clash_damage_enabled_ = value;
+  hev_settings::clash_damage_enabled = value;
 }
 
 }  // namespace mode
