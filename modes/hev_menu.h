@@ -112,11 +112,14 @@ struct HazardEnabledSetting : public BoolSetting {
   bool get();
   void set(bool value);
   void say() { 
-    // Play "Hazards" sound - we'll use a custom approach
-    // For now, just use the select sound as placeholder
+    // Play "Hazards" sound
     getSL<SPEC>()->SaySelect(); 
   }
 };
+
+// Menu entry for Hazard toggle
+template<class SPEC>
+class HevHazardEntry : public DirectBoolEntry<SPEC, HazardEnabledSetting<SPEC>> {};
 
 // BoolSetting for enabling/disabling health alerts
 template<class SPEC>
@@ -128,6 +131,10 @@ struct HealthAlertsEnabledSetting : public BoolSetting {
   }
 };
 
+// Menu entry for Health Alerts toggle
+template<class SPEC>
+class HevHealthAlertsEntry : public DirectBoolEntry<SPEC, HealthAlertsEnabledSetting<SPEC>> {};
+
 // BoolSetting for enabling/disabling armor alerts
 template<class SPEC>
 struct ArmorAlertsEnabledSetting : public BoolSetting {
@@ -137,6 +144,10 @@ struct ArmorAlertsEnabledSetting : public BoolSetting {
     getSL<SPEC>()->SaySelect();
   }
 };
+
+// Menu entry for Armor Alerts toggle
+template<class SPEC>
+class HevArmorAlertsEntry : public DirectBoolEntry<SPEC, ArmorAlertsEnabledSetting<SPEC>> {};
 
 // BoolSetting for enabling/disabling clash damage
 template<class SPEC>
@@ -148,13 +159,17 @@ struct ClashDamageEnabledSetting : public BoolSetting {
   }
 };
 
-// Main HEV Settings Menu
+// Menu entry for Clash Damage toggle
+template<class SPEC>
+class HevClashDamageEntry : public DirectBoolEntry<SPEC, ClashDamageEnabledSetting<SPEC>> {};
+
+// Main HEV Settings Menu - combines all setting entries
 template<class SPEC>
 struct HevSettingsMenu : public MenuEntryMenu<SPEC,
-  DirectBoolEntry<SPEC, HazardEnabledSetting<SPEC>>,
-  DirectBoolEntry<SPEC, HealthAlertsEnabledSetting<SPEC>>,
-  DirectBoolEntry<SPEC, ArmorAlertsEnabledSetting<SPEC>>,
-  DirectBoolEntry<SPEC, ClashDamageEnabledSetting<SPEC>>
+  HevHazardEntry<SPEC>,
+  HevHealthAlertsEntry<SPEC>,
+  HevArmorAlertsEntry<SPEC>,
+  HevClashDamageEntry<SPEC>
 > {};
 
 // HEV Menu Specification (button-based, no rotation)
