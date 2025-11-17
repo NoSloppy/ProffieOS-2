@@ -274,7 +274,7 @@ struct HevVolumeMode : public SPEC::SteppedMode {
     mode::getSL<SPEC>()->SayVolumeMenuEnd();
     SPEC::SteppedMode::mode_deactivate();
 
-    PVLOG_NORMAL << "** Exit Volume Menu\n";
+    // "Exit Volume Menu" printout already handled in select() / exit()
     if (percentage_ <= 10) PVLOG_NORMAL << "** Minimum Volume\n";
     else if (percentage_ >= 100) PVLOG_NORMAL << "** Maximum Volume\n";
     else PVLOG_NORMAL << "** Final Volume " << percentage_ << "%\n";
@@ -286,15 +286,15 @@ struct HevVolumeMode : public SPEC::SteppedMode {
       current_volume_ += max_volume_ * 0.10;
       if (current_volume_ >= max_volume_) {
         current_volume_ = max_volume_;
-      }
-      dynamic_mixer.set_volume(current_volume_);
-      percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
-      
-      PVLOG_NORMAL << "** Volume Up - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
-      
-      if (percentage_ >= 100) {
+        percentage_ = 100;
+        dynamic_mixer.set_volume(current_volume_);
         PVLOG_NORMAL << "** Maximum Volume\n";
         mode::getSL<SPEC>()->SayMaximumVolume();
+      } else {
+        dynamic_mixer.set_volume(current_volume_);
+        percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
+        mode::getSL<SPEC>()->SayVolumeUp();
+        PVLOG_NORMAL << "** Volume Up - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
       }
     } else {
       percentage_ = 100;
@@ -309,15 +309,15 @@ struct HevVolumeMode : public SPEC::SteppedMode {
       current_volume_ -= max_volume_ * 0.10;
       if (current_volume_ <= min_volume_) {
         current_volume_ = min_volume_;
-      }
-      dynamic_mixer.set_volume(current_volume_);
-      percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
-      
-      PVLOG_NORMAL << "** Volume Down - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
-      
-      if (percentage_ <= 10) {
+        percentage_ = 10;
+        dynamic_mixer.set_volume(current_volume_);
         PVLOG_NORMAL << "** Minimum Volume\n";
         mode::getSL<SPEC>()->SayMinimumVolume();
+      } else {
+        dynamic_mixer.set_volume(current_volume_);
+        percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
+        mode::getSL<SPEC>()->SayVolumeDown();
+        PVLOG_NORMAL << "** Volume Down - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
       }
     } else {
       percentage_ = 10;
