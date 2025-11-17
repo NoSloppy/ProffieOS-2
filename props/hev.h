@@ -65,6 +65,21 @@
 //       (hev.ini) - they persist across power cycles.                //
 //                                                                     //
 //---------------------------------------------------------------------//
+//                          VOLUME MENU                                //
+//---------------------------------------------------------------------//
+//                                                                     //
+// - Entering Menu:                                                    //
+//     - Triple-click POWER (ON or OFF)                                //
+// - Adjusting Volume:                                                 //
+//     - Hold POWER (medium) to increase volume by 10%                 //
+//     - Hold AUX (medium) to decrease volume by 10%                   //
+// - Saving Changes:                                                   //
+//     - Single-click POWER to save and exit                           //
+// - Canceling Changes:                                                //
+//     - Single-click AUX (or double-click POWER) to cancel and exit   //
+//       (restores original volume)                                    //
+//                                                                     //
+//---------------------------------------------------------------------//
 //                          COMBAT MODE                                //
 //---------------------------------------------------------------------//
 //                                                                     //
@@ -992,78 +1007,7 @@ public:
     PVLOG_NORMAL << "Armor: " << armor_ << "\n";
   }
 
-// Volume Menu
-  void VolumeMenu() {
-    // if (combat_mode_) return;
-    mode_volume_ = !mode_volume_;
-    if (mode_volume_) {
-      if (SFX_vmbegin) {
-        sound_library_.SayEnterVolumeMenu();
-      } else {
-        beeper.Beep(0.1, 1000);
-        beeper.Beep(0.1, 2000);
-        beeper.Beep(0.1, 3000);
-      }
-      PVLOG_NORMAL << "** Enter Volume Menu\n";
-      SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
-    } else {
-      if (SFX_vmend) {
-        sound_library_.SayVolumeMenuEnd();
-      } else {
-        beeper.Beep(0.1, 2000);
-        beeper.Beep(0.1, 1000);
-      }
-      PVLOG_NORMAL << "** Exit Volume Menu\n";
-    }
-  }
 
-  const int maxVolume = VOLUME;
-  const int minVolume = VOLUME * 0.10;
-  int currentVolume = dynamic_mixer.get_volume();
-
-  void VolumeUp() {
-    SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
-    int increasedVolume = std::min<int>(maxVolume, currentVolume + maxVolume * 0.10);
-
-    if (currentVolume < maxVolume) {
-      currentVolume = increasedVolume;
-      dynamic_mixer.set_volume(currentVolume);
-      if (!hybrid_font.PlayPolyphonic(&SFX_volup)) {
-        beeper.Beep(0.10, 2000);
-        beeper.Beep(0.20, 2500);
-      }
-      PVLOG_NORMAL << "** Volume Up - Current Volume: " << currentVolume << "\n";
-    } else {
-      currentVolume = maxVolume;
-      dynamic_mixer.set_volume(currentVolume);
-      if (!hybrid_font.PlayPolyphonic(&SFX_volmax)) {
-        beeper.Beep(0.5, 3000);
-      }
-      PVLOG_NORMAL << "** Maximum Volume\n";
-    }
-  }
-
-  void VolumeDown() {
-    SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
-    int decreasedVolume = std::max<int>(minVolume, currentVolume - maxVolume * 0.10);
-
-    if (currentVolume > minVolume) {
-      currentVolume = decreasedVolume;
-      dynamic_mixer.set_volume(currentVolume);
-      if (!hybrid_font.PlayPolyphonic(&SFX_voldown)) {
-        beeper.Beep(0.10, 2000);
-        beeper.Beep(0.20, 1500);
-      }
-      PVLOG_NORMAL << "** Volume Down - Current Volume: " << currentVolume << "\n";
-    } else {
-      currentVolume = minVolume;
-      dynamic_mixer.set_volume(currentVolume);
-      if (!hybrid_font.PlayPolyphonic(&SFX_volmin)) {
-        beeper.Beep(0.5, 1000);
-      }
-      PVLOG_NORMAL << "** Minimum Volume\n";
-    }
-  }
 
   // Main Loop
   void Loop() override {
@@ -1094,7 +1038,7 @@ public:
         Off();
         return true;
 
-      // short-click AUX to clear hazard / Volume Up
+      // short-click AUX to clear hazard
       case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
       case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         if (current_hazard_) {
@@ -1104,16 +1048,13 @@ public:
           timer_random_event_.start();
           timer_hazard_delay_.reset();
           return true;
-        } else if (mode_volume_) {
-            VolumeUp();
         }
         // Play a no-hazard sound ?
         return true;
 
-      // short-click POW to Volume Down
+      // short-click POW - no default action
       case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
       case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
-        if (mode_volume_) VolumeDown();
         return true;
 
       // Double-click power to start/stop track.
@@ -1182,11 +1123,14 @@ public:
         break;
 
 
-        // Enter/Exit Volume Menu
+        // Enter Volume Menu (3x click POW when ON or OFF)
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_OFF):
-        VolumeMenu();
-        return true;
+        if (current_mode == this) {
+          pushMode<MKSPEC<mode::HevMenuSpec>::HevVolumeMenu>();
+          return true;
+        }
+        break;
 
       // Enter HEV Settings Menu (when OFF)- 4x click POW or AUX
       case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
@@ -1373,9 +1317,6 @@ public:
         return;
     }
   }
-
-private:
-  bool mode_volume_ = false;
 
 };
 

@@ -233,6 +233,126 @@ struct HevSettingsMenu : public MenuEntryMenu<SPEC,
   HevClashDamageEntry<SPEC>
 > {};
 
+// HEV Volume Mode - button-based volume control integrated into menu system
+template<class SPEC>
+struct HevVolumeMode : public SPEC::SteppedMode {
+  const int max_volume_ = VOLUME;
+  const int min_volume_ = VOLUME * 0.10;
+  float initial_volume_ = 0.0;
+  int initial_percentage_ = 0;
+  int percentage_ = 0;
+
+  void mode_activate(bool onreturn) override {
+    initial_volume_ = dynamic_mixer.get_volume();
+    initial_percentage_ = round((initial_volume_ / max_volume_) * 10) * 10;
+    percentage_ = initial_percentage_;
+    SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
+    mode::getSL<SPEC>()->SayEditVolume();
+    announce_volume();
+
+    PVLOG_NORMAL << "** Enter Volume Menu\n";
+    if (percentage_ <= 10) PVLOG_NORMAL << "** Minimum Volume\n";
+    else if (percentage_ >= 100) PVLOG_NORMAL << "** Maximum Volume\n";
+    else PVLOG_NORMAL << "** Volume " << percentage_ << "%\n";
+
+    SPEC::SteppedMode::mode_activate(onreturn);
+  }
+
+  void announce_volume() {
+    if (percentage_ <= 10) {
+      mode::getSL<SPEC>()->SayMinimumVolume();
+    } else if (percentage_ >= 100) {
+      mode::getSL<SPEC>()->SayMaximumVolume();
+    } else {
+      mode::getSL<SPEC>()->SayWhole(percentage_);
+      mode::getSL<SPEC>()->SayPercent();
+    }
+  }
+
+  void mode_deactivate() override {
+    announce_volume();
+    mode::getSL<SPEC>()->SayVolumeMenuEnd();
+    SPEC::SteppedMode::mode_deactivate();
+
+    PVLOG_NORMAL << "** Exit Volume Menu\n";
+    if (percentage_ <= 10) PVLOG_NORMAL << "** Minimum Volume\n";
+    else if (percentage_ >= 100) PVLOG_NORMAL << "** Maximum Volume\n";
+    else PVLOG_NORMAL << "** Final Volume " << percentage_ << "%\n";
+  }
+
+  void next() override {
+    int current_volume_ = dynamic_mixer.get_volume();
+    if (current_volume_ < max_volume_) {
+      current_volume_ += max_volume_ * 0.10;
+      if (current_volume_ >= max_volume_) {
+        current_volume_ = max_volume_;
+      }
+      dynamic_mixer.set_volume(current_volume_);
+      percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
+      
+      PVLOG_NORMAL << "** Volume Up - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
+      
+      if (percentage_ >= 100) {
+        PVLOG_NORMAL << "** Maximum Volume\n";
+        mode::getSL<SPEC>()->SayMaximumVolume();
+      }
+    } else {
+      percentage_ = 100;
+      PVLOG_NORMAL << "** Maximum Volume\n";
+      mode::getSL<SPEC>()->SayMaximumVolume();
+    }
+  }
+
+  void prev() override {
+    int current_volume_ = dynamic_mixer.get_volume();
+    if (current_volume_ > min_volume_) {
+      current_volume_ -= max_volume_ * 0.10;
+      if (current_volume_ <= min_volume_) {
+        current_volume_ = min_volume_;
+      }
+      dynamic_mixer.set_volume(current_volume_);
+      percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
+      
+      PVLOG_NORMAL << "** Volume Down - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
+      
+      if (percentage_ <= 10) {
+        PVLOG_NORMAL << "** Minimum Volume\n";
+        mode::getSL<SPEC>()->SayMinimumVolume();
+      }
+    } else {
+      percentage_ = 10;
+      PVLOG_NORMAL << "** Minimum Volume\n";
+      mode::getSL<SPEC>()->SayMinimumVolume();
+    }
+  }
+
+  void update() override {
+    float volume = dynamic_mixer.get_volume();
+    percentage_ = round((volume / max_volume_) * 10) * 10;
+    SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
+  }
+
+  void exit() override {
+    // Cancel changes - restore initial volume
+    dynamic_mixer.set_volume(initial_volume_);
+    PVLOG_NORMAL << "** Volume Menu Cancelled - Restored to " << initial_percentage_ << "%\n";
+    SPEC::SteppedMode::exit();
+  }
+
+  void select() override {
+    // Save changes - keep current volume
+    PVLOG_NORMAL << "** Volume Menu Saved - Set to " << percentage_ << "%\n";
+    SPEC::SteppedMode::select();
+  }
+
+  // Override button handling if needed for custom controls
+  bool mode_Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
+    // Default behavior: POWER click = select, AUX click = cancel/exit
+    // POWER held medium = next, AUX held medium = prev (inherited from ButtonSteppedMode)
+    return SPEC::SelectCancelMode::mode_Event2(button, event, modifiers);
+  }
+};
+
 // HEV Menu Specification (button-based, no rotation)
 template<class SPEC>
 struct HevMenuSpec {
@@ -242,6 +362,7 @@ struct HevMenuSpec {
   typedef mode::ButtonMenuBase<SPEC> MenuBase;
   typedef SoundLibraryV2 SoundLibrary;
   typedef mode::HevSettingsMenu<SPEC> HevSettingsMenu;
+  typedef mode::HevVolumeMode<SPEC> HevVolumeMenu;
 };
 
 }  // namespace mode
