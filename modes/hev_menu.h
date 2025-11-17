@@ -344,13 +344,6 @@ struct HevVolumeMode : public SPEC::SteppedMode {
     PVLOG_NORMAL << "** Volume Menu Saved - Set to " << percentage_ << "%\n";
     SPEC::SteppedMode::select();
   }
-
-  // Override button handling if needed for custom controls
-  bool mode_Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
-    // Default behavior: POWER click = select, AUX click = cancel/exit
-    // POWER held medium = next, AUX held medium = prev (inherited from ButtonSteppedMode)
-    return SPEC::SelectCancelMode::mode_Event2(button, event, modifiers);
-  }
 };
 
 // HEV Menu Specification (button-based, no rotation)
