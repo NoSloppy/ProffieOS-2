@@ -846,8 +846,10 @@ public:
     // Apply damage if clash_damage_enabled (this one actually controls damage application)
     if (hev_settings::clash_damage_enabled) {
       DoDamage(damage, true);
-      // Queue effect for Injury voice line
-      SaberBase::DoEffect(EFFECT_USER3, 0.0);
+      // Queue effect for Injury voice line (only if not in combat mode)
+      if (!hev_settings::combat_mode) {
+        SaberBase::DoEffect(EFFECT_USER3, 0.0);
+      }
     }
     timer_clash_.start();
   }
@@ -1252,9 +1254,6 @@ public:
 
       // (HEV VOICE LINE) Injury Detected (Laceration/Fracture)
       case EFFECT_USER3: {
-        // Respect combat mode setting
-        if (hev_settings::combat_mode) return;
-
         int injury_type = injury_; // 0 = Laceration, 1 = Fracture
         int impact = impact_;      // 0 = Minor, 1 = Major
 
