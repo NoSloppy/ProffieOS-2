@@ -286,20 +286,12 @@ struct HevVolumeMode : public SPEC::SteppedMode {
       current_volume_ += max_volume_ * 0.10;
       if (current_volume_ >= max_volume_) {
         current_volume_ = max_volume_;
-        percentage_ = 100;
-        dynamic_mixer.set_volume(current_volume_);
         PVLOG_NORMAL << "** Maximum Volume\n";
         mode::getSL<SPEC>()->SayMaximumVolume();
       } else {
-        dynamic_mixer.set_volume(current_volume_);
-        percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
         mode::getSL<SPEC>()->SayVolumeUp();
-        PVLOG_NORMAL << "** Volume Up - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
       }
-    } else {
-      percentage_ = 100;
-      PVLOG_NORMAL << "** Maximum Volume\n";
-      mode::getSL<SPEC>()->SayMaximumVolume();
+      dynamic_mixer.set_volume(current_volume_);
     }
   }
 
@@ -309,40 +301,34 @@ struct HevVolumeMode : public SPEC::SteppedMode {
       current_volume_ -= max_volume_ * 0.10;
       if (current_volume_ <= min_volume_) {
         current_volume_ = min_volume_;
-        percentage_ = 10;
-        dynamic_mixer.set_volume(current_volume_);
         PVLOG_NORMAL << "** Minimum Volume\n";
         mode::getSL<SPEC>()->SayMinimumVolume();
       } else {
-        dynamic_mixer.set_volume(current_volume_);
-        percentage_ = round((current_volume_ / (float)max_volume_) * 10) * 10;
         mode::getSL<SPEC>()->SayVolumeDown();
-        PVLOG_NORMAL << "** Volume Down - Current Volume: " << current_volume_ << " (" << percentage_ << "%)\n";
       }
-    } else {
-      percentage_ = 10;
-      PVLOG_NORMAL << "** Minimum Volume\n";
-      mode::getSL<SPEC>()->SayMinimumVolume();
+      dynamic_mixer.set_volume(current_volume_);
     }
   }
 
   void update() override {
     float volume = dynamic_mixer.get_volume();
     percentage_ = round((volume / max_volume_) * 10) * 10;
+    PVLOG_NORMAL << "** Volume " << percentage_ << "%\n";
     SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
   }
 
-  void exit() override {
-    // Cancel changes - restore initial volume
-    dynamic_mixer.set_volume(initial_volume_);
-    PVLOG_NORMAL << "** Volume Menu Cancelled - Restored to " << initial_percentage_ << "%\n";
-    SPEC::SteppedMode::exit();
+  void select() override {
+    PVLOG_NORMAL << "** Saved - Exit Volume Menu\n";
+    mode::getSL<SPEC>()->SaySave();
+    SPEC::SteppedMode::select();
   }
 
-  void select() override {
-    // Save changes - keep current volume
-    PVLOG_NORMAL << "** Volume Menu Saved - Set to " << percentage_ << "%\n";
-    SPEC::SteppedMode::select();
+  void exit() override {
+    PVLOG_NORMAL << "** Cancelled - Exit Volume Menu\n";
+    percentage_ = initial_percentage_;
+    dynamic_mixer.set_volume(initial_volume_);
+    mode::getSL<SPEC>()->SayCancel();
+    SPEC::SteppedMode::exit();
   }
 };
 
