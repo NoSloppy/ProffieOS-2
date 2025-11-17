@@ -843,13 +843,12 @@ public:
     injury_ = injury_type;
     impact_ = severity;
 
-    // Apply damage if clash_damage_enabled (this one actually controls damage application)
-    if (hev_settings::clash_damage_enabled) {
+    // Apply damage if clash_damage_enabled and not in combat_mode
+    // (Combat mode saves/restores state, so damage during combat would be undone anyway)
+    if (!hev_settings::combat_mode && hev_settings::clash_damage_enabled) {
       DoDamage(damage, true);
-      // Queue effect for Injury voice line (only if not in combat mode)
-      if (!hev_settings::combat_mode) {
-        SaberBase::DoEffect(EFFECT_USER3, 0.0);
-      }
+      // Queue effect for Injury voice line
+      SaberBase::DoEffect(EFFECT_USER3, 0.0);
     }
     timer_clash_.start();
   }
