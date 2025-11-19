@@ -465,6 +465,17 @@
 #endif
 
 #include "prop_base.h"
+
+// HEV suit custom sound effects
+EFFECT(atmospherics_on);
+EFFECT(atmospherics_off);
+EFFECT(vitalsigns_on);
+EFFECT(vitalsigns_off);
+EFFECT(powerarmor_on);
+EFFECT(powerarmor_off);
+EFFECT(automedic_on);
+EFFECT(automedic_off);
+
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
 #include <cmath>
