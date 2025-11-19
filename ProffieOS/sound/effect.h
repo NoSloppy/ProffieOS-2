@@ -811,6 +811,16 @@ EFFECT(blast); // Not to be confused with "blst" and "blaster" as blocking sound
 // battery low
 EFFECT(lowbatt);  // battery low
 
+// HEV suit sounds
+EFFECT(atmospherics_on);
+EFFECT(atmospherics_off);
+EFFECT(vitalsigns_on);
+EFFECT(vitalsigns_off);
+EFFECT(powerarmor_on);
+EFFECT(powerarmor_off);
+EFFECT(automedic_on);
+EFFECT(automedic_off);
+
 // TODO: Optimize this and make it possible
 // to have the WAV reader use this.
 class EffectFileReader : public FileReader {

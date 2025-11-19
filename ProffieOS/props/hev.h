@@ -849,7 +849,7 @@ public:
         
         // 2. Hazard Alert (only if hazard is active)
         if (current_hazard_ != HAZARD_NONE) {
-          SaberBase::DoEffect2(EFFECT_ALT_SOUND, 0.0);
+          SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0);
         }
         
         // 3. Armor Compromised (only if armor just dropped to zero)
@@ -1440,16 +1440,20 @@ private:
 namespace mode {
 
 template<class SPEC>
-bool HazardEnabledSetting<SPEC>::get() return hev_settings::hazards_enabled;
-template<class SPEC>
+bool HazardEnabledSetting<SPEC>::get() {
+  return hev_settings::hazards_enabled;
+}
 
+template<class SPEC>
 void HazardEnabledSetting<SPEC>::set(bool value) {
   hev_settings::hazards_enabled = value;
   hev_settings::SaveSettings();
 }
 
 template<class SPEC>
-bool HealthAlertsEnabledSetting<SPEC>::get() return hev_settings::health_alerts_enabled;
+bool HealthAlertsEnabledSetting<SPEC>::get() {
+  return hev_settings::health_alerts_enabled;
+}
 
 template<class SPEC>
 void HealthAlertsEnabledSetting<SPEC>::set(bool value) {
@@ -1458,7 +1462,9 @@ void HealthAlertsEnabledSetting<SPEC>::set(bool value) {
 }
 
 template<class SPEC>
-bool ArmorAlertsEnabledSetting<SPEC>::get() return hev_settings::armor_alerts_enabled;
+bool ArmorAlertsEnabledSetting<SPEC>::get() {
+  return hev_settings::armor_alerts_enabled;
+}
 
 template<class SPEC>
 void ArmorAlertsEnabledSetting<SPEC>::set(bool value) {
@@ -1467,7 +1473,9 @@ void ArmorAlertsEnabledSetting<SPEC>::set(bool value) {
 }
 
 template<class SPEC>
-bool ClashDamageEnabledSetting<SPEC>::get() return hev_settings::clash_damage_enabled;
+bool ClashDamageEnabledSetting<SPEC>::get() {
+  return hev_settings::clash_damage_enabled;
+}
 
 template<class SPEC>
 void ClashDamageEnabledSetting<SPEC>::set(bool value) {
