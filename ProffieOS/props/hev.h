@@ -849,7 +849,7 @@ public:
         
         // 2. Hazard Alert (only if hazard is active)
         if (current_hazard_ != HAZARD_NONE) {
-          SaberBase::DoEffect2(EFFECT_ALT_SOUND, 0.0);
+          SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0);
         }
         
         // 3. Armor Compromised (only if armor just dropped to zero)
