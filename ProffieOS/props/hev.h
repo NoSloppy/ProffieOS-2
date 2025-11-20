@@ -658,9 +658,11 @@ public:
   void SetPreset(int preset_num, bool announce) override {
     PropBase::SetPreset(preset_num, announce);
     if (!SaberBase::IsOn()) {
-      // Set state to ON without calling On() to avoid triggering sounds/effects
-      // This gives us MODE_ON for event handling without the full power-on sequence
-      SaberBase::on_ = EffectLocation::ALL_BLADES;
+      // Temporarily set out.wav volume to 0 to suppress sound during auto-boot
+      uint8_t saved_volume = SFX_out.GetVolume();
+      SFX_out.SetVolume(0);
+      On();
+      SFX_out.SetVolume(saved_volume);
     }
   }
 
