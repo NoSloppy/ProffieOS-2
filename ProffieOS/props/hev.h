@@ -653,15 +653,14 @@ public:
 
   const char* name() override { return "Hev"; }
 
-  // Pull in parent's SetPreset, but turn the suit on after preset loads.
-  // This ensures the suit is ON after boot completes (safe timing).
+  // Pull in parent's SetPreset, but set the suit to ON state after preset loads.
+  // This ensures the suit starts in MODE_ON for button handling (safe timing).
   void SetPreset(int preset_num, bool announce) override {
     PropBase::SetPreset(preset_num, announce);
     if (!SaberBase::IsOn()) {
-      // Prevent out.wav from playing on auto-boot
-      // Use -2 to bypass random selection (-1 triggers random)
-      SFX_out.Select(-2);
-      On();
+      // Set state to ON without calling On() to avoid triggering sounds/effects
+      // This gives us MODE_ON for event handling without the full power-on sequence
+      SaberBase::on_ = EffectLocation::ALL_BLADES;
     }
   }
 
