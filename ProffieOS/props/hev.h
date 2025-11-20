@@ -658,11 +658,10 @@ public:
   void SetPreset(int preset_num, bool announce) override {
     PropBase::SetPreset(preset_num, announce);
     if (!SaberBase::IsOn()) {
-      // Temporarily set out.wav volume to 0 to suppress sound during auto-boot
-      uint8_t saved_volume = SFX_out.GetVolume();
-      SFX_out.SetVolume(0);
+      // Suppress out.wav on auto-boot using Select(-2)
+      // -1 = random, -2 = suppress sound
+      SFX_out.Select(-2);
       On();
-      SFX_out.SetVolume(saved_volume);
     }
   }
 
