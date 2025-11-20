@@ -465,6 +465,44 @@
 #endif
 
 #include "prop_base.h"
+
+// HEV VOICE LINES
+EFFECT(armor);
+EFFECT(health);
+EFFECT(armor_compromised);
+EFFECT(hazard);
+EFFECT(minor_laceration);
+EFFECT(minor_fracture);
+EFFECT(major_laceration);
+EFFECT(major_fracture);
+EFFECT(morphine);
+// HEV UI SOUNDS
+EFFECT(armor_alarm);
+EFFECT(battery);
+EFFECT(death);
+EFFECT(fuzz);
+EFFECT(medkit);
+// ENVIRONMENTAL SFX
+EFFECT(stun);
+// VOLUME MENU
+EFFECT(vmbegin);
+EFFECT(vmend);
+EFFECT(volup);
+EFFECT(voldown);
+EFFECT(volmax);
+EFFECT(volmin);
+// HEV MENU SOUNDS (for settings toggles)
+EFFECT(atmospherics_on);
+EFFECT(atmospherics_off);
+EFFECT(vitalsigns_on);
+EFFECT(vitalsigns_off);
+EFFECT(powerarmor_on);
+EFFECT(powerarmor_on_short);
+EFFECT(powerarmor_off);
+EFFECT(powerarmor_off_short);
+EFFECT(automedic_on);
+EFFECT(automedic_off);
+
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
 #include <cmath>
@@ -515,45 +553,6 @@ namespace hev_settings {
     }
   }
 }
-
-// HEV VOICE LINES
-EFFECT(armor);
-EFFECT(health);
-EFFECT(armor_compromised);
-EFFECT(hazard);
-EFFECT(minor_laceration);
-EFFECT(minor_fracture);
-EFFECT(major_laceration);
-EFFECT(major_fracture);
-EFFECT(morphine);
-
-// HEV UI SOUNDS
-EFFECT(armor_alarm);
-EFFECT(battery);
-EFFECT(death);
-EFFECT(fuzz);
-EFFECT(medkit);
-
-// ENVIRONMENTAL SFX
-EFFECT(stun);
-
-// VOLUME MENU
-EFFECT(vmbegin);
-EFFECT(vmend);
-EFFECT(volup);
-EFFECT(voldown);
-EFFECT(volmax);
-EFFECT(volmin);
-
-// HEV MENU SOUNDS (for settings toggles)
-EFFECT(atmospherics_on);
-EFFECT(atmospherics_off);
-EFFECT(automedic_on);
-EFFECT(automedic_off);
-EFFECT(powerarmor_on);
-EFFECT(powerarmor_off);
-EFFECT(vitalsigns_on);
-EFFECT(vitalsigns_off);
 
 struct HEVTimerBase {
   uint32_t start_ = 0;
@@ -681,8 +680,17 @@ public:
 
   Hazard current_hazard_ = HAZARD_NONE;
 
+  // Structure to hold damage results
+  struct DamageResult {
+    bool armor_compromised = false;
+    bool health_alert_triggered = false;
+    int health_range = 0;
+    bool death_occurred = false;
+  };
+
   // Calculate Physical and Hazard Damage
-  void DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
+  DamageResult DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
+    DamageResult result;
     int previous_health = health_;
     int previous_armor = armor_;
     int tens = health_ / 10;
@@ -729,10 +737,9 @@ public:
     if (health_ < 0) health_ = 0;
     if (armor_ < 0) armor_ = 0;
 
-    // (HEV VOICE LINE) Logic for Armor Compromised
-    // if (previous_armor > 0 && armor_ == 0 && health_ == 0) {
+    // Check if armor was compromised
     if (previous_armor > 0 && armor_ == 0 && hev_settings::armor_alerts_enabled && !hev_settings::combat_mode) {
-      SaberBase::DoEffect(EFFECT_USER2, 0.0);
+      result.armor_compromised = true;
       PVLOG_NORMAL << "Armor Compromised!\n";
     }
 
@@ -741,11 +748,12 @@ public:
     
     // (HEV UI SOUNDS) Logic for Death Sound
     if (health_ == 0 && previous_health > 0 && !hev_settings::combat_mode) {
+      result.death_occurred = true;
       SaberBase::DoEffect(EFFECT_EMPTY, 0.0);
-      return;
+      return result;
     }
     
-    // (HEV VOICE LINE) Logic for Health Alert
+    // Check if health alert should be triggered
     // Only plays when Health enters a new multiple of 10
     // and only if alive and health is less than 50. (avoid 50 silent wavs)
     // Configurable chance to announce and reduce spam.
@@ -753,30 +761,14 @@ public:
     if (tens != new_tens && health_ != 0 && health_ < 50 && hev_settings::health_alerts_enabled && !hev_settings::combat_mode) {
       if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
         // Map health ranges to announcements
-        int health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
-        const char* health_message = (health_range == 3) ? "Seek Medical Attention" : 
-                                     (health_range == 2) ? "Vital Signs Critical" : 
+        result.health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
+        result.health_alert_triggered = true;
+        const char* health_message = (result.health_range == 3) ? "Seek Medical Attention" : 
+                                     (result.health_range == 2) ? "Vital Signs Critical" : 
                                      "User Death Imminent";
         
-        PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << health_range 
+        PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << result.health_range 
                      << " (" << health_message << ")\n";
-        SaberBase::DoEffect(EFFECT_USER1, 0.0, health_range);  // Pass health_range as sound_number
-        
-        // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
-        int roll = random(100);
-        if (health_range < 3 && roll < 50) {
-          // Add cooldown check for health03 (Seek Medical Attention)
-          if (timer_cooldown_seek_medic_.check()) {
-            PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
-            SFX_health.Select(3);
-            SOUNDQ->Play(SoundToPlay(&SFX_health));
-            timer_cooldown_seek_medic_.start();
-          } else {
-            PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
-          }
-        } else if (health_range < 3) {
-          PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
-        }
       }
     }
 
@@ -785,6 +777,8 @@ public:
     PVLOG_NORMAL << "HAZARD DAMAGE: -" << log_hazard_damage << "\n";
     PVLOG_NORMAL << "HEALTH: " << health_ << " / ";
     PVLOG_NORMAL << "ARMOR: " << armor_ << "\n";
+    
+    return result;
   }
 
   // Armor Readout
@@ -845,10 +839,45 @@ public:
 
     // Apply damage if clash_damage_enabled (this one actually controls damage application)
     if (hev_settings::clash_damage_enabled) {
-      DoDamage(damage, true);
-      // Queue effect for Injury voice line (only if not in combat mode)
+      DamageResult result = DoDamage(damage, true);
+      
+      // Queue effects in the correct order (only if not in combat mode)
       if (!hev_settings::combat_mode) {
+        // 1. Injury Detected
         SaberBase::DoEffect(EFFECT_USER3, 0.0);
+        
+        // 2. Hazard Alert (only if hazard is active)
+        if (current_hazard_ != HAZARD_NONE) {
+          SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0);
+        }
+        
+        // 3. Armor Compromised (only if armor just dropped to zero)
+        if (result.armor_compromised) {
+          SaberBase::DoEffect(EFFECT_USER2, 0.0);
+        }
+        
+        // 4. Health Alert (only if health dropped into a new tens range and is below 50)
+        if (result.health_alert_triggered) {
+          SaberBase::DoEffect(EFFECT_USER1, 0.0, result.health_range);
+          
+          // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
+          int roll = random(100);
+          if (result.health_range < 3 && roll < 50) {
+            // Add cooldown check for health03 (Seek Medical Attention)
+            if (timer_cooldown_seek_medic_.check()) {
+              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
+              SFX_health.Select(3);
+              SOUNDQ->Play(SoundToPlay(&SFX_health));
+              timer_cooldown_seek_medic_.start();
+            } else {
+              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
+            }
+          } else if (result.health_range < 3) {
+            PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
+          }
+        }
+        
+        // 5. Morphine is handled inside EFFECT_USER3 if major injury played
       }
     }
     timer_clash_.start();
@@ -928,7 +957,36 @@ public:
         }
       }
       // Apply hazard damage
-      DoDamage(0, false, DAMAGE_HAZARD);
+      DamageResult result = DoDamage(0, false, DAMAGE_HAZARD);
+      
+      // For hazard damage, we should trigger armor compromised and health alerts if needed
+      if (!hev_settings::combat_mode) {
+        // Armor Compromised (only if armor just dropped to zero)
+        if (result.armor_compromised) {
+          SaberBase::DoEffect(EFFECT_USER2, 0.0);
+        }
+        
+        // Health Alert (only if health dropped into a new tens range and is below 50)
+        if (result.health_alert_triggered) {
+          SaberBase::DoEffect(EFFECT_USER1, 0.0, result.health_range);
+          
+          // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
+          int roll = random(100);
+          if (result.health_range < 3 && roll < 50) {
+            // Add cooldown check for health03 (Seek Medical Attention)
+            if (timer_cooldown_seek_medic_.check()) {
+              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
+              SFX_health.Select(3);
+              SOUNDQ->Play(SoundToPlay(&SFX_health));
+              timer_cooldown_seek_medic_.start();
+            } else {
+              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
+            }
+          } else if (result.health_range < 3) {
+            PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
+          }
+        }
+      }
 
       // Clear hazard on death
       if (health_ == 0) {
@@ -1077,9 +1135,10 @@ public:
   // Button Events
   bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
     switch (EVENTID(button, event, modifiers)) {
-      // On/Off long-click
+
+      // Standby On/Off (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
-#ifdef LIGHTS_ON_RESETS_HEALTH_ARMOR
+#ifdef STANDBY_RESETS_HEALTH_ARMOR
         health_ = 100;
         armor_ = 100;
 #endif
@@ -1094,7 +1153,8 @@ public:
         Off();
         return true;
 
-      // short-click AUX to clear hazard / Volume Up
+      // Clear hazard (Short-click AUX)
+      // Volume Up
       case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
       case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         if (current_hazard_) {
@@ -1110,36 +1170,36 @@ public:
         // Play a no-hazard sound ?
         return true;
 
-      // short-click POW to Volume Down
+      // Flashlight ON/OFF (Short-click POW)
+      // Volume Down
       case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
-        if (mode_volume_) VolumeDown();
+        if (!mode_volume_) {
+          SaberBase::DoBlast();
+        }else {
+          VolumeDown();
+        }
         return true;
 
-      // Double-click power to start/stop track.
+      // Start/stop track (Double-click POW)
       case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         StartOrStopTrack();
         return true;
     
-      // Double-click AUX for Armor Readout.
+      // Armor Readout (Double-click AUX)
       case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         SaberBase::DoEffect(EFFECT_USER8, 0.0);
         armor_readout();
         return true;
 
-      // Next/Previous preset. Triple-click on either button.
+      // Next/Previous preset (Triple-click either button)
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         next_preset();
         return true;
       case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         previous_preset();
         return true;
 
-      // Hold AUX to start healing
+      // Start healing (Hold AUX)
       case EVENTID(BUTTON_AUX, EVENT_HELD_MEDIUM, MODE_ON):
         if (!SaberBase::Lockup()) {
           SaberBase::SetLockup(SaberBase::LOCKUP_HEALING);
@@ -1149,9 +1209,8 @@ public:
         }
         break;
 
-      // Release AUX to stop healing (or wait until full).
+      // Stop healing (Release AUX or wait until full)
       case EVENTID(BUTTON_AUX, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_OFF):
         if (SaberBase::Lockup()) {
           SaberBase::DoEndLockup();
           SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
@@ -1160,7 +1219,7 @@ public:
         }
         break;
 
-      // Hold POWER to start recharging armor
+      // Start recharging armor (Hold POW)
       case EVENTID(BUTTON_POWER, EVENT_HELD_MEDIUM, MODE_ON):
         if (!SaberBase::Lockup()) {
           SaberBase::SetLockup(SaberBase::LOCKUP_FILL_ARMOR);
@@ -1170,9 +1229,8 @@ public:
         }
         break;
 
-      // Release POWER to stop recharging armor (or wait until full).
+      // Stop recharging armor (Release POW or wait until full)
       case EVENTID(BUTTON_POWER, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_OFF):
         if (SaberBase::Lockup()) {
           SaberBase::DoEndLockup();
           SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
@@ -1181,23 +1239,21 @@ public:
         }
         break;
 
-
-        // Enter/Exit Volume Menu
+        // Enter/Exit Volume Menu (Triple-click POW)
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_OFF):
         VolumeMenu();
         return true;
 
-      // Enter HEV Settings Menu (when OFF)- 4x click POW or AUX
-      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
-      case EVENTID(BUTTON_AUX, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
+      // Enter HEV Settings Menu (4x click POW or AUX)
+      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_ON):
+      case EVENTID(BUTTON_AUX, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_ON):
         if (current_mode == this) {
           pushMode<MKSPEC<mode::HevMenuSpec>::HevSettingsMenu>();
           return true;
         }
         break;
 
-      // Toggle Combat Mode (click AUX while POW held)
+      // Combat Mode ON/OFF (Hold POW, Short-click AUX)
       case EVENTID(BUTTON_AUX, EVENT_CLICK_SHORT, MODE_ON | BUTTON_POWER):
         hev_settings::combat_mode = !hev_settings::combat_mode;
         if (hev_settings::combat_mode) {
@@ -1244,7 +1300,7 @@ public:
     switch (effect) {
       default: return;
       case EFFECT_BOOT:
-        hybrid_font.PlayCommon(&SFX_boot);
+        On();
         return;
 
       // (ENVIRONMENTAL FX) Hazard SFX
@@ -1295,7 +1351,6 @@ public:
 
       // (HEV VOICE LINE) Armor Compromised
       case EFFECT_USER2:
-        // PVLOG_NORMAL << "******** Queueing SFX_armor_compromised sound with STEP2 trigger\n";
         SOUNDQ->Play(SoundToPlay(&SFX_armor_compromised, EFFECT_USER2_STEP2));
         return;
 
@@ -1304,7 +1359,6 @@ public:
         if (tmp) {
           SaberBase::sound_length = tmp->length();
         }
-        // PVLOG_NORMAL << "******** STEP2 effect triggered SaberBase::sound_length = " << SaberBase::sound_length << "\n";
         return;
       }
 
@@ -1376,10 +1430,11 @@ public:
 
 private:
   bool mode_volume_ = false;
+  bool flashlight_on_ = false;
 
 };
 
-// Implementation of HEV menu BoolSetting methods
+// HEV menu BoolSetting methods
 namespace mode {
 
 template<class SPEC>

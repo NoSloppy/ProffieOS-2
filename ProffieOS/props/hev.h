@@ -1,3 +1,5 @@
+// v5
+
 //=====================================================================//
 //                        H A L F - L I F E                            //
 //                      ─────────────────────                          //
@@ -471,14 +473,11 @@ EFFECT(atmospherics_off);
 EFFECT(automedic_on);
 EFFECT(automedic_off);
 EFFECT(powerarmor_on);
-EFFECT(powerarmor_on_short);
 EFFECT(powerarmor_off);
-EFFECT(powerarmor_off_short);
 EFFECT(vitalsigns_on);
 EFFECT(vitalsigns_off);
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
-#include <cmath>
 
 // HEV Settings Config File for persistent storage
 class HevSettingsFile : public ConfigFile {
@@ -555,6 +554,8 @@ EFFECT(volup);
 EFFECT(voldown);
 EFFECT(volmax);
 EFFECT(volmin);
+
+
 
 struct HEVTimerBase {
   uint32_t start_ = 0;
@@ -682,17 +683,8 @@ public:
 
   Hazard current_hazard_ = HAZARD_NONE;
 
-  // Structure to hold damage results
-  struct DamageResult {
-    bool armor_compromised = false;
-    bool health_alert_triggered = false;
-    int health_range = 0;
-    bool death_occurred = false;
-  };
-
   // Calculate Physical and Hazard Damage
-  DamageResult DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
-    DamageResult result;
+  void DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
     int previous_health = health_;
     int previous_armor = armor_;
     int tens = health_ / 10;
@@ -739,9 +731,10 @@ public:
     if (health_ < 0) health_ = 0;
     if (armor_ < 0) armor_ = 0;
 
-    // Check if armor was compromised
+    // (HEV VOICE LINE) Logic for Armor Compromised
+    // if (previous_armor > 0 && armor_ == 0 && health_ == 0) {
     if (previous_armor > 0 && armor_ == 0 && hev_settings::armor_alerts_enabled && !hev_settings::combat_mode) {
-      result.armor_compromised = true;
+      SaberBase::DoEffect(EFFECT_USER2, 0.0);
       PVLOG_NORMAL << "Armor Compromised!\n";
     }
 
@@ -750,12 +743,11 @@ public:
     
     // (HEV UI SOUNDS) Logic for Death Sound
     if (health_ == 0 && previous_health > 0 && !hev_settings::combat_mode) {
-      result.death_occurred = true;
       SaberBase::DoEffect(EFFECT_EMPTY, 0.0);
-      return result;
+      return;
     }
     
-    // Check if health alert should be triggered
+    // (HEV VOICE LINE) Logic for Health Alert
     // Only plays when Health enters a new multiple of 10
     // and only if alive and health is less than 50. (avoid 50 silent wavs)
     // Configurable chance to announce and reduce spam.
@@ -763,14 +755,30 @@ public:
     if (tens != new_tens && health_ != 0 && health_ < 50 && hev_settings::health_alerts_enabled && !hev_settings::combat_mode) {
       if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
         // Map health ranges to announcements
-        result.health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
-        result.health_alert_triggered = true;
-        const char* health_message = (result.health_range == 3) ? "Seek Medical Attention" : 
-                                     (result.health_range == 2) ? "Vital Signs Critical" : 
+        int health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
+        const char* health_message = (health_range == 3) ? "Seek Medical Attention" : 
+                                     (health_range == 2) ? "Vital Signs Critical" : 
                                      "User Death Imminent";
         
-        PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << result.health_range 
+        PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << health_range 
                      << " (" << health_message << ")\n";
+        SaberBase::DoEffect(EFFECT_USER1, 0.0, health_range);  // Pass health_range as sound_number
+        
+        // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
+        int roll = random(100);
+        if (health_range < 3 && roll < 50) {
+          // Add cooldown check for health03 (Seek Medical Attention)
+          if (timer_cooldown_seek_medic_.check()) {
+            PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
+            SFX_health.Select(3);
+            SOUNDQ->Play(SoundToPlay(&SFX_health));
+            timer_cooldown_seek_medic_.start();
+          } else {
+            PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
+          }
+        } else if (health_range < 3) {
+          PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
+        }
       }
     }
 
@@ -779,8 +787,6 @@ public:
     PVLOG_NORMAL << "HAZARD DAMAGE: -" << log_hazard_damage << "\n";
     PVLOG_NORMAL << "HEALTH: " << health_ << " / ";
     PVLOG_NORMAL << "ARMOR: " << armor_ << "\n";
-    
-    return result;
   }
 
   // Armor Readout
@@ -841,45 +847,10 @@ public:
 
     // Apply damage if clash_damage_enabled (this one actually controls damage application)
     if (hev_settings::clash_damage_enabled) {
-      DamageResult result = DoDamage(damage, true);
-      
-      // Queue effects in the correct order (only if not in combat mode)
+      DoDamage(damage, true);
+      // Queue effect for Injury voice line (only if not in combat mode)
       if (!hev_settings::combat_mode) {
-        // 1. Injury Detected
         SaberBase::DoEffect(EFFECT_USER3, 0.0);
-        
-        // 2. Hazard Alert (only if hazard is active)
-        if (current_hazard_ != HAZARD_NONE) {
-          SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0);
-        }
-        
-        // 3. Armor Compromised (only if armor just dropped to zero)
-        if (result.armor_compromised) {
-          SaberBase::DoEffect(EFFECT_USER2, 0.0);
-        }
-        
-        // 4. Health Alert (only if health dropped into a new tens range and is below 50)
-        if (result.health_alert_triggered) {
-          SaberBase::DoEffect(EFFECT_USER1, 0.0, result.health_range);
-          
-          // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
-          int roll = random(100);
-          if (result.health_range < 3 && roll < 50) {
-            // Add cooldown check for health03 (Seek Medical Attention)
-            if (timer_cooldown_seek_medic_.check()) {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
-              SFX_health.Select(3);
-              SOUNDQ->Play(SoundToPlay(&SFX_health));
-              timer_cooldown_seek_medic_.start();
-            } else {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
-            }
-          } else if (result.health_range < 3) {
-            PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
-          }
-        }
-        
-        // 5. Morphine is handled inside EFFECT_USER3 if major injury played
       }
     }
     timer_clash_.start();
@@ -959,36 +930,7 @@ public:
         }
       }
       // Apply hazard damage
-      DamageResult result = DoDamage(0, false, DAMAGE_HAZARD);
-      
-      // For hazard damage, we should trigger armor compromised and health alerts if needed
-      if (!hev_settings::combat_mode) {
-        // Armor Compromised (only if armor just dropped to zero)
-        if (result.armor_compromised) {
-          SaberBase::DoEffect(EFFECT_USER2, 0.0);
-        }
-        
-        // Health Alert (only if health dropped into a new tens range and is below 50)
-        if (result.health_alert_triggered) {
-          SaberBase::DoEffect(EFFECT_USER1, 0.0, result.health_range);
-          
-          // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
-          int roll = random(100);
-          if (result.health_range < 3 && roll < 50) {
-            // Add cooldown check for health03 (Seek Medical Attention)
-            if (timer_cooldown_seek_medic_.check()) {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
-              SFX_health.Select(3);
-              SOUNDQ->Play(SoundToPlay(&SFX_health));
-              timer_cooldown_seek_medic_.start();
-            } else {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
-            }
-          } else if (result.health_range < 3) {
-            PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
-          }
-        }
-      }
+      DoDamage(0, false, DAMAGE_HAZARD);
 
       // Clear hazard on death
       if (health_ == 0) {
@@ -1173,9 +1115,7 @@ public:
       // short-click POW to Volume Down
       case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
       case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
-        if (mode_volume_) {
-          VolumeDown();
-        }
+        if (mode_volume_) VolumeDown();
         return true;
 
       // Double-click power to start/stop track.
@@ -1243,6 +1183,7 @@ public:
         }
         break;
 
+
         // Enter/Exit Volume Menu
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_OFF):
@@ -1304,9 +1245,9 @@ public:
     // alongside death sound. However all pending sounds should be cleared.
     switch (effect) {
       default: return;
-      case EFFECT_BOOT:
-        hybrid_font.PlayCommon(&SFX_boot);
-        return;
+      // case EFFECT_BOOT:
+      //   hybrid_font.PlayCommon(&SFX_boot);
+      //   return;
 
       // (ENVIRONMENTAL FX) Hazard SFX
       case EFFECT_STUN:
