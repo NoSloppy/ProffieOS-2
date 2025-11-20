@@ -18,9 +18,9 @@ const unsigned int maxLedsPerStrip = 144;
 
 #endif
 
-// #ifdef CONFIG_PROP
-// #include "../props/hev.h"
-// #endif
+#ifdef CONFIG_PROP
+#include "../props/hev.h"
+#endif
 
 // All HALF-LIFE sfx audio can be found in the game's "sound" directory.
 // Specifically, HEV Suit voice lines can be found within the "fvox" dir.
