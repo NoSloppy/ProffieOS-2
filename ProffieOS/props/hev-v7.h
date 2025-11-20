@@ -505,7 +505,6 @@ EFFECT(automedic_off);
 
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
-#include <cmath>
 
 // HEV Settings Config File for persistent storage
 class HevSettingsFile : public ConfigFile {
