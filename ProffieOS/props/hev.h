@@ -653,6 +653,13 @@ public:
 
   const char* name() override { return "Hev"; }
 
+  // Pull in parent's SetPreset, but turn the suit on after preset loads.
+  // This ensures the suit is ON after boot completes (safe timing).
+  void SetPreset(int preset_num, bool announce) override {
+    PropBase::SetPreset(preset_num, announce);
+    if (!SaberBase::IsOn()) On();
+  }
+
   int health_ = 100;
   int armor_ = 100;
   int injury_ = 0; // 0 = Lacerations, 1 = Fractures
