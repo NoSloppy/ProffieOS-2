@@ -275,7 +275,11 @@ public:
   void SetPreset(int preset_num, bool announce) override {
     PropBase::SetPreset(preset_num, announce);
     if (!SFX_poweron && !SaberBase::IsOn()) {
+      // Suppress out.wav on boot by temporarily muting it
+      int saved_volume = SFX_out.GetVolume();
+      SFX_out.SetVolume(0);
       On();
+      SFX_out.SetVolume(saved_volume);
     }
   }
 
