@@ -476,6 +476,7 @@ EFFECT(powerarmor_on);
 EFFECT(powerarmor_off);
 EFFECT(vitalsigns_on);
 EFFECT(vitalsigns_off);
+
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
 
@@ -539,6 +540,7 @@ EFFECT(morphine);
 
 // HEV UI SOUNDS
 EFFECT(armor_alarm);
+EFFECT(armor_zero);
 EFFECT(battery);
 EFFECT(death);
 EFFECT(fuzz);
@@ -555,7 +557,8 @@ EFFECT(voldown);
 EFFECT(volmax);
 EFFECT(volmin);
 
-
+EFFECT(wpn_hudon);    // Enter "Combat" Mode
+EFFECT(wpn_hudoff);   // Exit "Combat" Mode
 
 struct HEVTimerBase {
   uint32_t start_ = 0;
@@ -683,6 +686,19 @@ public:
 
   Hazard current_hazard_ = HAZARD_NONE;
 
+  // Pull in parent's SetPreset, but turn the suit on.
+  void SetPreset(int preset_num, bool announce) override {
+    PropBase::SetPreset(preset_num, announce);
+    if (!SaberBase::IsOn()) {
+      // Suppress out.wav on boot by temporarily muting it
+      saved_out_volume_ = SFX_out.GetVolume();
+      SFX_out.SetVolume(0);
+      On();
+      // Mark that we need to restore volume later (will be set in Loop once sound starts)
+      restore_volume_time_ = 1; // Non-zero marker to indicate we need to check in Loop
+    }
+  }
+
   // Calculate Physical and Hazard Damage
   void DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
     int previous_health = health_;
@@ -801,20 +817,22 @@ public:
       SOUNDQ->Play(&SFX_fuzz);
 
       // Play Armor Readout
-      SFX_armor.SelectFloat(armor_ / 100.0);
+      // SFX_armor.SelectFloat(armor_ / 100.0);
       SOUNDQ->Play(&SFX_armor);
-
+      sound_library_.SayNumber(armor_ / 100.0, SAY_WHOLE);
+      sound_library_.SayPercent();
     } else {
       // If Armor is 0, immediately plays a warning sound.
-      SFX_armor.SelectFloat(armor_ / 0.0);
-      hybrid_font.PlayCommon(&SFX_armor);
+      // SFX_armor.SelectFloat(armor_ / 0.0);
+      // hybrid_font.PlayCommon(&SFX_armor);
+      hybrid_font.PlayCommon(&SFX_armor_zero);
     }
   }
 
   // Clashes
   void Clash(bool stab, float strength) override {
-    // Don't process clashes if dead or during cooldown.
-    if (!SaberBase::IsOn() || health_ == 0 || (timer_clash_.active_ && !timer_clash_.check())) {
+    // Don't process clashes if OFF, dead, during cooldown, or in Volume Menu
+    if (!SaberBase::IsOn() || mode_volume_ || health_ == 0 || (timer_clash_.active_ && !timer_clash_.check())) {
       return;
     }
 
@@ -863,9 +881,9 @@ public:
 
   // Random Hazards
   void CheckRandomEvent() {
-    // Skip Hazard check if OFF, dead, during revive cooldown
+    // Skip Hazard check if OFF, dead, during revive cooldown, or in Volume Menu
     // Note: hazards_enabled only affects audio/visual, not the actual hazard system
-    if (!SaberBase::IsOn() || health_ == 0 || !timer_hazard_after_revive_.check()) {
+    if (!SaberBase::IsOn() || mode_volume_ || health_ == 0 || !timer_hazard_after_revive_.check()) {
       return;
     }
 
@@ -1067,6 +1085,24 @@ public:
     }
   }
 
+  void DoSpokenBatteryLevel(bool volts) {
+    // Avoid weird battery readings when using USB
+    if (battery_monitor.battery() < 0.5) {
+      sound_library_.SayBatteryLevel();
+      sound_library_.SayDisabled();
+      return;
+    }
+    if (volts) {
+      sound_library_.SayBatteryVolts();
+      PVLOG_NORMAL << "Battery Voltage: " << battery_monitor.battery() << "\n";
+      SaberBase::DoEffect(EFFECT_BATTERY_LEVEL, 0);
+    } else {
+      sound_library_.SayBatteryPercent();
+      PVLOG_NORMAL << "Battery Percentage: " << battery_monitor.battery_percent() << "%\n";
+      SaberBase::DoEffect(EFFECT_BATTERY_LEVEL, 0);
+    }
+  }
+
   // Main Loop
   void Loop() override {
     CheckRandomEvent();
@@ -1100,31 +1136,17 @@ public:
     PropBase::Loop();
   }
 
-  // Override SetPreset to suppress out.wav on boot
-  void SetPreset(int preset_num, bool announce) override {
-    PropBase::SetPreset(preset_num, announce);
-    if (!SaberBase::IsOn()) {
-      // Suppress out.wav on boot by temporarily muting it
-      saved_out_volume_ = SFX_out.GetVolume();
-      SFX_out.SetVolume(0);
-      On();
-      // Mark that we need to restore volume later (will be set in Loop once sound starts)
-      restore_volume_time_ = 1; // Non-zero marker to indicate we need to check in Loop
-    }
-  }
-
   // Button Events
   bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
     switch (EVENTID(button, event, modifiers)) {
-      // On/Off long-click
-      case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
-#ifdef LIGHTS_ON_RESETS_HEALTH_ARMOR
-        health_ = 100;
-        armor_ = 100;
-#endif
-        On();
-        return true;
+
+// Activate Standby Mode  (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_ON):
+        if (mode_volume_) return false;
+        if (flashlight_on_) {
+          SaberBase::DoBlast();
+          flashlight_on_ = false;
+        }
         if (current_hazard_) {
           current_hazard_ = HAZARD_NONE;
           SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
@@ -1133,9 +1155,18 @@ public:
         Off();
         return true;
 
-      // short-click AUX to clear hazard / Volume Up
-      case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
+// Deactivate Standby Mode  (Long-click POW)
+      case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
+#ifdef STANDBY_RESETS_HEALTH_ARMOR
+        health_ = 100;
+        armor_ = 100;
+#endif
+        On();
+        return true;
+
+// Clear hazard (Short-click AUX)
+// Volume Up
+      case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ON):
         if (current_hazard_) {
           current_hazard_ = HAZARD_NONE;
           SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
@@ -1149,37 +1180,43 @@ public:
         // Play a no-hazard sound ?
         return true;
 
-      // short-click POW to Volume Down
-      case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
-        if (mode_volume_) VolumeDown();
+// Flashlight ON/OFF (Short-click POW)
+// Volume Down
+      case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ON):
+        if (!mode_volume_) {
+          flashlight_on_ =!flashlight_on_;
+          SaberBase::DoBlast();
+        }else {
+          VolumeDown();
+        }
         return true;
 
-      // Double-click power to start/stop track.
-      case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
+// Start/stop track (Double-click POW)
+      case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ON):
+        if (mode_volume_) return false;
         StartOrStopTrack();
         return true;
-    
-      // Double-click AUX for Armor Readout.
-      case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
+
+// Armor Readout (Double-click AUX)
+      case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ON):
+        if (mode_volume_) return false;
         SaberBase::DoEffect(EFFECT_USER8, 0.0);
         armor_readout();
         return true;
 
-      // Next/Previous preset. Triple-click on either button.
-      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
-        next_preset();
-        return true;
-      case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
-        previous_preset();
-        return true;
+      // // Next/Previous preset. Triple-click on either button.
+      // case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
+      //   if (mode_volume_) return false;
+      //   next_preset();
+      //   return true;
+      // case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
+      //   if (mode_volume_) return false;
+      //   previous_preset();
+      //   return true;
 
-      // Hold AUX to start healing
-      case EVENTID(BUTTON_AUX, EVENT_HELD_MEDIUM, MODE_ON):
+// Start healing (Hold AUX)
+      case EVENTID(BUTTON_AUX, EVENT_FIRST_HELD_MEDIUM, MODE_ON):
+        if (mode_volume_) return false;
         if (!SaberBase::Lockup()) {
           SaberBase::SetLockup(SaberBase::LOCKUP_HEALING);
           SaberBase::DoBeginLockup();
@@ -1188,9 +1225,8 @@ public:
         }
         break;
 
-      // Release AUX to stop healing (or wait until full).
-      case EVENTID(BUTTON_AUX, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_OFF):
+// Stop healing (Release AUX or wait until full)
+      case EVENTID(BUTTON_AUX, EVENT_RELEASED, MODE_ON):
         if (SaberBase::Lockup()) {
           SaberBase::DoEndLockup();
           SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
@@ -1199,8 +1235,9 @@ public:
         }
         break;
 
-      // Hold POWER to start recharging armor
-      case EVENTID(BUTTON_POWER, EVENT_HELD_MEDIUM, MODE_ON):
+// Start recharging armor (Hold POW)
+      case EVENTID(BUTTON_POWER, EVENT_FIRST_HELD_MEDIUM, MODE_ON):
+        if (mode_volume_) return false;
         if (!SaberBase::Lockup()) {
           SaberBase::SetLockup(SaberBase::LOCKUP_FILL_ARMOR);
           SaberBase::DoBeginLockup();
@@ -1209,9 +1246,8 @@ public:
         }
         break;
 
-      // Release POWER to stop recharging armor (or wait until full).
-      case EVENTID(BUTTON_POWER, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_OFF):
+// Stop recharging armor (Release POW or wait until full)
+      case EVENTID(BUTTON_POWER, EVENT_RELEASED, MODE_ON):
         if (SaberBase::Lockup()) {
           SaberBase::DoEndLockup();
           SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
@@ -1221,31 +1257,43 @@ public:
         break;
 
 
-        // Enter/Exit Volume Menu
+// Enter/Exit Volume Menu (Triple-click POW)
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_OFF):
         VolumeMenu();
         return true;
 
-      // Enter HEV Settings Menu (when OFF)- 4x click POW or AUX
-      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
-      case EVENTID(BUTTON_AUX, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
+      // Enter HEV Settings Menu (4x click POW or AUX)
+      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_ON):
         if (current_mode == this) {
           pushMode<MKSPEC<mode::HevMenuSpec>::HevSettingsMenu>();
           return true;
         }
         break;
 
-      // Toggle Combat Mode (click AUX while POW held)
+// Spoken Battery Level in volts
+      case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
+        DoSpokenBatteryLevel(false);
+        return true;
+
+// Spoken Battery Level in percentage
+      case EVENTID(BUTTON_AUX, EVENT_THIRD_HELD_MEDIUM, MODE_ON):
+        DoSpokenBatteryLevel(true);
+        return true;
+
+
+// Combat Mode ON/OFF (Hold POW, Short-click AUX)
       case EVENTID(BUTTON_AUX, EVENT_CLICK_SHORT, MODE_ON | BUTTON_POWER):
+        if (mode_volume_) return false;
         hev_settings::combat_mode = !hev_settings::combat_mode;
         if (hev_settings::combat_mode) {
+          hybrid_font.PlayPolyphonic(&SFX_wpn_hudon);
           // Entering Combat Mode - save current state
           saved_health_ = health_;
           saved_armor_ = armor_;
           PVLOG_NORMAL << "Combat Mode: ENABLED (voice/effects disabled)\n";
           PVLOG_NORMAL << "  Saved state - Health: " << saved_health_ << ", Armor: " << saved_armor_ << "\n";
         } else {
+          hybrid_font.PlayPolyphonic(&SFX_wpn_hudoff);
           // Exiting Combat Mode - restore saved state
           health_ = saved_health_;
           armor_ = saved_armor_;
@@ -1282,9 +1330,6 @@ public:
     // alongside death sound. However all pending sounds should be cleared.
     switch (effect) {
       default: return;
-      // case EFFECT_BOOT:
-      //   hybrid_font.PlayCommon(&SFX_boot);
-      //   return;
 
       // (ENVIRONMENTAL FX) Hazard SFX
       case EFFECT_STUN:
@@ -1415,6 +1460,7 @@ public:
 
 private:
   bool mode_volume_ = false;
+  bool flashlight_on_ = false;
   
   // Volume restoration for suppressed out.wav during boot
   int saved_out_volume_ = -1;
