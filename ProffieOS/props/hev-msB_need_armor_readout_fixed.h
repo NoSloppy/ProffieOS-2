@@ -686,20 +686,56 @@ public:
 
   Hazard current_hazard_ = HAZARD_NONE;
 
+  // // Pull in parent's SetPreset, but turn the suit on.
+  // void SetPreset(int preset_num, bool announce) override {
+  //   PropBase::SetPreset(preset_num, announce);
+  //   // Suppress out.wav by temporarily muting it
+  //   saved_out_volume_ = SFX_out.GetVolume();
+  //   PVLOG_NORMAL << "******************** just set saved_out_volume_ = " << saved_out_volume_ << "\n";
+  //   SFX_out.SetVolume(0);
+  //   PVLOG_NORMAL << "******************** just set SFX_out vol to ZERO\n";
+  //   if (!SaberBase::IsOn()) {
+  //     On();
+  //     PVLOG_NORMAL << "******************** just called On()\n";
+  //   }
+  //     // Use a non-zero marker for Loop() to watch
+  //     restore_volume_time_ = 1;
+  // }
   // Pull in parent's SetPreset, but turn the suit on.
+  // We need to replicate PropBase::SetPreset logic to inject volume muting
+  // at the right time (after chdir resets volumes, before FastOn plays sound)
   void SetPreset(int preset_num, bool announce) override {
-    PropBase::SetPreset(preset_num, announce);
-    if (!SaberBase::IsOn()) {
-      // Suppress out.wav on boot by temporarily muting it
-      int saved_volume = SFX_out.GetVolume();
-      SFX_out.SetVolume(0);
-      PVLOG_NORMAL << "******************** just setvol to ZERO\n";
-      On();
-      PVLOG_NORMAL << "******************** just called On()\n";
-      SFX_out.SetVolume(saved_volume);
-      PVLOG_NORMAL << "******************** just restored volume\n";
+    PVLOG_DEBUG << "SetPreset(" << preset_num << ")\n";
+    TRACE(PROP, "start");
+    BladeSet previously_on = PropBase::BladeOff();
+    PropBase::SaveColorChangeIfNeeded();
+    
+    // First free all styles, then allocate new ones to avoid memory fragmentation
+    PropBase::FreeBladeStyles();
+    PropBase::current_preset_.SetPreset(preset_num);
+    PropBase::AllocateBladeStyles();
+    PropBase::chdir(PropBase::current_preset_.font.get());
+    
+    // INJECT: After chdir (which resets volumes), mute SFX_out before FastOn
+    saved_out_volume_ = SFX_out.GetVolume();
+    SFX_out.SetVolume(0);
+    
+    if (previously_on.on()) PropBase::FastOn(EffectLocation(0, previously_on));
+    if (announce) {
+      PVLOG_STATUS << "Current Preset: " << PropBase::current_preset_name() << "\n";
+      SaberBase::DoNewFont();
     }
+    TRACE(PROP, "end");
+    
+    // Also handle the boot case (when OFF, turn on)
+    if (!SaberBase::IsOn()) {
+      On();
+    }
+    
+    // Mark that we need to restore volume later (will be set in Loop once sound starts)
+    restore_volume_time_ = 1;
   }
+
 
   // Calculate Physical and Hazard Damage
   void DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
@@ -1111,6 +1147,30 @@ public:
     HazardDecrease();
     IncreaseHealth();
     IncreaseArmor();
+
+    // Restore SFX_out volume after boot
+    if (saved_out_volume_ >= 0) {
+      if (restore_volume_time_ == 1) {
+        RefPtr<BufferedWavPlayer> player = GetWavPlayerPlaying(&SFX_out);
+        if (player) {
+          float length = player->length();
+          PVLOG_NORMAL << "******************** got length of SFX_out  = " << length << "\n";
+          if (length > 0) {
+            restore_volume_time_ = millis() + (uint32_t)(length * 1000);
+          } else {
+            // Unknown length, use default delay
+          PVLOG_NORMAL << "******************** Unknown length, use default delay of 10 seconds\n";
+            restore_volume_time_ = millis() + 10000;
+          }
+        }
+      } else if (restore_volume_time_ > 1 && millis() >= restore_volume_time_) {
+        // Time to restore the volume
+        SFX_out.SetVolume(saved_out_volume_);
+        PVLOG_NORMAL << "******************** just set SFX_out to saved_out_volume_ = " << saved_out_volume_ << "\n";
+        saved_out_volume_ = -1;
+        restore_volume_time_ = 0;
+      }
+    }
     PropBase::Loop();
   }
 
@@ -1439,7 +1499,8 @@ public:
 private:
   bool mode_volume_ = false;
   bool flashlight_on_ = false;
-
+  int saved_out_volume_ = -1;  // suppressed out.wav during boot
+  uint32_t restore_volume_time_ = 0;
 };
 
 // Implementation of HEV menu BoolSetting methods
