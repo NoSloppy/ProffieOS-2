@@ -688,11 +688,17 @@ public:
 
   // Pull in parent's SetPreset, but turn the suit on.
   void SetPreset(int preset_num, bool announce) override {
-    PropBase::SetPreset(preset_num, announce);
-    // Suppress out.wav by temporarily muting it
-    // This applies both at boot (when OFF) and during preset changes (when ON)
+    // Suppress out.wav by temporarily muting it BEFORE preset change
+    // This suppresses the retraction sound when turning off for preset change
     saved_out_volume_ = SFX_out.GetVolume();
     SFX_out.SetVolume(0);
+    
+    PropBase::SetPreset(preset_num, announce);
+    
+    // chdir() in SetPreset resets volume back to 100, so set it to 0 again
+    // This suppresses the ignition sound when turning back on
+    SFX_out.SetVolume(0);
+    
     if (!SaberBase::IsOn()) {
       On();
     }
