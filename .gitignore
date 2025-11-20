@@ -1,0 +1,21 @@
+# Build artifacts
+*.o
+*.d
+build/
+test-*/
+
+# Test executables and artifacts
+ProffieOS/sound/tests
+ProffieOS/sound/talkie_test
+ProffieOS/sound/*.wav
+ProffieOS/sound/testfont/
+
+# Compiled binaries
+*.elf
+*.hex
+*.bin
+
+# Temporary files
+*.tmp
+*~
+.DS_Store
