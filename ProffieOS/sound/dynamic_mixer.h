@@ -79,10 +79,10 @@ public:
       for (int i = 0; i < to_do; i++) {
         v = sum[i];
 //        vol_ = ((vol_ + abs(v)) * 255) >> 8;
-        vol_ += abs(v);
-        vol_ -= (vol_ + 255) >> 8; 
-        v2 = v * volume_ / (my_sqrt(vol_) + 100);        // BC for phase flip add minus like this v2 = v * -volume_ / (my_sqrt(vol_) + 100);
-//	      v2 = (int)((v * (float)volume_)/(sqrtf(vol_)+100.0f));
+	vol_ += abs(v);
+	vol_ -= (vol_ + 255) >> 8;
+        v2 = v * volume_ / (my_sqrt(vol_) + 100);
+//	v2 = (int)((v * (float)volume_)/(sqrtf(vol_)+100.0f));
         data[i] = clamptoi16(v2);
         peak_sum_ = std::max<int32_t>(abs(v), peak_sum_);
         peak_ = std::max<int32_t>(abs(v2), peak_);
@@ -122,9 +122,9 @@ public:
       for (int i = 0; i < to_do; i++) {
         v = sum[i];
         // vol_ = ((vol_ + abs(v)) * 255) >> 8;
-        vol_ += abs(v);
-        vol_ -= (vol_ + 255) >> 8;
-  	    data[i] = v / (sqrtf(vol_) + 100.0f);
+	vol_ += abs(v);
+	vol_ -= (vol_ + 255) >> 8;
+	data[i] = v / (sqrtf(vol_) + 100.0f);
       }
       data += to_do;
       elements -= to_do;

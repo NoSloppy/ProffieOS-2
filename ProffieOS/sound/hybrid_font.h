@@ -1,7 +1,6 @@
 #ifndef SOUND_HYBRID_FONT_H
 #define SOUND_HYBRID_FONT_H
 #include "../common/fuse.h"
-#include "../common/delay_timer.h"  // this is BC only because I think this is how it should work
 
 class FontConfigFile : public ConfigFile {
 public:
@@ -272,6 +271,7 @@ public:
     }
     return player;
   }
+
   RefPtr<BufferedWavPlayer> PlayPolyphonic(Effect* f)  {
     return PlayPolyphonic(f->RandomFile());
   }
@@ -565,7 +565,7 @@ public:
         break;
       case OFF_BLAST:
         SaberBase::DoEffect(EFFECT_BOOM, 0);
-        PVLOG_NORMAL << "+++++ BOOM!! +++++\n";  // this is BC only because I think this is how it should work (official uses PVLOG_STATUS)
+        PVLOG_VERBOSE << "+++++ BOOM!! +++++\n";
         break;
     }
 
@@ -616,22 +616,14 @@ public:
       case EFFECT_FORCE: PlayCommon(&SFX_force); return;
       case EFFECT_BLAST: Play(&SFX_blaster, &SFX_blst); return;
       case EFFECT_QUOTE: PlayCommon(&SFX_quote); return;
-      case EFFECT_BOOT:
-        if (DelayTimerActive()) pending_boot_ = true; return;  // this is BC only because I think this is how it should work
-        if (PlayPolyphonic(&SFX_boot)) return;
-        // If no boot sounds are found, fall through to font - // BC Only
-        [[gnu::fallthrough]];  // this is BC only because I think this is how it should work
-      case EFFECT_NEWFONT:
-        if (DelayTimerActive()) pending_newfont_ = true; return;  // this is BC only because I think this is how it should work
-        SB_NewFont();
-        return;
+      case EFFECT_BOOT: PlayPolyphonic(&SFX_boot); return;
+      case EFFECT_NEWFONT: SB_NewFont(); return;
       case EFFECT_LOCKUP_BEGIN: SB_BeginLockup(); return;
       case EFFECT_LOCKUP_END: SB_EndLockup(); return;
       case EFFECT_LOW_BATTERY: SB_LowBatt(); return;
-      case EFFECT_ALT_SOUND: {
-        int previous_alternative = 0;  // this is BC only because I think this is how it should work
+      case EFFECT_ALT_SOUND:
         if (num_alternatives) {
-          previous_alternative = current_alternative;
+          int previous_alternative = current_alternative;
           if (SaberBase::sound_number == -1) {
             // Next alternative
             if (++current_alternative >= num_alternatives)  current_alternative = 0;
@@ -643,11 +635,8 @@ public:
           }
           RestartHum(previous_alternative);
         }
-        SFX_altchng.Select(previous_alternative);  // this is BC only because I think this is how it should work
-        // see https://crucible.hubbe.net/t/jetpack-prop-update-and-questions-with-very-instructive-alt-sound-discussion/6648/41?u=nosloppy
         PlayCommon(&SFX_altchng);
         break;
-      }
       case EFFECT_BLADEIN:
         SB_BladeDetect(SFX_bladein);
         break;
@@ -664,29 +653,19 @@ public:
         }
         break;
       case EFFECT_FONT_DIRECTORY_NOT_FOUND:
-PVLOG_NORMAL << "*************SHOULD BE PLAYING Font Dir Not Found WAV HERE\n";
         PlayErrorMessage("e_fnt_nf.wav");
-        StartDelayTimer(SaberBase::sound_length * 1000);
         break;
       case EFFECT_VOICE_PACK_NOT_FOUND:
-PVLOG_NORMAL << "*************SHOULD BE PLAYING Voice pack not found WAV HERE\n";
         PlayErrorMessage("e_vp_nf.wav");
-        StartDelayTimer(SaberBase::sound_length * 1000);
         break;
       case EFFECT_ERROR_IN_BLADE_ARRAY:
-PVLOG_NORMAL << "*************SHOULD BE PLAYING Error in blade WAV HERE\n";
         PlayErrorMessage("e_blade.wav");
-        StartDelayTimer(SaberBase::sound_length * 1000);
         break;
       case EFFECT_ERROR_IN_FONT_DIRECTORY:
-PVLOG_NORMAL << "*************SHOULD BE PLAYING Error in Font Dir WAV HERE\n";
         PlayErrorMessage("e_in_fnt.wav");
-        StartDelayTimer(SaberBase::sound_length * 1000);
         break;
       case EFFECT_ERROR_IN_VOICE_PACK_VERSION:
-PVLOG_NORMAL << "*************SHOULD BE PLAYING Error in Voice Pack Ver WAV HERE\n";
         PlayErrorMessage("e_vp_ver.wav");
-        StartDelayTimer(SaberBase::sound_length * 1000);
         break;
     }
   }
@@ -907,18 +886,6 @@ PVLOG_NORMAL << "*************SHOULD BE PLAYING Error in Voice Pack Ver WAV HERE
         SaberBase::DoEffect(EFFECT_POSTOFF, saved_location_);
       }
     }
-// \/\/\/\/ this is BC only because I think this is how it should work
-      // Delay boot.wav for error talkie/beeps to finish..
-    if (pending_boot_ && !DelayTimerActive()) {
-      pending_boot_ = false;
-      if (PlayPolyphonic(&SFX_boot)) return;
-    }
-    // Delay font.wav for error talkie/beeps to finish..
-    if (pending_newfont_ && !DelayTimerActive()) {
-      pending_newfont_ = false;
-      SB_NewFont();
-    }
-// /\/\/\/\ this is BC only because I think this is how it should work
   }
 
   void StopIdleSound() {
@@ -966,8 +933,6 @@ PVLOG_NORMAL << "*************SHOULD BE PLAYING Error in Voice Pack Ver WAV HERE
   float volume_;
   float current_effect_length_ = 0.0;
   EffectLocation saved_location_;
-  bool pending_boot_ = false;  // this is BC only because I think this is how it should work
-  bool pending_newfont_ = false;  // this is BC only because I think this is how it should work
 };
 
 #endif

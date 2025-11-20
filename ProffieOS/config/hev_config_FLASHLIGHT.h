@@ -13,14 +13,14 @@ const unsigned int maxLedsPerStrip = 144;
 // #define HEV_RANDOM_EVENT_INTERVAL_MS 10000
 // #define HEV_RANDOM_HAZARD_CHANCE 95
 #define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100  // defaults to 50%
-// #define LIGHTS_ON_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
+// #define STANDBY_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
 #define MOUNT_SD_SETTING
 
 #endif
 
-#ifdef CONFIG_PROP
-#include "../props/hev.h"
-#endif
+// #ifdef CONFIG_PROP
+// #include "../props/hev.h"
+// #endif
 
 // All HALF-LIFE sfx audio can be found in the game's "sound" directory.
 // Specifically, HEV Suit voice lines can be found within the "fvox" dir.

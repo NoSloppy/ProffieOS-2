@@ -466,15 +466,17 @@
 
 #include "prop_base.h"
 
-// HEV suit custom sound effects
+// HEV MENU SOUNDS (for settings toggles)
 EFFECT(atmospherics_on);
 EFFECT(atmospherics_off);
-EFFECT(vitalsigns_on);
-EFFECT(vitalsigns_off);
-EFFECT(powerarmor_on);
-EFFECT(powerarmor_off);
 EFFECT(automedic_on);
 EFFECT(automedic_off);
+EFFECT(powerarmor_on);
+EFFECT(powerarmor_on_short);
+EFFECT(powerarmor_off);
+EFFECT(powerarmor_off_short);
+EFFECT(vitalsigns_on);
+EFFECT(vitalsigns_off);
 
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
@@ -555,16 +557,6 @@ EFFECT(volup);
 EFFECT(voldown);
 EFFECT(volmax);
 EFFECT(volmin);
-
-// HEV MENU SOUNDS (for settings toggles)
-EFFECT(atmospherics_on);
-EFFECT(atmospherics_off);
-EFFECT(automedic_on);
-EFFECT(automedic_off);
-EFFECT(powerarmor_on_short);
-EFFECT(powerarmor_off_short);
-EFFECT(vitalsigns_on);
-EFFECT(vitalsigns_off);
 
 struct HEVTimerBase {
   uint32_t start_ = 0;

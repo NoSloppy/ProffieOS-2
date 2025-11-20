@@ -193,7 +193,7 @@ class Effect {
     if (alt != -1) {
       filename += 7;
     }
-    
+
     const char *rest = startswith(name_, filename);
     if (!rest) return false;
     if (*rest == '/') {
@@ -251,7 +251,7 @@ class Effect {
       num_alternatives = std::max<int>(num_alternatives, alt + 1);
       found_in_alt_dir_ = true;
     }
-    
+
     return true;
   }
 
@@ -344,7 +344,7 @@ class Effect {
   size_t expected_files() const {
     return files_found() * number_of_alternatives() * number_of_subfiles();
   }
-  
+
   size_t get_min_file() const { return min_file_; }
 
   const char* get_directory() const { return directory_; }
@@ -400,7 +400,7 @@ class Effect {
   }
 #define RANDOMIZE(N, LAST) randomize((N), (LAST))
 #else
-#define RANDOMIZE(N, LAST) (rand() % (N))  
+#define RANDOMIZE(N, LAST) (rand() % (N))
 #endif
 
 
@@ -409,7 +409,7 @@ class Effect {
     int ret = RANDOMIZE(sub_files_, last_ == filenum ? last_subid_ : -1);
 #ifdef NO_REPEAT_RANDOM
     last_subid_ = ret;
-#endif    
+#endif
     return ret;
   }
 
@@ -436,7 +436,7 @@ class Effect {
 
 #ifdef NO_REPEAT_RANDOM
     last_ = n;
-#endif    
+#endif
 
     return FileID(this, n, subid);
   }
@@ -557,7 +557,7 @@ class Effect {
       }
       return false;
     }
-    
+
     void ScanIterator(LSFS::Iterator& iter) {
       PVLOG_DEBUG << "ScanIterator " << iter.name() << " fname=" << fname << "\n";
       char* fend = fname;
@@ -614,14 +614,9 @@ class Effect {
       Scanner scanner;
       scanner.Scan(dir);
       STDOUT.println(" done");
-    // } else {
-    //   if (strlen(dir)) ProffieOSErrors::font_directory_not_found();
-    // }
-
     } else {
       if (strlen(dir)) font_dir_missing_ = true;
     }
-
 #endif   // ENABLE_SD
   }
 
@@ -641,20 +636,18 @@ class Effect {
       if (e->expected_files() != (size_t)(e->num_files_)) {
         if (!warned) {
           warned = true;
-          PVLOG_NORMAL <<"\nWARNING: A font seems to be missing some files!!\n";
-          // ProffieOSErrors::error_in_font_directory();
+          PVLOG_ERROR <<"\nWARNING: A font seems to be missing some files!!\n";
           error_in_font_dir_ = true;
         }
         e->Show();
       }
     }
-    
+
     LOCK_SD(false);
   }
 
   Effect* next_;
 private:
-  // bool sd_missing_reported_ = false;
   Effect* following_ = nullptr;
 
   // Minimum file number.
@@ -729,7 +722,7 @@ EFFECT2(font, bgnidle);
 EFFECT(boot);
 EFFECT(font);      // also polyphonic
 #endif
-EFFECT(bladein);  // also polyphonic
+EFFECT(bladein);   // also polyphonic
 EFFECT(bladeout);  // also polyphonic
 EFFECT2(hum, hum);
 EFFECT2(humm, humm);
@@ -809,7 +802,7 @@ EFFECT(endauto); // Doesn't exist in fonts, but I expect there may be use for au
 EFFECT(blast); // Not to be confused with "blst" and "blaster" as blocking sounds in sabers
 
 // battery low
-EFFECT(lowbatt);  // battery low
+EFFECT(lowbatt);    // battery low
 
 // TODO: Optimize this and make it possible
 // to have the WAV reader use this.

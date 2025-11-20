@@ -22,10 +22,11 @@ const unsigned int maxLedsPerStrip = 144;
 #define SAVE_STATE
 #define ENABLE_ALL_EDIT_OPTIONS
 #define MENU_SPEC_TEMPLATE DefaultMenuSpec
-#define ENABLE_SSD1306
-
+#define MOUNT_SD_SETTING
 #endif
-
+#ifdef CONFIG_PROP
+#include "../props/saber_BC_buttons.h"
+#endif
 #ifdef CONFIG_PRESETS
 Preset presets[] = {
   { "TeensySF", "tracks/venus.wav",

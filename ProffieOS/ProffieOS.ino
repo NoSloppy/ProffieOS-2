@@ -1,157 +1,39 @@
 /*
-  ProffieOS: Control software for lightsabers and other props.
-  http://fredrik.hubbe.net/lightsaber/teensy_saber.html
-  Copyright (c) 2016-2019 Fredrik Hubinette
-  Additional copyright holders listed inline below.
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ ProffieOS: Control software for lightsabers and other props.
+ http://fredrik.hubbe.net/lightsaber/teensy_saber.html
+ Copyright (c) 2016-2019 Fredrik Hubinette
+ Additional copyright holders listed inline below.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*-----------------------------------------------------------------*\
+|  You can have multiple configuration files, and specify which one |
+|  to use here by removing the two slashes at the beginning.        |
+|  **NOTE** Only ONE line should be left uncommented at a time!     |
+|  Add the slashes to any that you are not using.                   |
+\*-----------------------------------------------------------------*/
 
+                                                                     #define CONFIG_FILE "config/hev_config_FLASHLIGHT.h"
 
-// a_official\ releases./ProffieOS-v7.x/ProffieOS/ProffieOS.ino
-
-// To use Terminal for Serial Monitor to have a dark mode ;)
-// Arduino CLI tool - https://github.com/arduino/arduino-cli
-// ls /dev/tty.* to find the port for current attached Proffieboard
-// arduino-cli monitor --port PORT_ID_GOES_HERE --config baudrate=115200
-// Example:
-// arduino-cli monitor --port /dev/tty.usbmodem2051318552421 --config baudrate=115200
-// arduino-cli monitor --port /dev/tty.usbmodem205E33A8344B1 --config baudrate=115200
-
-// ** NOTE ** - NEED TO CTRL+C TO EXIT BEFORE UPLOADING
-
-/*---------------------- ProffieOS:8.x ----------------------------*\
-  |  You can have multiple configuration files, and specify which one |
-  |  to use here by removing the two slashes at the beginning.        |
-  |  **NOTE** Only ONE line should be left uncommented at a time!     |
-  |  Add the slashes to any that you are not using.                   |
-  \*-----------------------------------------------------------------*/
-
-//  --------------- saber_BC_buttons_personal controls for serial monitor-----------r
-// Turn Main Blade ON                           //  pow s1
-// Turn Main Blade OFF                          //  pow m1
-// Turn Dual Blades ON (All blades)             //  pow m2
-// Turn Second Blade on/off using AUX button    //  aux h1
-// Turn Second Blade on/off using POW button    //  pow L2
-// Turn Dual Blades Off (All blades)            //  pow l1
-
-//#define CONFIG_FILE "config/Bunker_Bomb_config.h"
-
-
- #define CONFIG_FILE "config/hev_config_FLASHLIGHT.h"
-
-//#define CONFIG_FILE "config/default_proffieboard_config.h"
-
-//#define CONFIG_FILE "config/Spectre6_DualPropConfig.h"
-///#define CONFIG_FILE "config/proffieboard_v1_test_bench_configBC.h"
-//#define CONFIG_FILE "config/proffieboard_test_bench_config.h"
-//#define CONFIG_FILE "config/default_proffieboard_config.h"
-
-// Recntly used
-//#define CONFIG_FILE "config/BC_EvoFlex_7.x.h"
-                                                                                                  // #define CONFIG_FILE "config/BC_testblaster_8.x.h"
-                                                                                                  // #define CONFIG_FILE "config/BC_DL44_8x.h"
-                                                                                                  // #define CONFIG_FILE "config/BC_E-11_8.x.h"
-
-//#define CONFIG_FILE "config/BC_Darksaber_7.x.h"
-//#define CONFIG_FILE "config/BC_Corran_Horn_7.x.h"
-//#define CONFIG_FILE "config/BC_Vektra_7.x.h"
-//#define CONFIG_FILE "config/BC_Reva_7.x.h"
-//#define CONFIG_FILE "config/BC_OledTest.h"
-//#define CONFIG_FILE "config/BC_Scoundrel_7.x.h"
-//#define CONFIG_FILE "config/BC_Scoundrel_6.x_CONSTANT_BLADEID_TEST.h"
-//#define CONFIG_FILE "config/BC_Scoundrel_6.x_CONSTANT_BLADEID_TEST_dual_prop.h"
-//#define CONFIG_FILE "config/BC_Darkshadow_7.x_CONSTANT_BLADEID_TEST.h"
-//#define CONFIG_FILE "config/BC_Darkshadow_7.x_CONSTANT_BLADEID_TEST_dual_prop.h"
-// #define CONFIG_FILE "config/BC_ID7_7.x.h"
-// #define CONFIG_FILE "config/BC_DarkShadow_6.x.h"
-// #define CONFIG_FILE "config/BC_Darkshadow_7.x_DualProp.h"
-// #define CONFIG_FILE "config/BC_SinisterProphecy_6.x.h"
-//#define CONFIG_FILE "config/BC_Bane_MK2_Black_Bad_Guys_7.x.h"
-// #define CONFIG_FILE "config/BC_Bane_MK2_Black_fun_7.x.h"
-
-
-//#define CONFIG_FILE "config/BlankTestORIG.h"
-//#define CONFIG_FILE "config/BC_Testbed_DualProp.h"// Tools>Board to Proffieboard 1.5!!
-//#define CONFIG_FILE "config/BC_2ndSister_6.x.h"
-//#define CONFIG_FILE "config/BC_Testbed.h"// Tools>Board to Proffieboard 1.5!!
-//#define CONFIG_FILE "config/BC_PrincessLO_6.x.h"
-//#define CONFIG_FILE "config/BC_Rebel_Orphan_6x.h"
-//#define CONFIG_FILE "config/BC_LukeHero_6.x.h"`
-//#define CONFIG_FILE "config/BC_Starkiller_6.x.h"
-// #define CONFIG_FILE "config/BC_2b-Spectre6_DualProp.h"
-//#define CONFIG_FILE "config/BC_Starkiller_4.x.h"
-//#define CONFIG_FILE "config/BC_BlindKnight_6.x.h"
-//#define CONFIG_FILE "config/BC_ID7_6.5.h"
-//#define CONFIG_FILE "config/BC_EvoFlex_6.x.h"
-//#define CONFIG_FILE "config/BC_DarkShadow_BladeID.h"
-//#define CONFIG_FILE "config/BC_Testbed_blaster.h"
-//#define CONFIG_FILE "config/BC_may4thflagship_config_8.x.h"
-//#define CONFIG_FILE "config/BC_Fallen_6.x colorchangeTest.h"
-//#define CONFIG_FILE "config/BC_Fallen_6.x.h"
-
-// Alphabetical
-//#define CONFIG_FILE "config/BC_2b-Spectre6_DualProp.h"
-//#define CONFIG_FILE "config/BC_2ndSister_6.x.h"
-//#define CONFIG_FILE "config/BC_Darkshadow_7.x_Travel_Dual_Blade.h"
-                                                                          //#define CONFIG_FILE "config/BC_2ndSister_8.x_Official_Dual_Blade.h"
-                                                                          //#define CONFIG_FILE "config/BC_Ezra_Found_Spectre_8.x.h"
-                                                                          
-//#define CONFIG_FILE "config/BC_BlindKnight_6.x.h"
-//#define CONFIG_FILE "config/BC_Corran_Horn_7.x.h"
-//#define CONFIG_FILE "config/BC_Darkshadow_6.x_DualProp.h"
-//#define CONFIG_FILE "config/BC_DarkShadow_6.x.h"
-//#define CONFIG_FILE "config/BC_DarkShadow_BladeID.h"
-//#define CONFIG_FILE "config/BC_Darkshadow_7.x_CONSTANT_BLADEID_TEST.h"
-//#define CONFIG_FILE "config/BC_Darkshadow_7.x_CONSTANT_BLADEID_TEST_dual_prop.h"
-//#define CONFIG_FILE "config/BC_Elf_Ahsokas_7.x.h"
-                                                                          //#define CONFIG_FILE "config/BC_EvoFlex_8.x.h"
-//#define CONFIG_FILE "config/BC_Fallen_6.x colorchangeTest.h"
-//#define CONFIG_FILE "config/BC_Fallen_6.x.h"
-//#define CONFIG_FILE "config/BC_ID7_6.5.h"
-//#define CONFIG_FILE "config/BC_ID7_7.x.h"
-// #define CONFIG_FILE "config/BC_LukeHero_8.x.h"
-//#define CONFIG_FILE "config/BC_may4thflagship_config_6.x.h"
-//#define CONFIG_FILE "config/BC_OledTest.h"
-//#define CONFIG_FILE "config/BC_Pariahs_8.x.h"
-
-//#define CONFIG_FILE "config/BC_PrincessLO_6.x.h" 
-//#define CONFIG_FILE "config/BC_Rebel_Orphan_6x.h"
-//#define CONFIG_FILE "config/BC_Reva_7.x.h"
-                                                                    // #define CONFIG_FILE "config/BC_NullRev_8.x.h"
-                                                                    // #define CONFIG_FILE "config/BC_Arcann_8.x.h"
-
-                                                                    // #define CONFIG_FILE "config/BC_Ronin_8.x_testing.h"
-                                                                    // #define CONFIG_FILE "config/exilepBC.h"
-
-                                                                     //#define CONFIG_FILE "config/BC_Ronin_8.x.h"
-                                                        //#define CONFIG_FILE "config/BC_Ronin_8.xTEST.h"
-
-                                                                    // #define CONFIG_FILE "config/laser_musket_config.h"
-
-//#define CONFIG_FILE "config/BC_Ronin_fett263_7.x.h"
-//#define CONFIG_FILE "config/BC_Scoundrel_6.x_CONSTANT_BLADEID_TEST.h"
-//#define CONFIG_FILE "config/BC_Scoundrel_6.x.h"
-//#define CONFIG_FILE "config/BC_SinisterProphecy_7.x.h"
-
-//#define CONFIG_FILE "config/BC_Starkiller_4.x.h"
-//#define CONFIG_FILE "config/BC_Starkiller_6.x.h"
-//#define CONFIG_FILE "config/BC_Testbed_blaster.h"// Tools>Board to Proffieboard 1.5!!
-//#define CONFIG_FILE "config/BC_Testbed_DualProp.h"// Tools>Board to Proffieboard 1.5!!r
-//#define CONFIG_FILE "config/BC_Testbed.h"// Tools>Board to Proffieboard 1.5!!
-//#define CONFIG_FILE "config/BC_Vektra_6.x.h"
-//#define CONFIG_FILE "config/BC_VenZallow_6.x.h
-//#define CONFIG_FILE "config/BlankTestORIG.h"
+// #define CONFIG_FILE "config/default_proffieboard_config.h"
+// #define CONFIG_FILE "config/proffieboard_v1_test_bench_config.h"
+// #define CONFIG_FILE "config/proffieboard_v2_testing_config.h"
+// #define CONFIG_FILE "config/td_proffieboard_config.h"
+// #define CONFIG_FILE "config/proffieboard_v1_graflex.h"
+// #define CONFIG_FILE "config/teensy_audio_shield_micom.h"
+// #define CONFIG_FILE "config/proffieboard_v2_ob4.h"
 
 #ifndef CONFIG_FILE
 #error Please set CONFIG_FILE as shown above.
@@ -222,32 +104,13 @@
 #warning Your config file has KEEP_SAVEFILES_WHEN_PROGRAMMING in it. If you experience problems, please remove it and try again before asking for help. For more information, see: https://pod.hubbe.net/config/keeping-edits-when-uploading.html
 #endif
 
-#ifdef REAL_TIME_BLADE_ID_POWER_PINS
-#define COUNT_ARGS(...)  COUNT_ARGS_(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
-#define COUNT_ARGS_(_1, _2, _3, _4, _5, _6, N, ...)  N
-#define POWER_PINS_1(a)                    PowerPINS<bladePowerPin##a>
-#define POWER_PINS_2(a, b)                 PowerPINS<bladePowerPin##a, bladePowerPin##b>
-#define POWER_PINS_3(a, b, c)              PowerPINS<bladePowerPin##a, bladePowerPin##b, bladePowerPin##c>
-#define POWER_PINS_4(a, b, c, d)           PowerPINS<bladePowerPin##a, bladePowerPin##b, bladePowerPin##c, bladePowerPin##d>
-#define POWER_PINS_5(a, b, c, d, e)        PowerPINS<bladePowerPin##a, bladePowerPin##b, bladePowerPin##c, bladePowerPin##d, bladePowerPin##e>
-#define POWER_PINS_6(a, b, c, d, e, f)     PowerPINS<bladePowerPin##a, bladePowerPin##b, bladePowerPin##c, bladePowerPin##d, bladePowerPin##e, bladePowerPin##f>
-#define CAT2(A, B) A##B
-#define POWER_PINS_CAT(N) CAT2(POWER_PINS_, N)
-#define SELECT_POWER_PINS(...) POWER_PINS_CAT(COUNT_ARGS(__VA_ARGS__))(__VA_ARGS__)
-
-#define ENABLE_POWER_FOR_ID SELECT_POWER_PINS(REAL_TIME_BLADE_ID_POWER_PINS)
-#define SHARED_POWER_PINS
-#define BLADE_ID_SCAN_MILLIS 1000
-#define BLADE_ID_TIMES 15
-#endif
-
 //
 // OVERVIEW
 //
 // Here explain some general code concepts to make it easier
 // to understand the code below.
 //
-// Most things start with the PropBase class. Depending on the
+// Most things start with the ProbBase class. Depending on the
 // configuration, this class is extended by the Saber class,
 // the Detonator class, or some other class. The extended class
 // is instantiated as "prop", and is responsible for handling
@@ -404,8 +267,7 @@ SnoozeTouch snooze_touch;
 SnoozeBlock snooze_config(snooze_touch, snooze_digital, snooze_timer);
 #endif
 
-//const char version[] = "$Id: ce12a06a1e236b5101ec60c950530a9a4719a74d $";
-const char version[] = "8.x GitHub Master";
+const char version[] = "$Id: ce12a06a1e236b5101ec60c950530a9a4719a74d $";
 
 #include "common/common.h"
 #include "common/state_machine.h"
@@ -448,34 +310,34 @@ void PrintQuotedValue(const char* name, const char* str) {
 // be set to low. If a crash occurs in this function
 // it will stay high.
 class ScopedPinTracer {
-  public:
-    explicit ScopedPinTracer(int pin)
-      : pin_(pin)
-        pinMode(pin_, OUTPUT);
-      digitalWriteFast(pin, HIGH);
+public:
+  explicit ScopedPinTracer(int pin)
+    : pin_(pin) {
+    pinMode(pin_, OUTPUT);
+    digitalWriteFast(pin, HIGH);
   }
   ~ScopedPinTracer() {
-  digitalWriteFast(pin_, LOW);
-}
+    digitalWriteFast(pin_, LOW);
+  }
 private:
-int pin_;
+  int pin_;
 };
 
 class ScopedTracer3 {
-  public:
-    explicit ScopedTracer3(int code) {
-      pinMode(bladePowerPin1, OUTPUT);
-      pinMode(bladePowerPin2, OUTPUT);
-      pinMode(bladePowerPin3, OUTPUT);
-      digitalWriteFast(bladePowerPin1, !!(code & 1));
-      digitalWriteFast(bladePowerPin2, !!(code & 2));
-      digitalWriteFast(bladePowerPin3, !!(code & 4));
-    }
-    ~ScopedTracer3() {
-      digitalWriteFast(bladePowerPin1, LOW);
-      digitalWriteFast(bladePowerPin2, LOW);
-      digitalWriteFast(bladePowerPin3, LOW);
-    }
+public:
+  explicit ScopedTracer3(int code) {
+    pinMode(bladePowerPin1, OUTPUT);
+    pinMode(bladePowerPin2, OUTPUT);
+    pinMode(bladePowerPin3, OUTPUT);
+    digitalWriteFast(bladePowerPin1, !!(code & 1));
+    digitalWriteFast(bladePowerPin2, !!(code & 2));
+    digitalWriteFast(bladePowerPin3, !!(code & 4));
+  }
+  ~ScopedTracer3() {
+    digitalWriteFast(bladePowerPin1, LOW);
+    digitalWriteFast(bladePowerPin2, LOW);
+    digitalWriteFast(bladePowerPin3, LOW);
+  }
 };
 
 #endif
@@ -562,7 +424,6 @@ const char* next_current_directory(const char* dir) {
   if (!*dir) return NULL;
   return dir;
 }
-// Font Search Path -  search backwards through path for config.ini variables.
 const char* last_current_directory() {
   const char* ret = current_directory;
   while (true) {
@@ -591,32 +452,27 @@ const char* previous_current_directory(const char* dir) {
 #include "blades/blade_wrapper.h"
 
 class MicroEventTime {
-    void SetToNow() {
-      micros_ = micros();
-      millis_ = millis();
-    }
-    uint32_t millis_since() {
-      return millis() - millis_;
-    }
-    uint32_t micros_since() {
-      if (millis_since() > (0xFFFF0000UL / 1000)) return 0xFFFFFFFFUL;
-      return micros() - micros_;
-    }
-  private:
-    uint32_t millis_;
-    uint32_t micros_;
+  void SetToNow() {
+    micros_ = micros();
+    millis_ = millis();
+  }
+  uint32_t millis_since() {
+    return millis() - millis_;
+  }
+  uint32_t micros_since() {
+    if (millis_since() > (0xFFFF0000UL / 1000)) return 0xFFFFFFFFUL;
+    return micros() - micros_;
+  }
+private:
+  uint32_t millis_;
+  uint32_t micros_;
 };
 
 template<class T, class U>
-struct is_same_type {
-  static const bool value = false;
-};
+struct is_same_type { static const bool value = false; };
 
 template<class T>
-struct is_same_type<T, T> {
-  static const bool value = true;
-};
-
+struct is_same_type<T, T> { static const bool value = true; };
 
 // This really ought to be a typedef, but it causes problems I don't understand.
 #define StyleAllocator class StyleFactory*
@@ -713,7 +569,6 @@ struct is_same_type<T, T> {
 #include "functions/bullet_count.h"
 #include "functions/blaster_mode.h"
 
-
 // transitions
 #include "transitions/fade.h"
 #include "transitions/join.h"
@@ -733,7 +588,6 @@ struct is_same_type<T, T> {
 #include "transitions/blink.h"
 #include "transitions/doeffect.h"
 #include "transitions/loop.h"
-
 
 #include "styles/legacy_styles.h"
 //responsive styles
@@ -779,9 +633,9 @@ class NoLED;
 BladeConfig* current_config = nullptr;
 class BladeBase* GetPrimaryBlade() {
 #if NUM_BLADES == 0
-    return nullptr;
+  return nullptr;
 #else
-    return current_config->blade1;
+  return current_config->blade1;
 #endif
 }
 
@@ -798,7 +652,7 @@ int GetBladeNumber(BladeBase *blade) {
 BladeBase* GetBladeByNumber(int n) {
   if (!current_config) return nullptr;
   switch (n) {
-      ONCEPERBLADE(RETURN_BLADE_BY_NUMBER);
+    ONCEPERBLADE(RETURN_BLADE_BY_NUMBER);
   }
   return nullptr;
 }
@@ -827,7 +681,6 @@ ArgParserInterface* CurrentArgParser;
 #include "props/saber.h"
 #endif
 
-
 PROP_TYPE prop;
 
 #ifdef BLADE_ID_SCAN_MILLIS
@@ -836,16 +689,15 @@ bool ScanBladeIdNow() {
 }
 #endif
 
-
 #ifdef BLASTER_SHOTS_UNTIL_EMPTY
 int prop_GetBulletCount() {
-  return prop.GetBulletCount();
+    return prop.GetBulletCount();
 }
 #endif
 
 #ifdef PROP_HAS_GETBLASTERMODE
 int prop_GetBlasterMode() {
-  return prop.GetBlasterMode();
+    return prop.GetBlasterMode();
 }
 #endif
 
@@ -883,28 +735,14 @@ void prop_MovePreset(int position) {
   prop.MovePreset(position);
 }
 
-const char* GetStyle(int blade) {
-  return prop.GetStyle(blade);
-}
+const char* GetStyle(int blade) { return prop.GetStyle(blade); }
 void SetStyle(int blade, LSPtr<char> style);
-void SetStyle(int blade, LSPtr<char> style) {
-  prop.SetStyle(blade, std::move(style));
-}
-void SetFont(const char* font) {
-  prop.SetFont(font);
-}
-void SetTrack(const char* track) {
-  prop.SetTrack(track);
-}
-const char* GetFont() {
-  return prop.GetFont();
-}
-const char* GetTrack() {
-  return prop.GetTrack();
-}
-void chdir(const StringPiece font) {
-  prop.chdir(font);
-}
+void SetStyle(int blade, LSPtr<char> style) { prop.SetStyle(blade, std::move(style)); }
+void SetFont(const char* font) { prop.SetFont(font); }
+void SetTrack(const char* track) { prop.SetTrack(track); }
+const char* GetFont() { return prop.GetFont(); }
+const char* GetTrack() { return prop.GetTrack(); }
+void chdir(const StringPiece font) { prop.chdir(font); }
 
 #if 0
 #include "scripts/test_motion_timeout.h"
@@ -957,7 +795,7 @@ uint32_t startup_MODER[4];
 
 #ifdef BLADE_DETECT_PIN
 LatchingButtonTemplate<FloatingButtonBase<BLADE_DETECT_PIN>>
-    BladeDetect(BUTTON_BLADE_DETECT, BLADE_DETECT_PIN, "blade_detect");
+  BladeDetect(BUTTON_BLADE_DETECT, BLADE_DETECT_PIN, "blade_detect");
 
 USE_PIN_OUTPUT(BLADE_DETECT_PIN, PO_SubSystems::PO_BLADE_DETECT);
 #endif
@@ -967,340 +805,339 @@ USE_PIN_OUTPUT(BLADE_DETECT_PIN, PO_SubSystems::PO_BLADE_DETECT);
 class I2CDevice;
 
 class Commands : public CommandParser {
-  public:
-    enum PinType {
-      PinTypeFloating,
-      PinTypePulldown,
-      PinTypeCap,
-      PinTypeOther,
-    };
+public:
+  enum PinType {
+    PinTypeFloating,
+    PinTypePulldown,
+    PinTypeCap,
+    PinTypeOther,
+  };
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
-    File current_file;
+  File current_file;
 #endif
 
-    bool TestPin(int pin, PinType t) {
-      int ret = 0;
-      pinMode(pin, OUTPUT);
-      digitalWrite(pin, LOW);
-      delayMicroseconds(20);
-      ret <<= 1;
-      ret |= digitalRead(pin);
+  bool TestPin(int pin, PinType t) {
+    int ret = 0;
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW);
+    delayMicroseconds(20);
+    ret <<= 1;
+    ret |= digitalRead(pin);
 
-      digitalWrite(pin, HIGH);
-      delayMicroseconds(20);
-      ret <<= 1;
-      ret |= digitalRead(pin);
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(20);
+    ret <<= 1;
+    ret |= digitalRead(pin);
 
-      // Discharge time
-      pinMode(pin, INPUT_PULLDOWN);
-      uint32_t start = micros();
-      uint32_t end;
-      while (digitalRead(pin)) {
-        end = micros();
-        if (end - start > 32768) break;  // 32 millis
-      }
-      ret <<= 16;
-      ret |= (end - start);
-
-      pinMode(pin, INPUT_PULLUP);
-      delayMicroseconds(20);
-      ret <<= 1;
-      ret |= digitalRead(pin);
-      pinMode(pin, INPUT);
-
-      return ret;
+    // Discharge time
+    pinMode(pin, INPUT_PULLDOWN);
+    uint32_t start = micros();
+    uint32_t end;
+    while (digitalRead(pin)) {
+      end = micros();
+      if (end - start > 32768) break;  // 32 millis
     }
-    bool Parse(const char* cmd, const char* e) override {
+    ret <<= 16;
+    ret |= (end - start);
+
+    pinMode(pin, INPUT_PULLUP);
+    delayMicroseconds(20);
+    ret <<= 1;
+    ret |= digitalRead(pin);
+    pinMode(pin, INPUT);
+
+    return ret;
+  }
+  bool Parse(const char* cmd, const char* e) override {
 
 #ifdef ENABLE_SERIALFLASH
-      if (!strcmp(cmd, "ls")) {
-        char tmp[128];
-        SerialFlashChip::opendir();
-        uint32_t size;
-        while (SerialFlashChip::readdir(tmp, sizeof(tmp), size)) {
-          STDOUT.print(tmp);
-          STDOUT.print(" ");
-          STDOUT.println(size);
-        }
-        STDOUT.println("Done listing files.");
-        return true;
+    if (!strcmp(cmd, "ls")) {
+      char tmp[128];
+      SerialFlashChip::opendir();
+      uint32_t size;
+      while (SerialFlashChip::readdir(tmp, sizeof(tmp), size)) {
+        STDOUT.print(tmp);
+        STDOUT.print(" ");
+        STDOUT.println(size);
       }
-      if (!strcmp(cmd, "rm")) {
-        if (SerialFlashChip::remove(e)) {
-          STDOUT.println("Removed.\n");
-        } else {
-          STDOUT.println("No such file.\n");
-        }
-        return true;
+      STDOUT.println("Done listing files.");
+      return true;
+    }
+    if (!strcmp(cmd, "rm")) {
+      if (SerialFlashChip::remove(e)) {
+        STDOUT.println("Removed.\n");
+      } else {
+        STDOUT.println("No such file.\n");
       }
-      if (!strcmp(cmd, "format")) {
-        STDOUT.print("Erasing ... ");
-        SerialFlashChip::eraseAll();
-        while (!SerialFlashChip::ready());
-        STDOUT.println("Done");
-        return true;
-      }
+      return true;
+    }
+    if (!strcmp(cmd, "format")) {
+      STDOUT.print("Erasing ... ");
+      SerialFlashChip::eraseAll();
+      while (!SerialFlashChip::ready());
+      STDOUT.println("Done");
+      return true;
+    }
 #endif
 #ifdef ENABLE_SD
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
-      if (!strcmp(cmd, "dir")) {
-        LOCK_SD(true);
-        if (!e || LSFS::Exists(e)) {
-          for (LSFS::Iterator dir(e ? e : ""); dir; ++dir) {
-            STDOUT.print(dir.name());
-            STDOUT.print(" ");
-            STDOUT.println(dir.size());
-          }
-          STDOUT.println("Done listing files.");
-        } else {
-          STDOUT.println("No such directory.");
+    if (!strcmp(cmd, "dir")) {
+      LOCK_SD(true);
+      if (!e || LSFS::Exists(e)) {
+        for (LSFS::Iterator dir(e ? e : ""); dir; ++dir) {
+          STDOUT.print(dir.name());
+          STDOUT.print(" ");
+          STDOUT.println(dir.size());
         }
-        LOCK_SD(false);
-        return true;
+        STDOUT.println("Done listing files.");
+      } else {
+        STDOUT.println("No such directory.");
       }
+      LOCK_SD(false);
+      return true;
+    }
 #endif
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
-      // TODO: Maybe use the commands from the workbench?
-      if (!strcmp(cmd, "cat") && e) {
-        LOCK_SD(true);
-        File f = LSFS::Open(e);
-        while (f.available()) {
-          STDOUT.write(f.read());
-        }
-        f.close();
-        LOCK_SD(false);
-        return true;
+    // TODO: Maybe use the commands from the workbench?
+    if (!strcmp(cmd, "cat") && e) {
+      LOCK_SD(true);
+      File f = LSFS::Open(e);
+      while (f.available()) {
+        STDOUT.write(f.read());
       }
-      if (!strcmp(cmd, "openfile") && e) {
-        LOCK_SD(true);
-        current_file = LSFS::OpenRW(e);
-        LOCK_SD(false);
-        return true;
-      }
-      if (!strcmp(cmd, "closefile")) {
-        LOCK_SD(true);
-        current_file.close();
-        LOCK_SD(false);
-        return true;
-      }
-      if (!strcmp(cmd, ">>")) {
-        LOCK_SD(true);
-        current_file.println(e ? e : "");
-        LOCK_SD(false);
-        return true;
-      }
+      f.close();
+      LOCK_SD(false);
+      return true;
+    }
+    if (!strcmp(cmd, "openfile") && e) {
+      LOCK_SD(true);
+      current_file = LSFS::OpenRW(e);
+      LOCK_SD(false);
+      return true;
+    }
+    if (!strcmp(cmd, "closefile")) {
+      LOCK_SD(true);
+      current_file.close();
+      LOCK_SD(false);
+      return true;
+    }
+    if (!strcmp(cmd, ">>")) {
+      LOCK_SD(true);
+      current_file.println(e ? e : "");
+      LOCK_SD(false);
+      return true;
+    }
 #endif
 
-
-      if (!strcmp(cmd, "del") && e) {
-        LOCK_SD(true);
-        LSFS::Remove(e);
-        LOCK_SD(false);
-        return true;
-      }
+    if (!strcmp(cmd, "del") && e) {
+      LOCK_SD(true);
+      LSFS::Remove(e);
+      LOCK_SD(false);
+      return true;
+    }
 
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "readalot")) {
-        uint8_t tmp[10];
-        LOCK_SD(true);
-        File f = LSFS::Open(e);
-        for (int i = 0; i < 10000; i++) {
-          f.seek(0);
-          f.read(tmp, 10);
-          f.seek(1000);
-          f.read(tmp, 10);
-        }
-        f.close();
-        LOCK_SD(false);
-        STDOUT.println("Done");
-        return true;
+    if (!strcmp(cmd, "readalot")) {
+      uint8_t tmp[10];
+      LOCK_SD(true);
+      File f = LSFS::Open(e);
+      for (int i = 0; i < 10000; i++) {
+        f.seek(0);
+        f.read(tmp, 10);
+        f.seek(1000);
+        f.read(tmp, 10);
       }
+      f.close();
+      LOCK_SD(false);
+      STDOUT.println("Done");
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
-      if (!strcmp(cmd, "sdtest")) {
-        SDTestHelper sdtester;
-        if (e && !strcmp(e, "all")) {
-          sdtester.TestDir("");
-        } else {
-          sdtester.TestFont();
-        }
-        return true;
+    if (!strcmp(cmd, "sdtest")) {
+      SDTestHelper sdtester;
+      if (e && !strcmp(e, "all")) {
+        sdtester.TestDir("");
+      } else {
+        sdtester.TestFont();
       }
+      return true;
+    }
 #endif
 
 #endif  // ENABLE_SD
 
 #if defined(ENABLE_SD) && defined(ENABLE_SERIALFLASH)
-      if (!strcmp(cmd, "cache")) {
-        LOCK_SD(true);
-        File f = LSFS::Open(e);
-        if (!f) {
-          STDOUT.println("File not found.");
-          return true;
-        }
-        int bytes = f.size();
-        if (!SerialFlashChip::create(e, bytes)) {
-          STDOUT.println("Not enough space on serial flash chip.");
-          return true;
-        }
-        SerialFlashFile o = SerialFlashChip::open(e);
-        while (bytes) {
-          char tmp[256];
-          int b = f.read(tmp, min(bytes, (int)NELEM(tmp)));
-          o.write(tmp, b);
-          bytes -= b;
-        }
-        LOCK_SD(false);
-        STDOUT.println("Cached!");
+    if (!strcmp(cmd, "cache")) {
+      LOCK_SD(true);
+      File f = LSFS::Open(e);
+      if (!f) {
+        STDOUT.println("File not found.");
         return true;
       }
+      int bytes = f.size();
+      if (!SerialFlashChip::create(e, bytes)) {
+        STDOUT.println("Not enough space on serial flash chip.");
+        return true;
+      }
+      SerialFlashFile o = SerialFlashChip::open(e);
+      while (bytes) {
+        char tmp[256];
+        int b = f.read(tmp, min(bytes, (int)NELEM(tmp)));
+        o.write(tmp, b);
+        bytes -= b;
+      }
+      LOCK_SD(false);
+      STDOUT.println("Cached!");
+      return true;
+    }
 #endif
-      //#ifndef DISABLE_DIAGNOSTIC_COMMANDS // BC doesn't want to have to enable this all the time
-      if (!strcmp(cmd, "effects")) {
-        Effect::ShowAll();
-        return true;
-      }
-      //#endif
+#ifndef DISABLE_DIAGNOSTIC_COMMANDS
+    if (!strcmp(cmd, "effects")) {
+      Effect::ShowAll();
+      return true;
+    }
+#endif
 #if 0
-      if (!strcmp(cmd, "df")) {
-        STDOUT.print(SerialFlashChip::capacity());
-        STDOUT.println(" bytes available.");
-        return true;
-      }
+    if (!strcmp(cmd, "df")) {
+      STDOUT.print(SerialFlashChip::capacity());
+      STDOUT.println(" bytes available.");
+      return true;
+    }
 #endif
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "high") && e) {
-        pinMode(atoi(e), OUTPUT);
-        digitalWrite(atoi(e), HIGH);
-        STDOUT.println("Ok.");
-        return true;
-      }
+    if (!strcmp(cmd, "high") && e) {
+      pinMode(atoi(e), OUTPUT);
+      digitalWrite(atoi(e), HIGH);
+      STDOUT.println("Ok.");
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "low") && e) {
-        pinMode(atoi(e), OUTPUT);
-        digitalWrite(atoi(e), LOW);
-        STDOUT.println("Ok.");
-        return true;
-      }
+    if (!strcmp(cmd, "low") && e) {
+      pinMode(atoi(e), OUTPUT);
+      digitalWrite(atoi(e), LOW);
+      STDOUT.println("Ok.");
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 
 #if VERSION_MAJOR >= 4
-      if (!strcmp(cmd, "booster")) {
-        if (!strcmp(e, "on")) {
-          digitalWrite(boosterPin, HIGH);
-          STDOUT.println("Booster on.");
-          return true;
-        }
-        if (!strcmp(e, "off")) {
-          digitalWrite(boosterPin, LOW);
-          STDOUT.println("Booster off.");
-          return true;
-        }
+    if (!strcmp(cmd, "booster")) {
+      if (!strcmp(e, "on")) {
+        digitalWrite(boosterPin, HIGH);
+        STDOUT.println("Booster on.");
+        return true;
       }
+      if (!strcmp(e, "off")) {
+        digitalWrite(boosterPin, LOW);
+        STDOUT.println("Booster off.");
+        return true;
+      }
+    }
 #endif
 #ifdef ENABLE_AUDIO
 #if 0
-      if (!strcmp(cmd, "ton")) {
-        EnableAmplifier();
-        dac.SetStream(&saber_synth);
-        saber_synth.on_ = true;
-        return true;
-      }
-      if (!strcmp(cmd, "tof")) {
-        saber_synth.on_ = false;
-        return true;
-      }
+    if (!strcmp(cmd, "ton")) {
+      EnableAmplifier();
+      dac.SetStream(&saber_synth);
+      saber_synth.on_ = true;
+      return true;
+    }
+    if (!strcmp(cmd, "tof")) {
+      saber_synth.on_ = false;
+      return true;
+    }
 #endif
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "dumpwav")) {
-        int16_t tmp[32];
-        wav_players[0].Stop();
-        wav_players[0].read(tmp, NELEM(tmp));
-        wav_players[0].Play(e);
-        for (int j = 0; j < 64; j++) {
-          int k = wav_players[0].read(tmp, NELEM(tmp));
-          for (int i = 0; i < k; i++) {
-            STDOUT.print(tmp[i]);
-            STDOUT.print(" ");
-          }
-          STDOUT.println("");
+    if (!strcmp(cmd, "dumpwav")) {
+      int16_t tmp[32];
+      wav_players[0].Stop();
+      wav_players[0].read(tmp, NELEM(tmp));
+      wav_players[0].Play(e);
+      for (int j = 0; j < 64; j++) {
+        int k = wav_players[0].read(tmp, NELEM(tmp));
+        for (int i = 0; i < k; i++) {
+          STDOUT.print(tmp[i]);
+          STDOUT.print(" ");
         }
-        wav_players[0].Stop();
-        return true;
+        STDOUT.println("");
       }
+      wav_players[0].Stop();
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "dumpwavplayer")) {
-        for (size_t i = 0; i < NELEM(wav_players); i++) {
-          if (e && atoi(e) != (int)i) continue;
-          wav_players[i].dump();
-        }
-        return true;
+    if (!strcmp(cmd, "dumpwavplayer")) {
+      for (size_t i = 0; i < NELEM(wav_players); i++) {
+        if (e && atoi(e) != (int)i) continue;
+        wav_players[i].dump();
       }
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 #endif
 
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "sleep") && e) {
-        delay(atoi(e));
-        return true;
-      }
+    if (!strcmp(cmd, "sleep") && e) {
+      delay(atoi(e));
+      return true;
+    }
 #endif
 
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "twiddle")) {
-        int pin = strtol(e, NULL, 0);
-        STDOUT.print("twiddling ");
-        STDOUT.println(pin);
-        pinMode(pin, OUTPUT);
-        for (int i = 0; i < 1000; i++) {
+    if (!strcmp(cmd, "twiddle")) {
+      int pin = strtol(e, NULL, 0);
+      STDOUT.print("twiddling ");
+      STDOUT.println(pin);
+      pinMode(pin, OUTPUT);
+      for (int i = 0; i < 1000; i++) {
+        digitalWrite(pin, HIGH);
+        delay(10);
+        digitalWrite(pin, LOW);
+        delay(10);
+      }
+      STDOUT.println("done");
+      return true;
+    }
+#endif  // ENABLE_DEVELOPER_COMMANDS
+#ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "twiddle2")) {
+      int pin = strtol(e, NULL, 0);
+      STDOUT.print("twiddling ");
+      STDOUT.println(pin);
+      pinMode(pin, OUTPUT);
+      for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 500; i++) {
           digitalWrite(pin, HIGH);
-          delay(10);
+          delayMicroseconds(1);
           digitalWrite(pin, LOW);
-          delay(10);
+          delayMicroseconds(1);
         }
-        STDOUT.println("done");
-        return true;
+        delay(10);
       }
-#endif  // ENABLE_DEVELOPER_COMMANDS
-#ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "twiddle2")) {
-        int pin = strtol(e, NULL, 0);
-        STDOUT.print("twiddling ");
-        STDOUT.println(pin);
-        pinMode(pin, OUTPUT);
-        for (int i = 0; i < 1000; i++) {
-          for (int i = 0; i < 500; i++) {
-            digitalWrite(pin, HIGH);
-            delayMicroseconds(1);
-            digitalWrite(pin, LOW);
-            delayMicroseconds(1);
-          }
-          delay(10);
-        }
-        STDOUT.println("done");
-        return true;
-      }
+      STDOUT.println("done");
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
-      if (!strcmp(cmd, "malloc")) {
-        STDOUT.print("alloced: ");
-        STDOUT.println(mallinfo().uordblks);
-        STDOUT.print("Free: ");
-        STDOUT.println(mallinfo().fordblks);
-        return true;
-      }
+    if (!strcmp(cmd, "malloc")) {
+      STDOUT.print("alloced: ");
+      STDOUT.println(mallinfo().uordblks);
+      STDOUT.print("Free: ");
+      STDOUT.println(mallinfo().fordblks);
+      return true;
+    }
 #endif
-      if (!strcmp(cmd, "make_default_console")) {
-        default_output = stdout_output;
-        return true;
-      }
+    if (!strcmp(cmd, "make_default_console")) {
+      default_output = stdout_output;
+      return true;
+    }
     if (endswith("|", cmd) && e) {
       char tmp[32];
       StringPiece tag(cmd, strlen(cmd)-1);
@@ -1308,276 +1145,241 @@ class Commands : public CommandParser {
       const char* cmd2 = e;
       const char *arg2 = strchr(e, ' ');
       if (arg2 && arg2 - e < (int)sizeof(tmp)) {
-  memcpy(tmp, e, arg2 - e);
-  tmp[arg2 - e] = 0;
-  cmd2 = tmp;
-  arg2++;
+	memcpy(tmp, e, arg2 - e);
+	tmp[arg2 - e] = 0;
+	cmd2 = tmp;
+	arg2++;
       }
       return CommandParser::DoParse(cmd2, arg2);
     }
- #if 0
-      // Not finished yet
-      if (!strcmp(cmd, "selftest")) {
-        struct PinDefs {
-          int8_t pin;
-          PinType type;
-        };
-        static PinDefs pin_defs[]  = {
-          { bladePowerPin1, PinTypePulldown },
-          { bladePowerPin2, PinTypePulldown },
-          { bladePowerPin3, PinTypePulldown },
-          { bladePowerPin4, PinTypePulldown },
-          { bladePowerPin5, PinTypePulldown },
-          { bladePowerPin6, PinTypePulldown },
-          { bladePin,       PinTypeOther },
-          { blade2Pin,      PinTypeFloating },
-          { blade3Pin,      PinTypeFloating },
-          { blade4Pin,      PinTypeFloating },
-          { blade5Pin,      PinTypeFloating },
-          { amplifierPin,   PinTypeFloating },
-          { boosterPin,     PinTypeFloating },
-          { powerButtonPin, PinTypeFloating },
-          { auxPin,         PinTypeFloating },
-          { aux2Pin,        PinTypeFloating },
-          { rxPin,          PinTypeOther },
-          { txPin,          PinTypeFloating },
-        };
-        for (size_t test_index = 0; test_index < NELEM(pin_defs); test_index++) {
-          int pin = pin_defs[test_index].pin;
-          for (size_t i = 0; i < NELEM(pin_defs); i++)
-            pinMode(pin_defs[i].pin, INPUT);
+#if 0
+    // Not finished yet
+    if (!strcmp(cmd, "selftest")) {
+      struct PinDefs { int8_t pin; PinType type; };
+      static PinDefs pin_defs[]  = {
+        { bladePowerPin1, PinTypePulldown },
+        { bladePowerPin2, PinTypePulldown },
+        { bladePowerPin3, PinTypePulldown },
+        { bladePowerPin4, PinTypePulldown },
+        { bladePowerPin5, PinTypePulldown },
+        { bladePowerPin6, PinTypePulldown },
+        { bladePin,       PinTypeOther },
+        { blade2Pin,      PinTypeFloating },
+        { blade3Pin,      PinTypeFloating },
+        { blade4Pin,      PinTypeFloating },
+        { blade5Pin,      PinTypeFloating },
+        { amplifierPin,   PinTypeFloating },
+        { boosterPin,     PinTypeFloating },
+        { powerButtonPin, PinTypeFloating },
+        { auxPin,         PinTypeFloating },
+        { aux2Pin,        PinTypeFloating },
+        { rxPin,          PinTypeOther },
+        { txPin,          PinTypeFloating },
+      };
+      for (size_t test_index = 0; test_index < NELEM(pin_defs); test_index++) {
+        int pin = pin_defs[test_index].pin;
+        for (size_t i = 0; i < NELEM(pin_defs); i++)
+          pinMode(pin_defs[i].pin, INPUT);
+
+        // test
+        for (size_t i = 0; i < NELEM(pin_defs); i++) {
+          pinMode(pin_defs[i].pin, OUTPUT);
+          digitalWrite(pin_defs[i].pin, HIGH);
           // test
-          for (size_t i = 0; i < NELEM(pin_defs); i++) {
-            pinMode(pin_defs[i].pin, OUTPUT);
-            digitalWrite(pin_defs[i].pin, HIGH);
-            // test
-            digitalWrite(pin_defs[i].pin, LOW);
-            // test
-            pinMode(pin_defs[i].pin, INPUT);
-          }
+          digitalWrite(pin_defs[i].pin, LOW);
+          // test
+          pinMode(pin_defs[i].pin, INPUT);
         }
       }
+    }
 #endif
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
-      if (!strcmp(cmd, "top")) {
+    if (!strcmp(cmd, "top")) {
 #ifdef TEENSYDUINO
-        if (!(ARM_DWT_CTRL & ARM_DWT_CTRL_CYCCNTENA)) {
-          ARM_DEMCR |= ARM_DEMCR_TRCENA;
-          ARM_DWT_CTRL |= ARM_DWT_CTRL_CYCCNTENA;
-          STDOUT.println("Cycle counting enabled, top will work next time.");
-          return true;
-        }
+      if (!(ARM_DWT_CTRL & ARM_DWT_CTRL_CYCCNTENA)) {
+        ARM_DEMCR |= ARM_DEMCR_TRCENA;
+        ARM_DWT_CTRL |= ARM_DWT_CTRL_CYCCNTENA;
+        STDOUT.println("Cycle counting enabled, top will work next time.");
+        return true;
+      }
 #endif
 #ifdef ARDUINO_ARCH_STM32L4
-        if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
-          CoreDebug->DEMCR |= 1 << 24; // DEMCR_TRCENA_Msk;
-          DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-          STDOUT.println("Cycle counting enabled, top will work next time.");
-          return true;
-        }
-#endif
-
-        // TODO: list cpu usage for various objects.
-        float total_cycles =
-          (float)(audio_dma_interrupt_cycles + pixel_dma_interrupt_cycles + motion_interrupt_cycles + wav_interrupt_cycles + Looper::CountCycles() + CountProfileCycles());
-        STDOUT.print("Audio DMA: ");
-        STDOUT.print(audio_dma_interrupt_cycles * 100.0f / total_cycles);
-        STDOUT.println("%");
-        STDOUT.print("Wav reading: ");
-        STDOUT.print(wav_interrupt_cycles * 100.0f / total_cycles);
-        STDOUT.println("%");
-        STDOUT.print("Pixel DMA: ");
-        STDOUT.print(pixel_dma_interrupt_cycles * 100.0f / total_cycles);
-        STDOUT.println("%");
-        STDOUT.print("LOOP: ");
-        STDOUT.print(loop_cycles * 100.0f / total_cycles);
-        STDOUT.println("%");
-        STDOUT.print("Motion: ");
-        STDOUT.print(motion_interrupt_cycles * 100.0f / total_cycles);
-        STDOUT.println("%");
-        STDOUT.print("Global loops / second: ");
-        global_loop_counter.Print();
-        STDOUT.println("");
-        STDOUT.print("High frequency loops / second: ");
-        hf_loop_counter.Print();
-        STDOUT.println("");
-        SaberBase::DoTop(total_cycles);
-        Looper::LoopTop(total_cycles);
-        DumpProfileLocations(total_cycles);
-        noInterrupts();
-        audio_dma_interrupt_cycles = 0;
-        pixel_dma_interrupt_cycles = 0;
-        motion_interrupt_cycles = 0;
-        wav_interrupt_cycles = 0;
-        interrupts();
+      if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
+        CoreDebug->DEMCR |= 1 << 24;  // DEMCR_TRCENA_Msk;
+        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+        STDOUT.println("Cycle counting enabled, top will work next time.");
         return true;
       }
 #endif
 
-      if (!strcmp(cmd, "version")) { // BC custom printout with many details, because I can.
-        PVLOG_NORMAL << "********* Hi Brian! Welcome to ProffieOS " << version << "**********" <<
-                     "\n Installed: " << install_time <<
-                     "\n BOOT Volume: " TOSTRING(BOOT_VOLUME)
-                     "\n Current Volume: " << dynamic_mixer.get_volume() <<
-                     "\n MAX Volume: " TOSTRING(VOLUME)
-                     "\n " CONFIG_FILE
-                     "\n Prop: "  TOSTRING(PROP_TYPE)
-                     ".h\n Num buttons: " TOSTRING(NUM_BUTTONS)
-                     "\n Current Preset: " << current_directory << "\n";
-#if defined(USB_CLASS_MSC)
-        PVLOG_NORMAL << " Mass Storage Enabled: YES\n";
-#else
-        PVLOG_NORMAL << " Mass Storage Enabled: NO\n";
+      // TODO: list cpu usage for various objects.
+      float total_cycles =
+        (float)(audio_dma_interrupt_cycles + pixel_dma_interrupt_cycles + motion_interrupt_cycles + wav_interrupt_cycles + Looper::CountCycles() + CountProfileCycles());
+      STDOUT.print("Audio DMA: ");
+      STDOUT.print(audio_dma_interrupt_cycles * 100.0f / total_cycles);
+      STDOUT.println("%");
+      STDOUT.print("Wav reading: ");
+      STDOUT.print(wav_interrupt_cycles * 100.0f / total_cycles);
+      STDOUT.println("%");
+      STDOUT.print("Pixel DMA: ");
+      STDOUT.print(pixel_dma_interrupt_cycles * 100.0f / total_cycles);
+      STDOUT.println("%");
+      STDOUT.print("LOOP: ");
+      STDOUT.print(loop_cycles * 100.0f / total_cycles);
+      STDOUT.println("%");
+      STDOUT.print("Motion: ");
+      STDOUT.print(motion_interrupt_cycles * 100.0f / total_cycles);
+      STDOUT.println("%");
+      STDOUT.print("Global loops / second: ");
+      global_loop_counter.Print();
+      STDOUT.println("");
+      STDOUT.print("High frequency loops / second: ");
+      hf_loop_counter.Print();
+      STDOUT.println("");
+      SaberBase::DoTop(total_cycles);
+      Looper::LoopTop(total_cycles);
+      DumpProfileLocations(total_cycles);
+      noInterrupts();
+      audio_dma_interrupt_cycles = 0;
+      pixel_dma_interrupt_cycles = 0;
+      motion_interrupt_cycles = 0;
+      wav_interrupt_cycles = 0;
+      interrupts();
+      return true;
+    }
 #endif
-#if defined(BLADE_DETECT_PIN)
-        PVLOG_NORMAL << " Blade Detection: Blade Detect\n";
-#elif defined(BLADE_ID_SCAN_MILLIS)
-        PVLOG_NORMAL << " Blade Detection: Blade ID\n";
-#else
-        PVLOG_NORMAL << " Blade Detection: None\n";
-#endif
-#if defined(BC_DUAL_BLADES)
-        PVLOG_NORMAL << " BC_DUAL_BLADES Enabled: YES\n";
-#else
-        PVLOG_NORMAL << " BC_DUAL_BLADES Enabled: NO\n";
-#endif
-#if defined(MENU_SPEC_TEMPLATE)
-        PVLOG_NORMAL << " ProffieOS Menus Enabled: YES\n";
-#else
-        PVLOG_NORMAL << " ProffieOS Menus Enabled: NO\n";
-#endif
-#if defined(DYNAMIC_BLADE_LENGTH)
-        PVLOG_NORMAL << " DYNAMIC_BLADE_LENGTH Enabled: YES\n";
-#else
-        PVLOG_NORMAL << " DYNAMIC_BLADE_LENGTH Enabled: NO\n";
-#endif
-        return true;
-      }
-      if (!strcmp(cmd, "reset")) {
+
+    if (!strcmp(cmd, "version")) {
+      STDOUT << version
+             << "\n" CONFIG_FILE "\nprop: " TOSTRING(PROP_TYPE) "\nbuttons: " TOSTRING(NUM_BUTTONS) "\ninstalled: "
+             << install_time << "\n";
+      return true;
+    }
+    if (!strcmp(cmd, "reset")) {
 #ifdef TEENSYDUINO
-        SCB_AIRCR = 0x05FA0004;
+      SCB_AIRCR = 0x05FA0004;
 #endif
 #ifdef ARDUINO_ARCH_STM32L4
-        STM32.reset();
+      STM32.reset();
 #endif
-        STDOUT.println("Reset failed.");
-        return true;
-      }
+      STDOUT.println("Reset failed.");
+      return true;
+    }
 #ifdef ARDUINO_ARCH_STM32L4
-      if (!strcmp(cmd, "shutdown")) {
-        STDOUT.println("Sleeping 10 seconds.\n");
-        STM32.stop(100000);
-        return true;
-      }
-      if (!strcmp(cmd, "RebootDFU")) {
-        stm32l4_system_dfu();
-        return true;
-      }
+    if (!strcmp(cmd, "shutdown")) {
+      STDOUT.println("Sleeping 10 seconds.\n");
+      STM32.stop(100000);
+      return true;
+    }
+    if (!strcmp(cmd, "RebootDFU")) {
+      stm32l4_system_dfu();
+      return true;
+    }
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "dumpfusor")) {
-        fusor.dump();
-        return true;
-      }
+    if (!strcmp(cmd, "dumpfusor")) {
+      fusor.dump();
+      return true;
+    }
 #endif
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "stm32info")) {
-        STDOUT.print("VBAT: ");
-        STDOUT.println(STM32.getVBAT());
-        STDOUT.print("VREF: ");
-        STDOUT.println(STM32.getVREF());
-        STDOUT.print("TEMP: ");
-        STDOUT.println(STM32.getTemperature());
-        return true;
-      }
+    if (!strcmp(cmd, "stm32info")) {
+      STDOUT.print("VBAT: ");
+      STDOUT.println(STM32.getVBAT());
+      STDOUT.print("VREF: ");
+      STDOUT.println(STM32.getVREF());
+      STDOUT.print("TEMP: ");
+      STDOUT.println(STM32.getTemperature());
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "i2cstate")) {
-        extern void DumpI2CState();
-        DumpI2CState();
-        SaberBase::DumpMotionRequest();
-        return true;
-      }
+    if (!strcmp(cmd, "i2cstate")) {
+      extern void DumpI2CState();
+      DumpI2CState();
+      SaberBase::DumpMotionRequest();
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "portstates")) {
-        GPIO_TypeDef* GPIO;
-        for (int i = 0; i < 4; i++) {
-          switch (i) {
-            case 0:
-              GPIO = (GPIO_TypeDef*)GPIOA_BASE;
-              STDOUT.print("PORTA: ");
-              break;
-            case 1:
-              GPIO = (GPIO_TypeDef*)GPIOB_BASE;
-              STDOUT.print("PORTB: ");
-              break;
-            case 2:
-              GPIO = (GPIO_TypeDef*)GPIOC_BASE;
-              STDOUT.print("PORTC: ");
-              break;
-            case 3:
-              GPIO = (GPIO_TypeDef*)GPIOH_BASE;
-              STDOUT.print("PORTH: ");
-              break;
-          }
-          for (int j = 15; j >= 0; j--) {
-            uint32_t now = (GPIO->MODER >> (j * 2)) & 3;
-            uint32_t saved = (startup_MODER[i] >> (j * 2)) & 3;
-            STDOUT.print((now == saved ? "ioga" : "IOGA")[now]);
-            if (!(j & 3)) STDOUT.print(" ");
-          }
-          STDOUT.print("  ");
-          for (int j = 15; j >= 0; j--) {
-            uint32_t now = (GPIO->PUPDR >> (j * 2)) & 3;
-            STDOUT.print("-ud?"[now]);
-            if (!(j & 3)) STDOUT.print(" ");
-          }
-          STDOUT.print("  ");
-          for (int j = 15; j >= 0; j--) {
-            uint32_t now = ((GPIO->IDR >> j) & 1) | (((GPIO->ODR >> j) & 1) << 1);
-            STDOUT.print("lhLH"[now]);
-            if (!(j & 3)) STDOUT.print(" ");
-          }
-          STDOUT.print("  ");
-          for (int j = 15; j >= 0; j--) {
-            int afr = 0xf & (GPIO->AFR[j >> 3] >> ((j & 7) * 4));
-            STDOUT.print("0123456789ABCDEF"[afr]);
-            if (!(j & 3)) STDOUT.print(" ");
-          }
-          STDOUT.println("");
+    if (!strcmp(cmd, "portstates")) {
+      GPIO_TypeDef* GPIO;
+      for (int i = 0; i < 4; i++) {
+        switch (i) {
+          case 0:
+            GPIO = (GPIO_TypeDef*)GPIOA_BASE;
+            STDOUT.print("PORTA: ");
+            break;
+          case 1:
+            GPIO = (GPIO_TypeDef*)GPIOB_BASE;
+            STDOUT.print("PORTB: ");
+            break;
+          case 2:
+            GPIO = (GPIO_TypeDef*)GPIOC_BASE;
+            STDOUT.print("PORTC: ");
+            break;
+          case 3:
+            GPIO = (GPIO_TypeDef*)GPIOH_BASE;
+            STDOUT.print("PORTH: ");
+            break;
         }
-        return true;
-      }
-#endif // ENABLE_DEVELOPER_COMMANDS
-#ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "CLK")) {
-        if (e) {
-          uint32_t c = atoi(e) * 1000000;
-          stm32l4_system_sysclk_configure(c, c / 2, c / 2);
+        for (int j = 15; j >= 0; j--) {
+          uint32_t now = (GPIO->MODER >> (j * 2)) & 3;
+          uint32_t saved = (startup_MODER[i] >> (j * 2)) & 3;
+          STDOUT.print((now == saved ? "ioga" : "IOGA")[now]);
+          if (!(j & 3)) STDOUT.print(" ");
         }
-        STDOUT.print("Clocks: hse=");
-        STDOUT.print(stm32l4_system_hseclk());
-        STDOUT.print(" lse=");
-        STDOUT.print(stm32l4_system_lseclk());
-        STDOUT.print(" sys=");
-        STDOUT.print(stm32l4_system_sysclk());
-        STDOUT.print(" f=");
-        STDOUT.print(stm32l4_system_fclk());
-        STDOUT.print(" h=");
-        STDOUT.print(stm32l4_system_hclk());
-        STDOUT.print(" p1=");
-        STDOUT.print(stm32l4_system_pclk1());
-        STDOUT.print(" p2=");
-        STDOUT.print(stm32l4_system_pclk2());
-        STDOUT.print(" sai=");
-        STDOUT.println(stm32l4_system_saiclk());
-        return true;
+        STDOUT.print("  ");
+        for (int j = 15; j >= 0; j--) {
+          uint32_t now = (GPIO->PUPDR >> (j * 2)) & 3;
+          STDOUT.print("-ud?"[now]);
+          if (!(j & 3)) STDOUT.print(" ");
+        }
+        STDOUT.print("  ");
+        for (int j = 15; j >= 0; j--) {
+          uint32_t now = ((GPIO->IDR >> j) & 1) | (((GPIO->ODR >> j) & 1) << 1);
+          STDOUT.print("lhLH"[now]);
+          if (!(j & 3)) STDOUT.print(" ");
+        }
+        STDOUT.print("  ");
+        for (int j = 15; j >= 0; j--) {
+          int afr = 0xf & (GPIO->AFR[j >> 3] >> ((j & 7) * 4));
+          STDOUT.print("0123456789ABCDEF"[afr]);
+          if (!(j & 3)) STDOUT.print(" ");
+        }
+        STDOUT.println("");
       }
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
-      if (!strcmp(cmd, "whatispowered")) {
-        STDOUT.print("ON: ");
+    if (!strcmp(cmd, "CLK")) {
+      if (e) {
+        uint32_t c = atoi(e) * 1000000;
+        stm32l4_system_sysclk_configure(c, c / 2, c / 2);
+      }
+      STDOUT.print("Clocks: hse=");
+      STDOUT.print(stm32l4_system_hseclk());
+      STDOUT.print(" lse=");
+      STDOUT.print(stm32l4_system_lseclk());
+      STDOUT.print(" sys=");
+      STDOUT.print(stm32l4_system_sysclk());
+      STDOUT.print(" f=");
+      STDOUT.print(stm32l4_system_fclk());
+      STDOUT.print(" h=");
+      STDOUT.print(stm32l4_system_hclk());
+      STDOUT.print(" p1=");
+      STDOUT.print(stm32l4_system_pclk1());
+      STDOUT.print(" p2=");
+      STDOUT.print(stm32l4_system_pclk2());
+      STDOUT.print(" sai=");
+      STDOUT.println(stm32l4_system_saiclk());
+      return true;
+    }
+#endif  // ENABLE_DEVELOPER_COMMANDS
+#ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "whatispowered")) {
+      STDOUT.print("ON: ");
 #define PRINTIFON(REG, BIT)                                            \
   do {                                                                 \
     if (RCC->REG & RCC_##REG##_##BIT##EN) {                            \
@@ -1585,155 +1387,154 @@ class Commands : public CommandParser {
       if (!(startup_##REG & RCC_##REG##_##BIT##EN)) STDOUT.print("+"); \
     }                                                                  \
   } while (0)
-        PRINTIFON(AHB1ENR, FLASH);
-        PRINTIFON(AHB1ENR, DMA1);
-        PRINTIFON(AHB1ENR, DMA2);
-        PRINTIFON(AHB2ENR, GPIOA);
-        PRINTIFON(AHB2ENR, GPIOB);
+
+      PRINTIFON(AHB1ENR, FLASH);
+      PRINTIFON(AHB1ENR, DMA1);
+      PRINTIFON(AHB1ENR, DMA2);
+      PRINTIFON(AHB2ENR, GPIOA);
+      PRINTIFON(AHB2ENR, GPIOB);
 #ifdef GPIOC_BASE
-        PRINTIFON(AHB2ENR, GPIOC);
+      PRINTIFON(AHB2ENR, GPIOC);
 #endif
 #ifdef GPIOD_BASE
-        PRINTIFON(AHB2ENR, GPIOD);
+      PRINTIFON(AHB2ENR, GPIOD);
 #endif
 #ifdef GPIOE_BASE
-        PRINTIFON(AHB2ENR, GPIOE);
+      PRINTIFON(AHB2ENR, GPIOE);
 #endif
 #if defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(AHB2ENR, GPIOF);
-        PRINTIFON(AHB2ENR, GPIOG);
+      PRINTIFON(AHB2ENR, GPIOF);
+      PRINTIFON(AHB2ENR, GPIOG);
 #endif
-        PRINTIFON(AHB2ENR, GPIOH);
+      PRINTIFON(AHB2ENR, GPIOH);
 #if defined(STM32L496xx)
-        PRINTIFON(AHB2ENR, GPIOI);
+      PRINTIFON(AHB2ENR, GPIOI);
 #endif
-        PRINTIFON(AHB2ENR, ADC);
-        PRINTIFON(APB1ENR1, DAC1);
+      PRINTIFON(AHB2ENR, ADC);
+      PRINTIFON(APB1ENR1, DAC1);
 #if defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(AHB2ENR, OTGFS);
+      PRINTIFON(AHB2ENR, OTGFS);
 #else
-        PRINTIFON(APB1ENR1, USBFS);
+      PRINTIFON(APB1ENR1, USBFS);
 #endif
-        PRINTIFON(APB2ENR, USART1);
-        PRINTIFON(APB1ENR1, USART2);
+      PRINTIFON(APB2ENR, USART1);
+      PRINTIFON(APB1ENR1, USART2);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(APB1ENR1, USART3);
+      PRINTIFON(APB1ENR1, USART3);
 #endif
 #if defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(APB1ENR1, UART4);
-        PRINTIFON(APB1ENR1, UART5);
+      PRINTIFON(APB1ENR1, UART4);
+      PRINTIFON(APB1ENR1, UART5);
 #endif
-        PRINTIFON(APB1ENR2, LPUART1);
-        PRINTIFON(APB1ENR1, I2C1);
+      PRINTIFON(APB1ENR2, LPUART1);
+      PRINTIFON(APB1ENR1, I2C1);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(APB1ENR1, I2C2);
+      PRINTIFON(APB1ENR1, I2C2);
 #endif
-        PRINTIFON(APB1ENR1, I2C3);
+      PRINTIFON(APB1ENR1, I2C3);
 #if defined(STM32L496xx)
-        PRINTIFON(APB1ENR2, I2C4);
+      PRINTIFON(APB1ENR2, I2C4);
 #endif
-        PRINTIFON(APB2ENR, SPI1);
+      PRINTIFON(APB2ENR, SPI1);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(APB1ENR1, SPI2);
+      PRINTIFON(APB1ENR1, SPI2);
 #endif
-        PRINTIFON(APB1ENR1, SPI3);
-        PRINTIFON(APB1ENR1, CAN1);
+      PRINTIFON(APB1ENR1, SPI3);
+      PRINTIFON(APB1ENR1, CAN1);
 #if defined(STM32L496xx)
-        PRINTIFON(APB1ENR1, CAN2);
+      PRINTIFON(APB1ENR1, CAN2);
 #endif
-        PRINTIFON(AHB3ENR, QSPI);
+      PRINTIFON(AHB3ENR, QSPI);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(APB2ENR, SDMMC1);
+      PRINTIFON(APB2ENR, SDMMC1);
 #endif
-        PRINTIFON(APB2ENR, SAI1);
+      PRINTIFON(APB2ENR, SAI1);
 #if defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(APB2ENR, SAI2);
-        PRINTIFON(APB2ENR, DFSDM1);
+      PRINTIFON(APB2ENR, SAI2);
+      PRINTIFON(APB2ENR, DFSDM1);
 #endif
-        PRINTIFON(APB2ENR, TIM1);
-        PRINTIFON(APB1ENR1, TIM2);
+      PRINTIFON(APB2ENR, TIM1);
+      PRINTIFON(APB1ENR1, TIM2);
 #ifdef TIM3_BASE
-        PRINTIFON(APB1ENR1, TIM3);
+      PRINTIFON(APB1ENR1, TIM3);
 #endif
 #ifdef TIM4_BASE
-        PRINTIFON(APB1ENR1, TIM4);
+      PRINTIFON(APB1ENR1, TIM4);
 #endif
 #ifdef TIM5_BASE
-        PRINTIFON(APB1ENR1, TIM5);
+      PRINTIFON(APB1ENR1, TIM5);
 #endif
-        PRINTIFON(APB1ENR1, TIM6);
+      PRINTIFON(APB1ENR1, TIM6);
 #ifdef TIM7_BASE
-        PRINTIFON(APB1ENR1, TIM7);
+      PRINTIFON(APB1ENR1, TIM7);
 #endif
 #ifdef TIM8_BASE
-        PRINTIFON(APB2ENR, TIM8);
+      PRINTIFON(APB2ENR, TIM8);
 #endif
-        PRINTIFON(APB2ENR, TIM15);
-        PRINTIFON(APB2ENR, TIM16);
+      PRINTIFON(APB2ENR, TIM15);
+      PRINTIFON(APB2ENR, TIM16);
 #if defined(STM32L476xx) || defined(STM32L496xx)
-        PRINTIFON(APB2ENR, TIM17);
+      PRINTIFON(APB2ENR, TIM17);
 #endif
-        PRINTIFON(APB1ENR1, LPTIM1);
-        PRINTIFON(APB1ENR2, LPTIM2);
+      PRINTIFON(APB1ENR1, LPTIM1);
+      PRINTIFON(APB1ENR2, LPTIM2);
 
-        // Not sure what CPUs implement these
-        PRINTIFON(AHB1ENR, CRC);
-        PRINTIFON(AHB1ENR, TSC);
-        PRINTIFON(AHB2ENR, RNG);
+      // Not sure what CPUs implement these
+      PRINTIFON(AHB1ENR, CRC);
+      PRINTIFON(AHB1ENR, TSC);
+      PRINTIFON(AHB2ENR, RNG);
 #ifdef LCD_BASE
-        PRINTIFON(APB1ENR1, LCD);
+      PRINTIFON(APB1ENR1, LCD);
 #endif
-        PRINTIFON(APB1ENR1, RTCAPB);
-        PRINTIFON(APB1ENR1, WWDG);
-        PRINTIFON(APB1ENR1, CRS);
-        PRINTIFON(APB1ENR1, CAN1);
-        PRINTIFON(APB1ENR1, PWR);
-        PRINTIFON(APB1ENR1, OPAMP);
+      PRINTIFON(APB1ENR1, RTCAPB);
+      PRINTIFON(APB1ENR1, WWDG);
+      PRINTIFON(APB1ENR1, CRS);
+      PRINTIFON(APB1ENR1, CAN1);
+      PRINTIFON(APB1ENR1, PWR);
+      PRINTIFON(APB1ENR1, OPAMP);
 #ifdef SWPMI1_BASE
-        PRINTIFON(APB1ENR2, SWPMI1);
+      PRINTIFON(APB1ENR2, SWPMI1);
 #endif
-        PRINTIFON(APB2ENR, SYSCFG);
-        PRINTIFON(APB2ENR, FW);
+      PRINTIFON(APB2ENR, SYSCFG);
+      PRINTIFON(APB2ENR, FW);
 
-        STDOUT.println("");
-        STDOUT.print("VBUS: ");
-        STDOUT.println(stm32l4_gpio_pin_read(GPIO_PIN_PB2));
-        STDOUT.print("USBD connected: ");
-        STDOUT.println(USBD_Connected());
-        return true;
-      }
+      STDOUT.println("");
+      STDOUT.print("VBUS: ");
+      STDOUT.println(stm32l4_gpio_pin_read(GPIO_PIN_PB2));
+      STDOUT.print("USBD connected: ");
+      STDOUT.println(USBD_Connected());
+      return true;
+    }
 #endif  // ENABLE_DEVELOPER_COMMANDS
 
 #ifdef ENABLE_DEVELOPER_COMMANDS
 #ifdef HAVE_STM32L4_DMA_GET
-      if (!strcmp(cmd, "dmamap")) {
-        for (int channel = 0; channel < 16; channel++) {
-          stm32l4_dma_t* dma = stm32l4_dma_get(channel);
-          if (dma) {
-            STDOUT.print(" DMA");
-            STDOUT.print(1 + (channel / 8));
-            STDOUT.print("_CH");
-            STDOUT.print(channel % 8);
-            STDOUT.print(" = ");
-            STDOUT.println(dma->channel >> 4, HEX);
-          }
+    if (!strcmp(cmd, "dmamap")) {
+      for (int channel = 0; channel < 16; channel++) {
+        stm32l4_dma_t* dma = stm32l4_dma_get(channel);
+        if (dma) {
+          STDOUT.print(" DMA");
+          STDOUT.print(1 + (channel / 8));
+          STDOUT.print("_CH");
+          STDOUT.print(channel % 8);
+          STDOUT.print(" = ");
+          STDOUT.println(dma->channel >> 4, HEX);
         }
-        return true;
       }
-#endif  // HAVE_STM32L4_DMA_GET    
+      return true;
+    }
+#endif  // HAVE_STM32L4_DMA_GET
 #endif  // ENABLE_DEVELOPER_COMMANDS
 
 #endif  // TEENSYDUINO
 
-      return false;
-    }
-
+    return false;
+  }
 };
 
 StaticWrapper<Commands> commands;
 
 #include "common/serial.h"
-
 
 #if defined(ENABLE_MOTION) || defined(ENABLE_DISPLAY_CODE)
 #include "common/i2cdevice.h"
@@ -1757,6 +1558,7 @@ SSD1306Template<128, uint32_t, DISPLAY_POWER_PINS> display(&display_controller);
 
 #include "display/layer_controller.h"
 #include "display/rgb565frame.h"
+
 #ifdef ENABLE_SPIDISPLAY
 #include "display/spidisplay.h"
 #endif

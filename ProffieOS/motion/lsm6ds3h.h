@@ -181,7 +181,7 @@ public:
       I2CUnlock();
 
       last_event_ = millis();
-#ifdef PROFFIEBOARD
+#ifdef PROFFIEBOARD      
       stm32l4_exti_notify(&stm32l4_exti, g_APinDescription[motionSensorInterruptPin].pin,
 			  EXTI_CONTROL_RISING_EDGE, &LSM6DS3H::irq, this);
 

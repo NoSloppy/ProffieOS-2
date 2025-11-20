@@ -35,74 +35,12 @@ Enter Menu -              Double-click AUX button while blade is off.
 
 #define PROP_TYPE Saber
 
-EFFECT(array); // array sound
-
-
 // The Saber class implements the basic states and actions
 // for the saber.
 class Saber : public PROP_INHERIT_PREFIX PropBase {
 public:
   Saber() : PropBase() {}
   const char* name() override { return "Saber"; }
-
-  void TriggerBladeID() {
-    FindBladeAgain();
-    // option if no array.wavs used, play font.wav instead
-    //  SaberBase::DoNewFont();
-    SFX_array.Select(current_config - blades);
-    hybrid_font.PlayCommon(&SFX_array);
-  }
-
-  void NextBladeArray() {
-    // current_config = blades + (current_config - blades + 1) % NELEM(blades);
-    FakeFindBladeAgain();
-    // option if no array.wavs used, play font.wav instead
-    //  SaberBase::DoNewFont();
-    SFX_array.Select(current_config - blades);
-    hybrid_font.PlayCommon(&SFX_array);
-  }
-
-    // Manual Blade Array Selection version of FindBladeAgain()
-    void FakeFindBladeAgain() {
-      // Reverse everything FindBladeAgain does, except for recalculating best_config
-      ONCEPERBLADE(UNSET_BLADE_STYLE)
-
-  #undef DEACTIVATE
-  #define DEACTIVATE(N) do {                      \
-      if (current_config->blade##N)               \
-        current_config->blade##N->Deactivate();   \
-    } while(0);
-
-      ONCEPERBLADE(DEACTIVATE);
-      SaveVolumeIfNeeded();
-    current_config = blades + (current_config - blades + 1) % NELEM(blades);
-      PVLOG_STATUS << "** Faked blade ohm = " << current_config->ohm << "\n";
-
-  #undef ACTIVATE
-  #define ACTIVATE(N) do {                        \
-      if (!current_config->blade##N) {            \
-        goto bad_blade;                           \
-      }                                           \
-      current_config->blade##N->Activate(N);      \
-    } while(0);
-
-      ONCEPERBLADE(ACTIVATE);
-      RestoreGlobalState();
-
-  #ifdef SAVE_PRESET
-      ResumePreset();
-  #else
-      SetPreset(0, false);
-  #endif // SAVE_PRESET
-      PVLOG_NORMAL << "** FakeFindBladeAgain() Completed\n";
-      return;
-
-  #if NUM_BLADES != 0
-    bad_blade:
-      ProffieOSErrors::error_in_blade_array();
-  #endif
-    }
-
 
   bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
 #ifdef DUAL_POWER_BUTTONS
@@ -127,7 +65,7 @@ public:
       case EVENTID(BUTTON_POWER, EVENT_LATCH_ON, MODE_OFF):
       case EVENTID(BUTTON_AUX, EVENT_LATCH_ON, MODE_OFF):
       case EVENTID(BUTTON_AUX2, EVENT_LATCH_ON, MODE_OFF):
-      case EVENTID(BUTTON_POWER, EVENT_SAVED_CLICK_SHORT, MODE_OFF):
+      case EVENTID(BUTTON_POWER, EVENT_CLICK_SHORT, MODE_OFF):
         aux_on_ = false;
         On();
         return true;
@@ -150,11 +88,6 @@ public:
         return true;
 #endif
 
-// Manually cycle to Next Preset Array
-      case EVENTID(BUTTON_POWER, EVENT_CLICK_LONG, MODE_OFF | BUTTON_AUX):
-        NextBladeArray();
-        return true;
-
 #ifdef MENU_SPEC_TEMPLATE
       case EVENTID(BUTTON_AUX, EVENT_SAVED_CLICK_SHORT, MODE_OFF):
 #else
@@ -168,20 +101,20 @@ public:
 #endif
         return true;
 
-      //   // Handle double-click with preon
-      // case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_OFF):
-      //   if (on_pending_) {
-      //     if (SetMute(true)) {
-      //       unmute_on_deactivation_ = true;
-      //     }
-      //     return true;
-      //   }
-      //   return false;
+        // Handle double-click with preon
+      case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_OFF):
+        if (on_pending_) {
+          if (SetMute(true)) {
+            unmute_on_deactivation_ = true;
+          }
+          return true;
+        }
+        return false;
 
 #ifdef MENU_SPEC_TEMPLATE
-      case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_OFF):
-        EnterMenu();
-        return true;
+      case EVENTID(BUTTON_AUX, EVENT_DOUBLE_CLICK, MODE_OFF):
+	EnterMenu();
+	return true;
 #endif
 
       case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_ON):

@@ -76,15 +76,13 @@ private:
     }
     if (found_version < required_version_) {
       if (SFX_mnum) {
-        // PVLOG_ERROR << "** A version " << required_version_ << " voice pack is required to use the selected prop file.\n";
         ProffieOSErrors::error_in_voice_pack_version();
       } else {
-        // PVLOG_ERROR << "** A voice pack is required to use selected prop file.\n";
-        // PVLOG_ERROR << "** Add sounds to SD card and append 'common' to preset's font search path.\n";
-        ProffieOSErrors::voice_pack_not_found();
+       ProffieOSErrors::voice_pack_not_found();
       }
     }
   }
+
   int required_version_ = 0;
   RefPtr<BufferedWavPlayer> wav_player_;
 };
@@ -570,12 +568,6 @@ public:
   ADD_SL_SOUND(CantDeleteLastPreset, "mcantdlp");
   ADD_SL_SOUND(ThisStyleHasNoSettings, "mstnoset");
   ADD_SL_SOUND(EditSettingsV2, "mseting2");    // NO pause!
-  ADD_SL_SOUND(Click, "mclick");
-  ADD_SL_SOUND(FontDirectoryNotFound, "e_fnt_nf");
-  ADD_SL_SOUND(VoicePackNotFound, "e_vp_nf");
-  ADD_SL_SOUND(ErrorInBladeArray, "e_blade");
-  ADD_SL_SOUND(ErrorInFontDirectory, "e_in_fnt");
-  ADD_SL_SOUND(ErrorInVoicePackVersion, "e_vp_ver");
 };
 
 // Please don't forget to call sound_library_->init();

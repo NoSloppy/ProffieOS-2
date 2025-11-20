@@ -9,6 +9,7 @@ const unsigned int maxLedsPerStrip = 144;
 #define ENABLE_SSD1306
 #define CLASH_THRESHOLD_G 3.5
 #define MOUNT_SD_SETTING
+#define DISABLE_TALKIE
 #endif
 
 #ifdef CONFIG_PROP

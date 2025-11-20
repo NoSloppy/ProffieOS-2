@@ -59,11 +59,8 @@ public:
   void Toggle(MonitorBit bit) {
     active_monitors_ ^= bit;
   }
-
-
 private:
-  // uint32_t monitor_frequency_ms_ = 200;
-  uint32_t monitor_frequency_ms_ = 8;
+  uint32_t monitor_frequency_ms_ = 200;
   int last_monitor_loop_ = 0;
   uint32_t monitor_soon_ = 0;
   uint32_t monitored_ = 0;

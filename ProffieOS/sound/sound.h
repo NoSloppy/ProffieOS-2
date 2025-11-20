@@ -42,7 +42,7 @@ RefPtr<BufferedWavPlayer> GetFreeWavPlayer()  {
 RefPtr<BufferedWavPlayer> GetWavPlayerPlaying(const Effect* effect) {
   for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
     if (wav_players[unit].isPlaying() &&
-      wav_players[unit].current_file_id().GetEffect() == effect) {
+        wav_players[unit].current_file_id().GetEffect() == effect) {
       return RefPtr<BufferedWavPlayer>(wav_players + unit);
     }
   }
@@ -140,8 +140,7 @@ bool PlayErrorMessage(const char* filename) {
     return false;
   }
 
-  // DodgeSound(ret->length() * 1000.0);
-  StartDelayTimer(ret->length() * 1000.0);
+  DodgeSound(ret->length() * 1000.0);
   ret->set_dodge(false);
   ret->UpdateSaberBaseSoundInfo();
   return true;

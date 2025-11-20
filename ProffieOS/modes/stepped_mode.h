@@ -20,10 +20,11 @@ struct SteppedModeBase : public SPEC::SelectCancelMode {
   virtual void prev() = 0;
   virtual void update() {}
 
+  virtual int dead_zone_percent() { return 25; }
+
   virtual int steps_per_revolution() {
     return STEPS_PER_REVOLUTION;
-  }
-  virtual int dead_zone_percent() { return 25; }
+  }  
 
   // Size of one menu entry.
   virtual float stepsize() {

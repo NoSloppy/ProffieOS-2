@@ -154,27 +154,27 @@ public:
   }
 
   virtual void Off(OffType off_type = OFF_NORMAL, EffectLocation location = EffectLocation()) {
-    // STDOUT << "Turning off " << location << "\n";
+    STDOUT << "Turning off " << location << "\n";
     if (on_pending_) {
       // Or is it better to wait until we turn on, and then turn off?
       on_pending_ = false;
       SaberBase::TurnOff(SaberBase::OFF_CANCEL_PREON);
       return;
     }
-    // STDOUT << "Turning off " << location << "\n";
+    STDOUT << "Turning off " << location << "\n";
     if (!SaberBase::IsOn()) return;
-    // STDOUT << "Turning off " << location << "\n";
+    STDOUT << "Turning off " << location << "\n";
     if (SaberBase::Lockup()) {
       SaberBase::DoEndLockup();
       SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
     }
-    // STDOUT << "Turning off " << location << "\n";
+    STDOUT << "Turning off " << location << "\n";
 #ifndef DISABLE_COLOR_CHANGE
     if (SaberBase::GetColorChangeMode() != SaberBase::COLOR_CHANGE_MODE_NONE) {
       ToggleColorChangeMode();
     }
 #endif
-    // STDOUT << "Turning off " << location << "\n";
+    STDOUT << "Turning off " << location << "\n";
     SaberBase::TurnOff(off_type, location);
     if (unmute_on_deactivation_) {
       unmute_on_deactivation_ = false;
@@ -575,6 +575,7 @@ public:
     }
     return best_config;
   }
+
   size_t FindBestConfig(bool announce = false) {
     return FindBestConfigForId(id(announce));
   }
@@ -1286,13 +1287,6 @@ public:
   bool Parse(const char *cmd, const char* arg) override {
     if (current_mode->mode_Parse(cmd, arg)) return true;
 
-#ifdef ECHO_COMMANDS
-    // Echo the raw command and its argument (if any)
-    PVLOG_NORMAL << "Received: " << cmd 
-                 << (arg && *arg ? String(" ") + arg : "") 
-                 << "\n";
-#endif
-
     if (!strcmp(cmd, "scanid")) {
       FindBladeAgain();
       return true;
@@ -1451,41 +1445,7 @@ public:
 #ifdef ENABLE_AUDIO
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
-/*
-Note    Frequency (Hz)
-D3      146.83
-D#3     155.56
-E3      164.81
-F3      174.61
-F#3     185.0
-G3      196.0
-G#3     207.65
-A3      220.0
-A#3     233.08
-B3      246.94
-C4      261.63
-C#4     277.18
-D4      293.66
-D#4     311.13
-E4      329.63
-F4      349.23
-F#4     369.99
-G4      392.0
-G#4     415.3
-A4      440.0
-A#4     466.16
-B4      493.88
-C5      523.25
-C#5     554.37
-D5      587.33
-D#5     622.25
-E5      659.26
-F5      698.46
-F#5     739.99
-G5      783.99
-*/
     if (!strcmp(cmd, "beep")) {
-      // Close Encounters
       beeper.Beep(0.5, 293.66 * 2);
       beeper.Beep(0.5, 329.33 * 2);
       beeper.Beep(0.5, 261.63 * 2);
@@ -1493,384 +1453,7 @@ G5      783.99
       beeper.Beep(1.0, 196.00 * 2);
       return true;
     }
-
-#ifdef BC_CUSTOM_BEEPER
-
-    if (!strcmp(cmd, "beep1")) {
-      // Skywalker Theme
-      beeper.Beep(1.0, 475);  // B4
-      beeper.Beep(0.5, 693);  // F5
-      beeper.Beep(0.16, 625); // E5
-      beeper.Beep(0.16, 595); // D#5
-      beeper.Beep(0.16, 525); // C#5
-      beeper.Beep(1.1, 950);  // A5
-      beeper.Beep(0.5, 693);  // F5
-      beeper.Beep(0.16, 625); // E5
-      beeper.Beep(0.16, 595); // D#5
-      beeper.Beep(0.16, 525); // C#5
-      beeper.Beep(1.1, 950);  // A5
-      beeper.Beep(0.5, 693);  // F5
-      beeper.Beep(0.16, 625); // E5
-      beeper.Beep(0.16, 595); // D#5
-      beeper.Beep(0.16, 625); // E5
-      beeper.Beep(1.1, 525);  // C#5
-      return true;
-    }
-
-    if (!strcmp(cmd, "beep2")) {
-      // The Force Theme
-      // custom_beep 0.75,146.83;1.5,196.0;1.0,220.0;0.25,233.08;0.25,261.63;1.5,233.08;1.25,146.83;0.02,0;0.25,146.93;1.25,196.0;0.25,220.0;0.5,233.08;0.25,146.83;0.25,233.08;0.25,196.0;0.25,293.66;1.5,261.63;0.75,293.66;0.75,146.83;1.25,196.0;0.25,220.0;0.5,233.08;0.25,196.0;0.5,293.66;0.25,233.08;1.5,392.0;0.75,196.0;0.25,233.08;0.25,220.0;0.25,196.0;1.0,293.66;0.25,233.08;0.25,196.0;0.75,146.83;0.02,0;0.50,146.83;0.02,0;0.25,146.83;1.75,196.0
-      beeper.Beep(0.75, 146.83);  // D3
-      beeper.Beep(1.5, 196.0);    // G3
-      beeper.Beep(1.0, 220.0);    // A3
-      beeper.Beep(0.25, 233.08);  // A#3
-      beeper.Beep(0.25, 261.63);  // C4
-      beeper.Beep(1.5, 233.08);   // A#3
-      beeper.Beep(1.25, 146.83);  // D3
-      beeper.Silence(0.02);
-      beeper.Beep(0.25, 146.93);  // D3
-      beeper.Beep(1.25, 196.0);   // G3
-      beeper.Beep(0.25, 220.0);   // A3
-      beeper.Beep(0.5, 233.08);   // A#3
-      beeper.Beep(0.25, 146.83);  // D3
-      beeper.Beep(0.25, 233.08);  // A#3 (triplet)
-      beeper.Beep(0.25, 196.0);   // G3 (triplet)
-      beeper.Beep(0.25, 293.66);  // D4 (triplet)
-      beeper.Beep(1.5, 261.63);   // C4
-      beeper.Beep(0.75, 293.66);  // D4
-
-      beeper.Beep(0.75, 146.83);  // D3
-      beeper.Beep(1.25, 196.0);   // G3
-      beeper.Beep(0.25, 220.0);   // A3
-      beeper.Beep(0.5, 233.08);   // A#3
-      beeper.Beep(0.25, 196.0);   // G3
-      beeper.Beep(0.5, 293.66);   // D4
-      beeper.Beep(0.25, 233.08);  // A#3
-      beeper.Beep(1.5, 392.0);    // G4
-      beeper.Beep(0.75, 196.0);   // G3
-      beeper.Beep(0.25, 233.08);  // A#3
-      beeper.Beep(0.25, 220.0);   // A3
-      beeper.Beep(0.25, 196.0);   // G3
-      beeper.Beep(1.0, 293.66);   // D4
-      beeper.Beep(0.25, 233.08);  // A#3
-      beeper.Beep(0.25, 196.0);   // G3
-      beeper.Beep(0.75, 146.83);   // D3
-      beeper.Silence(0.02);
-      beeper.Beep(0.50, 146.83);  // D3
-      beeper.Silence(0.02);
-      beeper.Beep(0.25, 146.83);  // D3
-      beeper.Beep(1.75, 196.0);   // G3
-
-
-      return true;
-    }
-
-    if (!strcmp(cmd, "beep3")) {
-      // Imperial March
-      // custom_beep 0.45,196.0;0.2,0;0.45,196.0;0.2,0;0.45,196.0;0.2,0;0.5,155.56;0.2,233.08;0.45,196.0;0.2,0;0.45,155.56;0.2,233.08;0.8,196.0;0.5,0;0.45,293.66;0.2,0;0.45,293.66;0.2,0;0.45,293.66;0.2,0;0.45,311.13;0.2,233.08;0.45,185.0;0.2,0;0.45,155.56;0.2,233.08;0.8,196.0;0.5,0;0.45,392.0;0.2,0;0.4,196.0;0.125,0;0.15,196.0;0.45,392.0;0.175,0;0.4,369.99;0.125,0;0.2,349.23;0.125,329.63;0.125,311.13;0.25,329.63;0.3,0;0.2,207.65;0.175,0;0.45,277.18;0.175,0;0.4,261.63;0.125,0;0.2,246.94;0.125,233.08;0.125,220.0;0.25,233.08;0.5,0;0.2,155.56;0.15,0;0.45,185.0;0.2,0;0.5,155.56;0.2,233.08;0.45,196.0;0.2,0;0.45,155.56;0.2,233.08;0.8,196.0
-      beeper.Beep(0.45, 196.0);   // G3
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 196.0);   // G3
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 196.0);   // G3
-      beeper.Silence(0.2);
-      beeper.Beep(0.5, 155.56);  // D#3
-      beeper.Beep(0.2, 233.08);   // A#3
-      beeper.Beep(0.45, 196.0);   // G3
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 155.56);  // D#3
-      beeper.Beep(0.2, 233.08);   // A#3
-      beeper.Beep(0.8, 196.0);    // G3
-      beeper.Silence(0.5);
-
-      beeper.Beep(0.45, 293.66);  // D4
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 293.66);  // D4
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 293.66);  // D4
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 311.13);  // D#4
-      beeper.Beep(0.2, 233.08);   // A#3
-      beeper.Beep(0.45, 185.0);   // F#3
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 155.56);  // D#3
-      beeper.Beep(0.2, 233.08);   // A#3
-      beeper.Beep(0.8, 196.0);    // G3
-      beeper.Silence(0.5);
-
-      beeper.Beep(0.45, 392.0);   // G4
-      beeper.Silence(0.2);
-      beeper.Beep(0.4, 196.0);    // G3
-      beeper.Silence(0.125);
-      beeper.Beep(0.150, 196.0);    // G3
-      beeper.Beep(0.45, 392.0);   // G4
-      beeper.Silence(0.175);
-      beeper.Beep(0.40, 369.99);   // F#4
-      beeper.Silence(0.125);
-      beeper.Beep(0.2, 349.23);   // F4
-      beeper.Beep(0.125, 329.63);    // E4
-      beeper.Beep(0.125, 311.13);    // D#4
-      beeper.Beep(0.25, 329.63);    // E4
-      beeper.Silence(0.3);
-
-      beeper.Beep(0.2, 207.65);    // G#3
-      beeper.Silence(0.175);
-      beeper.Beep(0.45, 277.18);   // C#4
-      beeper.Silence(0.175);
-      beeper.Beep(0.40, 261.63);   // C4
-      beeper.Silence(0.125);
-      beeper.Beep(0.2, 246.94);   // B3
-      beeper.Beep(0.125, 233.08);    // A#3
-      beeper.Beep(0.125, 220.0);    // A3
-      beeper.Beep(0.25, 233.08);    // A#3
-      beeper.Silence(0.5);
-
-      beeper.Beep(0.2, 155.56);  // D#3
-      beeper.Silence(0.15);
-      beeper.Beep(0.45, 185.0);   // F#3
-      beeper.Silence(0.2);
-      beeper.Beep(0.5, 155.56);  // D#3
-      beeper.Beep(0.2, 233.08);   // A#3
-      beeper.Beep(0.45, 196.0);   // G3
-      beeper.Silence(0.2);
-      beeper.Beep(0.45, 155.56);  // D#3
-      beeper.Beep(0.2, 233.08);   // A#3
-      beeper.Beep(0.8, 196.0);    // G3
-
-      return true;
-    }
-
-    if (!strcmp(cmd, "beep4")) {
-      // We Wish You A Merry Christmas
-      // // custom_beep 0.3333,196;0.3333,261;0.1667,261;0.1667,294;0.1667,261;0.1667,247;0.3333,220;0.3333,220;0.3333,220;0.3333,294;0.1667,294;0.1667,330;0.1667,294;0.1667,261;0.3333,247;0.3333,196;0.3333,196;0.3333,330;0.1667,330;0.1667,349;0.1667,330;0.1667,294;0.3333,261;0.3333,220;0.1667,196;0.1667,196;0.3333,220;0.3333,294;0.3333,247;0.5,261
-      beeper.Beep(0.3333, 196);  // G3
-      beeper.Beep(0.3333, 261);  // C4
-      beeper.Silence(0.025);
-      beeper.Beep(0.1667, 261);  // C4
-      beeper.Beep(0.1667, 294);  // D4
-      beeper.Beep(0.1667, 261);  // C4
-      beeper.Beep(0.1667, 247);  // B3
-      beeper.Beep(0.3333, 220);  // A3
-      beeper.Silence(0.025);
-      beeper.Beep(0.3333, 220);  // A3
-      beeper.Silence(0.05);
-      beeper.Beep(0.3333, 220);  // A3
-      beeper.Beep(0.3333, 294);  // D4
-      beeper.Silence(0.025);
-      beeper.Beep(0.1667, 294);  // D4
-      beeper.Beep(0.1667, 330);  // E4
-      beeper.Beep(0.1667, 294);  // D4
-      beeper.Beep(0.1667, 261);  // C4
-      beeper.Beep(0.3333, 247);  // B3
-      beeper.Beep(0.3333, 196);  // G3
-      beeper.Silence(0.05);
-      beeper.Beep(0.3333, 196);  // G3
-      beeper.Beep(0.3333, 330);  // E4
-      beeper.Silence(0.025);
-      beeper.Beep(0.1667, 330);  // E4
-      beeper.Beep(0.1667, 349);  // F4
-      beeper.Beep(0.1667, 330);  // E4
-      beeper.Beep(0.1667, 294);  // D4
-      beeper.Beep(0.3333, 261);  // C4
-      beeper.Beep(0.3333, 220);  // A3
-      beeper.Silence(0.05);
-      beeper.Beep(0.1667, 196);  // G3
-      beeper.Silence(0.025);
-      beeper.Beep(0.1667, 196);  // G3
-      beeper.Beep(0.3333, 220);  // A3
-      beeper.Beep(0.3333, 294);  // D4
-      beeper.Beep(0.3333, 247);  // B3
-      beeper.Beep(0.5, 261);     // C4
-      return true;
-    }
-
-    if (!strcmp(cmd, "beep5")) {
-      // The Star Spangled Banner
-      // custom_beep 0.5,392.00;0.25,329.63;0.75,261.63;0.75,329.63;0.75,392.00;1.5,523.25;0.5,659.25;0.25,587.33;0.75,523.25;0.75,329.63;0.75,369.99;1.5,392.00;0.05,0;0.5,392.00;0.025,0;0.25,392.00;1.25,659.25;0.25,587.33;0.75,523.25;1.5,493.88;0.5,440.00;0.25,493.88;0.75,523.25;0.025,0;0.75,523.25;0.75,392.00;0.75,329.63;0.75,261.63;0.5,659.25;0.025,0;0.25,659.25;0.025,0;0.75,659.25;0.75,698.46;0.75,783.99;0.025,0;1.5,783.99;0.05,0;0.5,698.46;0.25,659.25;0.75,587.33;0.75,659.25;0.75,698.46;0.025,0;1.5,698.46;0.05,0;0.75,698.46;1.25,659.25;0.25,587.33;0.75,523.25;1.5,493.88;0.5,440.00;0.25,493.88;0.75,523.25;0.75,329.63;0.75,369.99;1.5,392.00;0.05,0;0.75,392.00;0.75,523.25;0.025,0;0.75,523.25;0.025,0;0.5,523.25;0.25,493.88;0.75,440.00;0.025,0;0.75,440.00;0.025,0;0.75,440.00;0.5,587.33;0.25,659.25;0.5,698.46;0.25,659.25;0.5,587.33;0.25,523.25;0.025,0;1.5,523.25;1.75,493.88;1.5,0;0.5,392.00;0.05,0;0.25,392.00;1.25,523.25;0.25,587.33;0.5,659.25;0.25,698.46;1.75,783.99;0.5,0;0.5,523.25;0.25,587.33;1.5,659.25;0.75,698.46;1.5,587.33;2.5,523.25
-      beeper.Beep(0.5, 392.00);  // G4
-      beeper.Beep(0.25, 329.63);  // E4
-      beeper.Beep(0.75, 261.63);  // C4
-      beeper.Beep(0.75, 329.63);  // E4
-      beeper.Beep(0.75, 392.00);  // G4
-      beeper.Beep(1.5, 523.25);  // C5
-
-      beeper.Beep(0.5,659.25);  // E5
-      beeper.Beep(0.25,587.33);  // D5
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Beep(0.75,329.63);  // E4
-      beeper.Beep(0.75,369.99);  // F#4
-      beeper.Beep(1.5, 392.00);  // G4
-      beeper.Silence(0.05);
-
-      beeper.Beep(0.5, 392.00);  // G4
-      beeper.Silence(0.025);
-      beeper.Beep(0.25, 392.00);  // G4
-      beeper.Beep(1.25,659.25);  // E5
-      beeper.Beep(0.25,587.33);  // D5
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Beep(1.5,493.88);  // B4
-
-      beeper.Beep(0.5,440.00);  // A4
-      beeper.Beep(0.25,493.88);  // B4
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Silence(0.025);
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Beep(0.75, 392.00);  // G4
-      beeper.Beep(0.75,329.63);  // E4
-      beeper.Beep(0.75, 261.63);  // C4
-
-      beeper.Beep(0.5,659.25);  // E5
-      beeper.Silence(0.025);
-      beeper.Beep(0.25,659.25);  // E5
-      beeper.Silence(0.025);
-      beeper.Beep(0.75,659.25);  // E5
-      beeper.Beep(0.75,698.46);  // F5
-      beeper.Beep(0.75,783.99);  // G5
-      beeper.Silence(0.025);
-      beeper.Beep(1.5,783.99);  // G5
-      beeper.Silence(0.05);
-
-      beeper.Beep(0.5,698.46);  // F5
-      beeper.Beep(0.25,659.25);  // E5
-      beeper.Beep(0.75,587.33);  // D5
-      beeper.Beep(0.75,659.25);  // E5
-      beeper.Beep(0.75,698.46);  // F5
-      beeper.Silence(0.025);
-      beeper.Beep(1.5,698.46);  // F5
-      beeper.Silence(0.05);
-
-      beeper.Beep(0.75,698.46);  // F5
-      beeper.Beep(1.25,659.25);  // E5
-      beeper.Beep(0.25,587.33);  // D5
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Beep(1.5,493.88);  // B4
-
-      beeper.Beep(0.5,440.00);  // A4
-      beeper.Beep(0.25,493.88);  // B4
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Beep(0.75,329.63);  // E4
-      beeper.Beep(0.75,369.99);  // F#4
-      beeper.Beep(1.5, 392.00);  // G4
-      beeper.Silence(0.05);
-
-      beeper.Beep(0.75, 392.00);  // G4
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Silence(0.025);
-      beeper.Beep(0.75,523.25);  // C5
-      beeper.Silence(0.025);
-      beeper.Beep(0.5,523.25);  // C5
-      beeper.Beep(0.25,493.88);  // B4
-      beeper.Beep(0.75,440.00);  // A4
-      beeper.Silence(0.025);
-      beeper.Beep(0.75,440.00);  // A4
-      beeper.Silence(0.025);
-      beeper.Beep(0.75,440.00);  // A4
-      beeper.Beep(0.5,587.33);  // D5
-      beeper.Beep(0.25,659.25);  // E5
-      beeper.Beep(0.5,698.46);  // F5
-      beeper.Beep(0.25,659.25);  // E5
-      beeper.Beep(0.5,587.33);  // D5
-      beeper.Beep(0.25,523.25);  // C5
-      beeper.Silence(0.025);
-      beeper.Beep(1.5,523.25);  // C5
-      beeper.Beep(1.75,493.88);  // B4
-      beeper.Silence(1.5);
-
-      beeper.Beep(0.5, 392.00);  // G4
-      beeper.Silence(0.05);
-      beeper.Beep(0.25, 392.00);  // G4
-      beeper.Beep(1.25,523.25);  // C5
-      beeper.Beep(0.25,587.33);  // D5
-      beeper.Beep(0.5,659.25);  // E5
-      beeper.Beep(0.25,698.46);  // F5
-      beeper.Beep(1.75,783.99);  // G5
-      beeper.Silence(0.5);
-      beeper.Beep(0.5,523.25);  // C5
-      beeper.Beep(0.25,587.33);  // D5
-      beeper.Beep(1.5,659.25);  // E5
-      beeper.Beep(0.75,698.46);  // F5
-      beeper.Beep(1.5,587.33);  // D5
-      beeper.Beep(2.5,523.25);  // C5
-      return true;
-    }
-
-  if (!strcmp(cmd, "custom_beep") && arg) {
-    STDOUT.println("Playing custom beep sequence...");
-    const char* input = arg;
-    char duration_str[16]  = {0};
-    char frequency_str[16] = {0};
-
-    while (*input) {
-      const char* comma = strchr(input, ',');
-      if (!comma) {
-        STDOUT.println("Error: Missing comma in input.");
-        break;
-      }
-      strncpy(duration_str, input, comma - input);
-      duration_str[comma - input] = '\0';  // Null-terminate
-
-      const char* semicolon = strchr(comma + 1, ';');
-      if (!semicolon) {
-        semicolon = comma + strlen(comma);  // Last element
-      }
-      strncpy(frequency_str, comma + 1, semicolon - (comma + 1));
-      frequency_str[semicolon - (comma + 1)] = '\0';  // Null-terminate
-
-      float duration = atof(duration_str);
-      int frequency = atoi(frequency_str);
-
-      beeper.Beep(duration, frequency);
-
-      input = (*semicolon) ? semicolon + 1 : semicolon;
-    }
-    return true;
-  }
-#endif  // BC_CUSTOM_BEEPER
-
-// if (!strcmp(cmd, "custom_beep") && arg) {
-//   STDOUT.println("Playing custom beep sequence...");
-
-//   const char* input = arg;
-//   char duration_str[16] = {0};
-//   char frequency_str[16] = {0};
-
-//   while (*input) {
-//     const char* comma = strchr(input, ',');
-//     if (!comma) {
-//       STDOUT.println("Error: Missing comma in input.");
-//       break;
-//     }
-//     strncpy(duration_str, input, comma - input);
-//     duration_str[comma - input] = '\0'; // Null-terminate
-
-//     const char* semicolon = strchr(comma + 1, ';');
-//     if (!semicolon) {
-//       semicolon = comma + strlen(comma); // Last element
-//     }
-//     strncpy(frequency_str, comma + 1, semicolon - (comma + 1));
-//     frequency_str[semicolon - (comma + 1)] = '\0'; // Null-terminate
-
-//     float duration = atof(duration_str);
-//     int frequency = atoi(frequency_str);
-
-//     if (duration > 0) {
-//       // Play the note directly (including 20kHz)
-//       while (beeper.BufferFull()) {
-//         yield();  // Non-blocking wait
-//       }
-//       beeper.Beep(duration, frequency);  // Play note or inaudible 20kHz
-//     } else {
-//       STDOUT.println("Error: Invalid duration or frequency.");
-//     }
-
-//     input = (*semicolon) ? semicolon + 1 : semicolon;
-//   }
-
-//   return true;
-// }
-
-#endif  // DISABLE_DIAGNOSTIC_COMMANDS
-
+#endif
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "sd_card_not_found")) {
       ProffieOSErrors::sd_card_not_found();
@@ -1996,15 +1579,11 @@ G5      783.99
       return true;
     }
     if (!strcmp(cmd, "n") || (!strcmp(cmd, "next") && arg && (!strcmp(arg, "preset") || !strcmp(arg, "pre")))) {
-      SaberBase::IsOn() ? next_preset_fast() : next_preset();
+      next_preset();
       return true;
     }
     if (!strcmp(cmd, "p") || (!strcmp(cmd, "prev") && arg && (!strcmp(arg, "preset") || !strcmp(arg, "pre")))) {
-      SaberBase::IsOn() ? previous_preset_fast() : previous_preset();
-      return true;
-    }
-    if (!strcmp(cmd, "f") || (!strcmp(cmd, "first") && arg && (!strcmp(arg, "preset") || !strcmp(arg, "pre")))) {
-      SaberBase::IsOn() ? first_preset_fast() : first_preset();
+      previous_preset();
       return true;
     }
     if (!strcmp(cmd, "rotate")) {
@@ -2086,9 +1665,9 @@ G5      783.99
           }
         }
       }
-      STDOUT << "\nSD Access "
+      STDOUT << "SD Access "
              << (LSFS::GetAllowMount() ? "ON" : "OFF")
-             << "\n\n";
+             << "\n";
       return true;
     }
 #endif
@@ -2137,18 +1716,15 @@ G5      783.99
       STDOUT.println(current_preset_.preset_num);
       return true;
     }
-    // if (!strcmp(cmd, "get_volume")) {
-    if (!strcmp(cmd, "get_volume") || !strcmp(cmd, "gvol")) {  // BC custom shortcut
+    if (!strcmp(cmd, "get_volume")) {
 #ifdef ENABLE_AUDIO
-      STDOUT.print("volume ");
       STDOUT.println(dynamic_mixer.get_volume());
 #else
       STDOUT.println(0);
 #endif
       return true;
     }
-    // if (!strcmp(cmd, "set_volume") && arg) {
-    if ((!strcmp(cmd, "set_volume") || !strcmp(cmd, "svol")) && arg) {  // BC custom shortcut
+    if (!strcmp(cmd, "set_volume") && arg) {
 #ifdef ENABLE_AUDIO
       int32_t volume = strtol(arg, NULL, 0);
       if (volume >= 0 && volume <= 3000) {
@@ -2178,13 +1754,6 @@ G5      783.99
       return true;
     }
 
-    if (!strcmp(cmd, "set_preset_fast") && arg) {
-      int preset = strtol(arg, NULL, 0);
-      SaveState(preset);
-      SetPreset(preset, false);
-      return true;
-    }
-
     if (!strcmp(cmd, "change_preset") && arg) {
       int preset = strtol(arg, NULL, 0);
       if (preset != current_preset_.preset_num) {
@@ -2198,12 +1767,9 @@ G5      783.99
     if (arg && (!strcmp(cmd, "var") || !strcmp(cmd, "variation"))) {
       size_t variation = strtol(arg, NULL, 0);
       SaberBase::SetVariation(variation);
-      STDOUT.print("variation set "); // BC Only?
-      STDOUT.println(variation);
       return true;
     }
-    if (!strcmp(cmd, "gvar") || !strcmp(cmd, "get_variation")) {
-      STDOUT.print("variation ");
+    if (!strcmp(cmd, "get_variation")) {
       STDOUT.println(SaberBase::GetCurrentVariation());
       return true;
     }
@@ -2211,7 +1777,6 @@ G5      783.99
       ToggleColorChangeMode();
       return true;
     }
-
 #endif
 
 #ifdef ENABLE_SD

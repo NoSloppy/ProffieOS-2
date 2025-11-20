@@ -1154,6 +1154,9 @@ EFFECT(push);       // for Force Push gesture
 EFFECT(tr);         // for EFFECT_TRANSITION_SOUND, use with User Effects.
 EFFECT(mute);       // Notification before muted ignition to avoid confusion.
 EFFECT(array);      // for Manual Blade Array switching
+#ifdef BC_BUTTON_CLICKER
+EFFECT(press);      // for button press clicks when OFF only.
+#endif
 
 template<class SPEC>
 struct BCScrollPresetsMode : public SPEC::SteppedMode {
@@ -1210,12 +1213,18 @@ struct BCVolumeMode : public SPEC::SteppedMode {
   int percentage_ = 0;
 
   void mode_activate(bool onreturn) override {
-    PVLOG_NORMAL << "** Enter Volume Menu\n";
     initial_volume_ = dynamic_mixer.get_volume();
     initial_percentage_ = round((initial_volume_ / max_volume_) * 10) * 10;
+    percentage_ = initial_percentage_;
     SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
     mode::getSL<SPEC>()->SayEditVolume();
     announce_volume();
+
+    PVLOG_NORMAL << "** Enter Volume Menu\n";
+    if (percentage_ <= 10) PVLOG_NORMAL << "** Minimum Volume\n";
+    else if (percentage_ >= 100) PVLOG_NORMAL << "** Maximum Volume\n";
+    else PVLOG_NORMAL << "** Volume " << percentage_ << "%\n";
+
     SPEC::SteppedMode::mode_activate(onreturn);
   }
 
@@ -1234,6 +1243,11 @@ struct BCVolumeMode : public SPEC::SteppedMode {
     announce_volume();
     mode::getSL<SPEC>()->SayVolumeMenuEnd();
     SPEC::SteppedMode::mode_deactivate();
+
+    // "Exit Volume Menu" printout already handled in select() / exit()
+    if (percentage_ <= 10) PVLOG_NORMAL << "** Minimum Volume\n";
+    else if (percentage_ >= 100) PVLOG_NORMAL << "** Maximum Volume\n";
+    else PVLOG_NORMAL << "** Final Volume " << percentage_ << "%\n";
   }
 
   void next() override {
@@ -1244,6 +1258,7 @@ struct BCVolumeMode : public SPEC::SteppedMode {
         current_volume_ = max_volume_;
         QuickMaxVolume();
       } else {
+        sound_library_.fadeout(0.2);
         mode::getSL<SPEC>()->SayVolumeUp();
       }
       dynamic_mixer.set_volume(current_volume_);
@@ -1258,6 +1273,7 @@ struct BCVolumeMode : public SPEC::SteppedMode {
         current_volume_ = min_volume_;
         QuickMinVolume();
       } else {
+        sound_library_.fadeout(0.2);
         mode::getSL<SPEC>()->SayVolumeDown();
       }
       dynamic_mixer.set_volume(current_volume_);
@@ -1276,9 +1292,10 @@ struct BCVolumeMode : public SPEC::SteppedMode {
     mode::getSL<SPEC>()->SayMinimumVolume();
   }
 
-  void update() override {  // Overridden to substitute the tick sound
+  void update() override {
     float volume = dynamic_mixer.get_volume();
     percentage_ = round((volume / max_volume_) * 10) * 10;
+    PVLOG_NORMAL << "** Volume " << percentage_ << "%\n";
     SaberBase::DoEffect(EFFECT_VOLUME_LEVEL, 0);
   }
 
@@ -2102,6 +2119,16 @@ void DoSavedTwist() {
   }
 
   RefPtr<BufferedWavPlayer> wav_player;
+
+#ifdef BC_BUTTON_CLICKER
+  bool Event(enum BUTTON button, EVENT event) override {
+    // Play clicker only when saber is OFF and a button is PRESSED
+    if (!IsOn() && event == EVENT_PRESSED) {
+      hybrid_font.PlayPolyphonic(&SFX_press);
+    }
+    return PropBase::Event(button, event);
+  }
+#endif
 
   bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
     switch (EVENTID(button, event, modifiers)) {

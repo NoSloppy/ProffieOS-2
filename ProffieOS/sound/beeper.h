@@ -41,10 +41,6 @@ public:
   }
 
   void Beep(float length, float freq) {
-#ifdef BC_CUSTOM_BEEPER
-    // Block here until there’s room in the 16‐entry buffer:
-    while (BufferFull()) yield();
-#endif
     EnableAmplifier();
     if (beeps_.space_available()) {
       beeps_.next().f_ = freq == 0.0 ? 0 : AUDIO_RATE / freq / 2.0;
@@ -63,9 +59,6 @@ public:
   bool eof() const override {
     return beeps_.size() == 0;
   }
-#ifdef BC_CUSTOM_BEEPER
-  bool BufferFull() const { return beeps_.size() >= 16; }  // BC custom beeper
-#endif
 
 private:
   struct Beep {

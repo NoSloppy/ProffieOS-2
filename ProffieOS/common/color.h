@@ -1,8 +1,6 @@
 #ifndef COMMON_COLOR_H
 #define COMMON_COLOR_H
 
-#include <type_traits>
-
 // Used to represent a color. Uses normal 8-bit-per channel RGB.
 // Note that these colors are in linear space and their interpretation
 // depends on the blade.
@@ -390,11 +388,6 @@ struct OverDriveColor {
   bool getOverdrive() const { return overdrive; }
 };
 
-namespace color_details {
-  template<typename T> struct IsOpaqueColor : std::false_type {};
-  template<> struct IsOpaqueColor<SimpleColor> : std::true_type {};
-  template<> struct IsOpaqueColor<OverDriveColor> : std::true_type {};
-}
 
 // SIMPLE
 // Opaque.fade -> Opaque or Alpha?

@@ -106,7 +106,6 @@ struct ColorChangeOnlyMenuSpec {
   typedef mode::SmoothVariationMode<SPEC> SmoothVariationMode;
   typedef mode::SteppedVariationMode<SPEC> SteppedVariationMode;
   typedef mode::ColorChangeMode<SPEC> ColorChangeMenu;
-  typedef SoundLibraryV2 SoundLibrary;
 };
 
 #endif
