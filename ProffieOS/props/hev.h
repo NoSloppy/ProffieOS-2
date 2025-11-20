@@ -657,7 +657,11 @@ public:
   // This ensures the suit is ON after boot completes (safe timing).
   void SetPreset(int preset_num, bool announce) override {
     PropBase::SetPreset(preset_num, announce);
-    if (!SaberBase::IsOn()) On();
+    if (!SaberBase::IsOn()) {
+      // Prevent out.wav from playing on auto-boot by selecting invalid sound
+      SFX_out.Select(-1);
+      On();
+    }
   }
 
   int health_ = 100;
