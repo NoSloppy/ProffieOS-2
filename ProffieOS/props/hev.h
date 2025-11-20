@@ -689,14 +689,15 @@ public:
   // Pull in parent's SetPreset, but turn the suit on.
   void SetPreset(int preset_num, bool announce) override {
     PropBase::SetPreset(preset_num, announce);
+    // Suppress out.wav by temporarily muting it
+    // This applies both at boot (when OFF) and during preset changes (when ON)
+    saved_out_volume_ = SFX_out.GetVolume();
+    SFX_out.SetVolume(0);
     if (!SaberBase::IsOn()) {
-      // Suppress out.wav on boot by temporarily muting it
-      saved_out_volume_ = SFX_out.GetVolume();
-      SFX_out.SetVolume(0);
       On();
-      // Mark that we need to restore volume later (will be set in Loop once sound starts)
-      restore_volume_time_ = 1; // Non-zero marker to indicate we need to check in Loop
     }
+    // Mark that we need to restore volume later (will be set in Loop once sound starts)
+    restore_volume_time_ = 1; // Non-zero marker to indicate we need to check in Loop
   }
 
   // Calculate Physical and Hazard Damage
@@ -1116,10 +1117,9 @@ public:
         // We're waiting for the out.wav to start playing
         RefPtr<BufferedWavPlayer> player = GetWavPlayerPlaying(&SFX_out);
         if (player) {
-          // Sound has started! Get its length and schedule restoration
-          float length = player->length();
-          if (length > 0) {
-            restore_volume_time_ = millis() + (uint32_t)(length * 1000);
+          // Sound has started! SaberBase::sound_length is set by the player
+          if (SaberBase::sound_length > 0) {
+            restore_volume_time_ = millis() + (uint32_t)(SaberBase::sound_length * 1000);
           } else {
             // Unknown length, use default delay
             restore_volume_time_ = millis() + 12000;
