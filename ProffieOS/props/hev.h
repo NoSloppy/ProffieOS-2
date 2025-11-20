@@ -480,7 +480,6 @@ EFFECT(vitalsigns_off);
 
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
-#include <cmath>
 
 // HEV Settings Config File for persistent storage
 class HevSettingsFile : public ConfigFile {
@@ -645,14 +644,13 @@ public:
     timer_cooldown_major_laceration_.configure(HEV_COOLDOWN_MAJOR_LACERATION_MS);
     timer_cooldown_major_fracture_.configure(HEV_COOLDOWN_MAJOR_FRACTURE_MS);
     timer_cooldown_morphine_.configure(HEV_COOLDOWN_MORPHINE_MS);
-    
-    // Load saved HEV settings from SD card
-    hev_settings::LoadSettings();
   }
 
 #ifndef MENU_SPEC_TEMPLATE
   void Setup() override {
     MKSPEC<mode::HevMenuSpec>::SoundLibrary::init();
+    // Load saved HEV settings from SD card after SD is initialized
+    hev_settings::LoadSettings();
   }
 #endif
 
@@ -802,7 +800,7 @@ public:
 
     } else {
       // If Armor is 0, immediately plays a warning sound.
-      SFX_armor.SelectFloat(armor_ / 0.0);
+      SFX_armor.Select(0);
       hybrid_font.PlayCommon(&SFX_armor);
     }
   }
