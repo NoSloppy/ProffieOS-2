@@ -1073,7 +1073,44 @@ public:
     HazardDecrease();
     IncreaseHealth();
     IncreaseArmor();
+    
+    // Restore SFX_out volume after suppressed boot sound has finished
+    if (saved_out_volume_ >= 0) {
+      if (restore_volume_time_ == 1) {
+        // We're waiting for the out.wav to start playing
+        RefPtr<BufferedWavPlayer> player = GetWavPlayerPlaying(&SFX_out);
+        if (player) {
+          // Sound has started! Get its length and schedule restoration
+          float length = player->length();
+          if (length > 0) {
+            restore_volume_time_ = millis() + (uint32_t)(length * 1000);
+          } else {
+            // Unknown length, use default delay
+            restore_volume_time_ = millis() + 12000;
+          }
+        }
+      } else if (restore_volume_time_ > 1 && millis() >= restore_volume_time_) {
+        // Time to restore the volume
+        SFX_out.SetVolume(saved_out_volume_);
+        saved_out_volume_ = -1;
+        restore_volume_time_ = 0;
+      }
+    }
+    
     PropBase::Loop();
+  }
+
+  // Override SetPreset to suppress out.wav on boot
+  void SetPreset(int preset_num, bool announce) override {
+    PropBase::SetPreset(preset_num, announce);
+    if (!SaberBase::IsOn()) {
+      // Suppress out.wav on boot by temporarily muting it
+      saved_out_volume_ = SFX_out.GetVolume();
+      SFX_out.SetVolume(0);
+      On();
+      // Mark that we need to restore volume later (will be set in Loop once sound starts)
+      restore_volume_time_ = 1; // Non-zero marker to indicate we need to check in Loop
+    }
   }
 
   // Button Events
@@ -1378,6 +1415,10 @@ public:
 
 private:
   bool mode_volume_ = false;
+  
+  // Volume restoration for suppressed out.wav during boot
+  int saved_out_volume_ = -1;
+  uint32_t restore_volume_time_ = 0;
 
 };
 
