@@ -494,14 +494,14 @@ EFFECT(volmin);
 // HEV MENU SOUNDS (for settings toggles)
 EFFECT(atmospherics_on);
 EFFECT(atmospherics_off);
-EFFECT(vitalsigns_on);
-EFFECT(vitalsigns_off);
+EFFECT(automedic_on);
+EFFECT(automedic_off);
 EFFECT(powerarmor_on);
 EFFECT(powerarmor_on_short);
 EFFECT(powerarmor_off);
 EFFECT(powerarmor_off_short);
-EFFECT(automedic_on);
-EFFECT(automedic_off);
+EFFECT(vitalsigns_on);
+EFFECT(vitalsigns_off);
 
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"

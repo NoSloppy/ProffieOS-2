@@ -683,6 +683,12 @@ public:
 
   Hazard current_hazard_ = HAZARD_NONE;
 
+  // Pull in parent's SetPreset, but turn the suit on.
+  void SetPreset(int preset_num, bool announce) override {
+    PropBase::SetPreset(preset_num, announce);
+    if (!SaberBase::IsOn()) On();
+  }
+
   // Calculate Physical and Hazard Damage
   void DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
     int previous_health = health_;

@@ -25,7 +25,8 @@
 |  Add the slashes to any that you are not using.                   |
 \*-----------------------------------------------------------------*/
 
-                                                                     #define CONFIG_FILE "config/hev_config_FLASHLIGHT.h"
+// ************************** GitHub/ProffieOS-2
+                                                                     #define CONFIG_FILE "config/hev_config_FLASHLIGHT-BC.h"
 
 // #define CONFIG_FILE "config/default_proffieboard_config.h"
 // #define CONFIG_FILE "config/proffieboard_v1_test_bench_config.h"
