@@ -659,11 +659,9 @@ public:
     PropBase::SetPreset(preset_num, announce);
     if (!SaberBase::IsOn()) {
       // Prevent out.wav from playing on auto-boot
-      // Temporarily set files_found to 0 so RandomFile returns empty
-      int saved_num = SFX_out.num_files_;
-      SFX_out.num_files_ = 0;
+      // Use -2 to bypass random selection (-1 triggers random)
+      SFX_out.Select(-2);
       On();
-      SFX_out.num_files_ = saved_num;
     }
   }
 
