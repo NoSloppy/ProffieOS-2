@@ -3,7 +3,7 @@
 #define NUM_BLADES 6
 #define NUM_BUTTONS 2
 #define VOLUME 1500
-#define BOOT_VOLUME 150
+#define BOOT_VOLUME 50
 #define SAVE_VOLUME
 const unsigned int maxLedsPerStrip = 144;
 #define CLASH_THRESHOLD_G 3.0
@@ -12,10 +12,10 @@ const unsigned int maxLedsPerStrip = 144;
 #define IDLE_OFF_TIME 9999999
 // #define HEV_RANDOM_EVENT_INTERVAL_MS 10000
 // #define HEV_RANDOM_HAZARD_CHANCE 95
-#define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100  // defaults to 50%
-// #define STANDBY_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
+// #define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100  // defaults to 50%
+// #define LIGHTS_ON_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
 #define MOUNT_SD_SETTING
-
+#define CONFIG_STARTUP_DELAY 4000
 #endif
 
 #ifdef CONFIG_PROP
@@ -32,7 +32,7 @@ using OnDemandVolumeLevel = TransitionEffectL<TrConcat<TrSmoothFade<200>,AlphaL<
 
 Preset armor[] = {
 
-{ "hev;HEVcommon", "HEVcommon/tracks/hl1_ost/10 Valve Theme [Extended].wav",
+{ "hev;HEVcommon;ProffieOS_V2_Voicepack_GladOS/common", "HEVcommon/tracks/hl1_ost/10 Valve Theme [Extended].wav",
 // Left front (inner LED =1)
 StylePtr<Layers<
   /* Flashlight */
@@ -361,7 +361,3 @@ CONFIGARRAY(armor),
 Button PowerButton(BUTTON_POWER, powerButtonPin, "pow");
 Button AuxButton(BUTTON_AUX, auxPin, "aux");
 #endif
-
-
-
-

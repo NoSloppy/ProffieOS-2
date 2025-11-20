@@ -465,9 +465,46 @@
 #endif
 
 #include "prop_base.h"
+
+// HEV VOICE LINES
+EFFECT(armor);
+EFFECT(health);
+EFFECT(armor_compromised);
+EFFECT(hazard);
+EFFECT(minor_laceration);
+EFFECT(minor_fracture);
+EFFECT(major_laceration);
+EFFECT(major_fracture);
+EFFECT(morphine);
+// HEV UI SOUNDS
+EFFECT(armor_alarm);
+EFFECT(battery);
+EFFECT(death);
+EFFECT(fuzz);
+EFFECT(medkit);
+// ENVIRONMENTAL SFX
+EFFECT(stun);
+// VOLUME MENU
+EFFECT(vmbegin);
+EFFECT(vmend);
+EFFECT(volup);
+EFFECT(voldown);
+EFFECT(volmax);
+EFFECT(volmin);
+// HEV MENU SOUNDS (for settings toggles)
+EFFECT(atmospherics_on);
+EFFECT(atmospherics_off);
+EFFECT(vitalsigns_on);
+EFFECT(vitalsigns_off);
+EFFECT(powerarmor_on);
+EFFECT(powerarmor_on_short);
+EFFECT(powerarmor_off);
+EFFECT(powerarmor_off_short);
+EFFECT(automedic_on);
+EFFECT(automedic_off);
+
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
-#include <cmath>
 
 // HEV Settings Config File for persistent storage
 class HevSettingsFile : public ConfigFile {
@@ -515,45 +552,6 @@ namespace hev_settings {
     }
   }
 }
-
-// HEV VOICE LINES
-EFFECT(armor);
-EFFECT(health);
-EFFECT(armor_compromised);
-EFFECT(hazard);
-EFFECT(minor_laceration);
-EFFECT(minor_fracture);
-EFFECT(major_laceration);
-EFFECT(major_fracture);
-EFFECT(morphine);
-
-// HEV UI SOUNDS
-EFFECT(armor_alarm);
-EFFECT(battery);
-EFFECT(death);
-EFFECT(fuzz);
-EFFECT(medkit);
-
-// ENVIRONMENTAL SFX
-EFFECT(stun);
-
-// VOLUME MENU
-EFFECT(vmbegin);
-EFFECT(vmend);
-EFFECT(volup);
-EFFECT(voldown);
-EFFECT(volmax);
-EFFECT(volmin);
-
-// HEV MENU SOUNDS (for settings toggles)
-EFFECT(atmospherics_on);
-EFFECT(atmospherics_off);
-EFFECT(automedic_on);
-EFFECT(automedic_off);
-EFFECT(powerarmor_on);
-EFFECT(powerarmor_off);
-EFFECT(vitalsigns_on);
-EFFECT(vitalsigns_off);
 
 struct HEVTimerBase {
   uint32_t start_ = 0;
@@ -1137,9 +1135,9 @@ public:
   bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
     switch (EVENTID(button, event, modifiers)) {
 
-      // On/Off long-click
+      // Standby On/Off (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
-#ifdef LIGHTS_ON_RESETS_HEALTH_ARMOR
+#ifdef STANDBY_RESETS_HEALTH_ARMOR
         health_ = 100;
         armor_ = 100;
 #endif
@@ -1154,7 +1152,8 @@ public:
         Off();
         return true;
 
-      // short-click AUX to clear hazard / Volume Up
+      // Clear hazard (Short-click AUX)
+      // Volume Up
       case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
       case EVENTID(BUTTON_AUX, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         if (current_hazard_) {
@@ -1170,36 +1169,36 @@ public:
         // Play a no-hazard sound ?
         return true;
 
-      // short-click POW to Volume Down
+      // Flashlight ON/OFF (Short-click POW)
+      // Volume Down
       case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
-        if (mode_volume_) VolumeDown();
+        if (!mode_volume_) {
+          SaberBase::DoBlast();
+        }else {
+          VolumeDown();
+        }
         return true;
 
-      // Double-click power to start/stop track.
+      // Start/stop track (Double-click POW)
       case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         StartOrStopTrack();
         return true;
     
-      // Double-click AUX for Armor Readout.
+      // Armor Readout (Double-click AUX)
       case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         SaberBase::DoEffect(EFFECT_USER8, 0.0);
         armor_readout();
         return true;
 
-      // Next/Previous preset. Triple-click on either button.
+      // Next/Previous preset (Triple-click either button)
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         next_preset();
         return true;
       case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_OFF):
         previous_preset();
         return true;
 
-      // Hold AUX to start healing
+      // Start healing (Hold AUX)
       case EVENTID(BUTTON_AUX, EVENT_HELD_MEDIUM, MODE_ON):
         if (!SaberBase::Lockup()) {
           SaberBase::SetLockup(SaberBase::LOCKUP_HEALING);
@@ -1209,9 +1208,8 @@ public:
         }
         break;
 
-      // Release AUX to stop healing (or wait until full).
+      // Stop healing (Release AUX or wait until full)
       case EVENTID(BUTTON_AUX, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_AUX, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_OFF):
         if (SaberBase::Lockup()) {
           SaberBase::DoEndLockup();
           SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
@@ -1220,7 +1218,7 @@ public:
         }
         break;
 
-      // Hold POWER to start recharging armor
+      // Start recharging armor (Hold POW)
       case EVENTID(BUTTON_POWER, EVENT_HELD_MEDIUM, MODE_ON):
         if (!SaberBase::Lockup()) {
           SaberBase::SetLockup(SaberBase::LOCKUP_FILL_ARMOR);
@@ -1230,9 +1228,8 @@ public:
         }
         break;
 
-      // Release POWER to stop recharging armor (or wait until full).
+      // Stop recharging armor (Release POW or wait until full)
       case EVENTID(BUTTON_POWER, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_RELEASED, MODE_ANY_BUTTON | MODE_OFF):
         if (SaberBase::Lockup()) {
           SaberBase::DoEndLockup();
           SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
@@ -1241,23 +1238,21 @@ public:
         }
         break;
 
-
-        // Enter/Exit Volume Menu
+        // Enter/Exit Volume Menu (Triple-click POW)
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
-      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_OFF):
         VolumeMenu();
         return true;
 
-      // Enter HEV Settings Menu (when OFF)- 4x click POW or AUX
-      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
-      case EVENTID(BUTTON_AUX, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
+      // Enter HEV Settings Menu (4x click POW or AUX)
+      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_ON):
+      case EVENTID(BUTTON_AUX, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_ON):
         if (current_mode == this) {
           pushMode<MKSPEC<mode::HevMenuSpec>::HevSettingsMenu>();
           return true;
         }
         break;
 
-      // Toggle Combat Mode (click AUX while POW held)
+      // Combat Mode ON/OFF (Hold POW, Short-click AUX)
       case EVENTID(BUTTON_AUX, EVENT_CLICK_SHORT, MODE_ON | BUTTON_POWER):
         hev_settings::combat_mode = !hev_settings::combat_mode;
         if (hev_settings::combat_mode) {
@@ -1434,10 +1429,11 @@ public:
 
 private:
   bool mode_volume_ = false;
+  bool flashlight_on_ = false;
 
 };
 
-// Implementation of HEV menu BoolSetting methods
+// HEV menu BoolSetting methods
 namespace mode {
 
 template<class SPEC>
