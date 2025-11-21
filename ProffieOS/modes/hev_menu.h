@@ -70,6 +70,19 @@ struct ButtonSteppedMode : public SPEC::SelectCancelMode {
   }
 };
 
+// Helper function to stop currently playing menu sounds
+// This prevents audio overlap when toggling settings or navigating
+// Note: Requires wav_players global array from sound.h to be available
+inline void StopCurrentMenuSounds() {
+  static constexpr float MENU_SOUND_FADE_TIME = 0.05f;  // 50ms
+  for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
+    if (wav_players[unit].isPlaying() && wav_players[unit].refs() == 0) {
+      wav_players[unit].set_fade_time(MENU_SOUND_FADE_TIME);
+      wav_players[unit].FadeAndStop();
+    }
+  }
+}
+
 // Button-based menu base class
 template<class SPEC>
 struct ButtonMenuBase : public ButtonSteppedMode<SPEC> {
@@ -95,34 +108,17 @@ struct ButtonMenuBase : public ButtonSteppedMode<SPEC> {
   }
   
   void next() override {
-    stopCurrentMenuSounds();
+    StopCurrentMenuSounds();
     pos_ = MOD(pos_ + 1, size());
     say();
   }
   void prev() override {
-    stopCurrentMenuSounds();
+    StopCurrentMenuSounds();
     pos_ = MOD(pos_ - 1, size());
     say();
   }
 
   uint16_t pos_;
-
-private:
-  // Fade time for menu sound transitions (in seconds)
-  static constexpr float MENU_SOUND_FADE_TIME = 0.05f;  // 50ms
-  
-  // Helper method to fade and stop currently playing menu sounds
-  // This prevents audio overlap when navigating between settings
-  // Note: Requires wav_players global array from sound.h to be available
-  void stopCurrentMenuSounds() {
-    // Fade and stop all currently playing wav players to prevent overlap
-    for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
-      if (wav_players[unit].isPlaying() && wav_players[unit].refs() == 0) {
-        wav_players[unit].set_fade_time(MENU_SOUND_FADE_TIME);
-        wav_players[unit].FadeAndStop();
-      }
-    }
-  }
 };
 
 // BoolSetting for enabling/disabling hazards
@@ -150,6 +146,7 @@ public:
     }
   }
   void select(int entry) {
+    StopCurrentMenuSounds();
     getPtr<HazardEnabledSetting<SPEC>>()->set(!getPtr<HazardEnabledSetting<SPEC>>()->get());
     say(entry);
   }
@@ -179,6 +176,7 @@ public:
     }
   }
   void select(int entry) {
+    StopCurrentMenuSounds();
     getPtr<HealthAlertsEnabledSetting<SPEC>>()->set(!getPtr<HealthAlertsEnabledSetting<SPEC>>()->get());
     say(entry);
   }
@@ -208,6 +206,7 @@ public:
     }
   }
   void select(int entry) {
+    StopCurrentMenuSounds();
     getPtr<ArmorAlertsEnabledSetting<SPEC>>()->set(!getPtr<ArmorAlertsEnabledSetting<SPEC>>()->get());
     say(entry);
   }
@@ -238,6 +237,7 @@ public:
     }
   }
   void select(int entry) {
+    StopCurrentMenuSounds();
     getPtr<ClashDamageEnabledSetting<SPEC>>()->set(!getPtr<ClashDamageEnabledSetting<SPEC>>()->get());
     say(entry);
   }
