@@ -113,6 +113,7 @@ private:
   
   // Helper method to fade and stop currently playing menu sounds
   // This prevents audio overlap when navigating between settings
+  // Note: Requires wav_players global array from sound.h to be available
   void stopCurrentMenuSounds() {
     // Fade and stop all currently playing wav players to prevent overlap
     for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
