@@ -12,7 +12,7 @@ const unsigned int maxLedsPerStrip = 144;
 // #define HEV_RANDOM_EVENT_INTERVAL_MS 10000
 // #define HEV_RANDOM_HAZARD_CHANCE 95
 // #define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100  // defaults to 50%
-// #define LIGHTS_ON_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
+#define STANDBY_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
 #define MOUNT_SD_SETTING
 #define CONFIG_STARTUP_DELAY 4000
 
@@ -50,7 +50,8 @@ StylePtr<Layers<
   /* Flashlight Pulses */
   TransitionEffectL<TrConcat<TrInstant,White,TrDelay<800>,TrSmoothFade<1200>>,EFFECT_NEWFONT>,
   TransitionEffectL<TrConcat<TrInstant,White,TrDelay<800>,TrSmoothFade<1200>>,EFFECT_BOOT>,
-  
+  TransitionEffectL<TrConcat<TrInstant,White,TrDelay<800>,TrSmoothFade<1200>>,EFFECT_USER7>,
+
   /* Hazards */
   AlphaL<ColorSelect<AltF,TrFade<300>,AlphaL<Black,Int<0>>,TransitionLoop<Black,TrConcat<TrInstant,AlphaL<ImperialYellow,LayerFunctions<LinearSectionF<Int<5400>,Int<10900>>,LinearSectionF<Int<27400>,Int<10900>>>>,TrDelay<333>,AlphaL<ImperialYellow,LinearSectionF<Int<16384>,Int<10900>>>,TrDelay<333>>>,RandomBlink<3000,Sparkle<Black,Green,3000,900>>,Pulsing<Mix<Int<16384>,Red,Black>,Black,800>,Pulsing<Gradient<Yellow,Black>,Gradient<Black,Black,Yellow>,800>,Pulsing<Gradient<Orange,Orange,Red,Red>,Gradient<Red,Red,Orange>,800>,Pulsing<Mix<Int<16384>,Black,Blue>,Black,800>>,Int<32768>>,
   /* Physical Damage */

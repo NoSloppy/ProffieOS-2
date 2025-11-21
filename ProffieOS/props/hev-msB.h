@@ -842,7 +842,7 @@ public:
       // Play Armor Readout
       // SFX_armor.SelectFloat(armor_ / 100.0);
       SOUNDQ->Play(&SFX_armor);
-      sound_library_.SayNumber(armor_ / 100.0, SAY_WHOLE);
+      sound_library_.SayNumber(armor_, SAY_WHOLE);
       sound_library_.SayPercent();
     } else {
       // If Armor is 0, immediately plays a warning sound.
@@ -1160,7 +1160,7 @@ public:
   bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) override {
     switch (EVENTID(button, event, modifiers)) {
 
-// Activate Standby Mode  (Long-click POW)
+// Activate Standby Mode (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_ON):
         if (mode_volume_) return false;
         if (flashlight_on_) {
@@ -1175,12 +1175,13 @@ public:
         Off();
         return true;
 
-// Deactivate Standby Mode  (Long-click POW)
+// Deactivate Standby Mode (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
 #ifdef STANDBY_RESETS_HEALTH_ARMOR
         health_ = 100;
         armor_ = 100;
 #endif
+        SaberBase::DoEffect(EFFECT_USER7, 0.0);  // Power On Pulse
         On();
         return true;
 
@@ -1282,8 +1283,9 @@ public:
         VolumeMenu();
         return true;
 
-      // Enter HEV Settings Menu (4x click POW or AUX)
+// Enter HEV Settings Menu (4x click POW or AUX)
       case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_ON):
+        if (mode_volume_) return false;
         if (current_mode == this) {
           pushMode<MKSPEC<mode::HevMenuSpec>::HevSettingsMenu>();
           return true;
