@@ -94,18 +94,6 @@ struct ButtonMenuBase : public ButtonSteppedMode<SPEC> {
     getSL<SPEC>()->fadeout(len);
   }
   
-  // Helper method to fade and stop currently playing menu sounds
-  // This prevents audio overlap when navigating between settings
-  void stopCurrentMenuSounds() {
-    // Fade and stop all currently playing wav players to prevent overlap
-    for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
-      if (wav_players[unit].isPlaying() && wav_players[unit].refs() == 0) {
-        wav_players[unit].set_fade_time(0.05);  // 50ms fade
-        wav_players[unit].FadeAndStop();
-      }
-    }
-  }
-  
   void next() override {
     stopCurrentMenuSounds();
     pos_ = MOD(pos_ + 1, size());
@@ -118,6 +106,22 @@ struct ButtonMenuBase : public ButtonSteppedMode<SPEC> {
   }
 
   uint16_t pos_;
+
+private:
+  // Fade time for menu sound transitions (in seconds)
+  static constexpr float MENU_SOUND_FADE_TIME = 0.05f;  // 50ms
+  
+  // Helper method to fade and stop currently playing menu sounds
+  // This prevents audio overlap when navigating between settings
+  void stopCurrentMenuSounds() {
+    // Fade and stop all currently playing wav players to prevent overlap
+    for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
+      if (wav_players[unit].isPlaying() && wav_players[unit].refs() == 0) {
+        wav_players[unit].set_fade_time(MENU_SOUND_FADE_TIME);
+        wav_players[unit].FadeAndStop();
+      }
+    }
+  }
 };
 
 // BoolSetting for enabling/disabling hazards
