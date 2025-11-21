@@ -30,6 +30,9 @@ namespace mode {
 // Forward declare the HEV prop class so we can access its settings
 class HevProp;
 
+// Forward declaration of helper function
+inline void StopCurrentMenuSounds();
+
 // Button-based menu navigation mode (no rotation required)
 // Uses HELD_MEDIUM events for forward/back navigation
 template<class SPEC>
