@@ -661,6 +661,7 @@ public:
   int armor_ = 100;
   int injury_ = 0; // 0 = Lacerations, 1 = Fractures
   int impact_ = 0; // 0 = Minor, 1 = Major
+  bool queue_morphine_ = false; // Flag to queue morphine after other voice lines
 
   // Combat Mode saved state
   int saved_health_ = 100;
@@ -853,10 +854,19 @@ public:
 
     // Apply damage if clash_damage_enabled (this one actually controls damage application)
     if (hev_settings::clash_damage_enabled) {
-      DoDamage(damage, true);
-      // Queue effect for Injury voice line (only if not in combat mode)
+      // Queue effect for Injury voice line FIRST (only if not in combat mode)
+      // This ensures injury is announced before armor/health alerts
+      queue_morphine_ = false; // Reset morphine flag
       if (!hev_settings::combat_mode) {
         SaberBase::DoEffect(EFFECT_USER3, 0.0);
+      }
+      // Then apply damage which may queue armor/health alerts
+      DoDamage(damage, true);
+      // Finally, queue morphine if major injury was played
+      if (queue_morphine_) {
+        SOUNDQ->Play(SoundToPlay(&SFX_morphine));
+        timer_cooldown_morphine_.start();
+        queue_morphine_ = false;
       }
     }
     timer_clash_.start();
@@ -1270,9 +1280,9 @@ public:
             if (random(100) < HEV_CLASH_MAJOR_LACERATION_CHANCE && timer_cooldown_major_laceration_.check()) {
               SOUNDQ->Play(SoundToPlay(&SFX_major_laceration));
               timer_cooldown_major_laceration_.start();
+              // Set flag to queue morphine later (after other voice lines)
               if (random(100) < HEV_MORPHINE_CHANCE && timer_cooldown_morphine_.check()) {
-                SOUNDQ->Play(SoundToPlay(&SFX_morphine));
-                timer_cooldown_morphine_.start();
+                queue_morphine_ = true;
               }
             }
           } else { // Minor
@@ -1286,9 +1296,9 @@ public:
             if (random(100) < HEV_CLASH_MAJOR_FRACTURE_CHANCE && timer_cooldown_major_fracture_.check()) {
               SOUNDQ->Play(SoundToPlay(&SFX_major_fracture));
               timer_cooldown_major_fracture_.start();
+              // Set flag to queue morphine later (after other voice lines)
               if (random(100) < HEV_MORPHINE_CHANCE && timer_cooldown_morphine_.check()) {
-                SOUNDQ->Play(SoundToPlay(&SFX_morphine));
-                timer_cooldown_morphine_.start();
+                queue_morphine_ = true;
               }
             }
           } else { // Minor
@@ -1364,7 +1374,7 @@ public:
       // (HEV UI SOUNDS) Death Sound
       case EFFECT_EMPTY:
         if (health_ == 0) {
-          SOUNDQ->clear_pending();
+          SOUNDQ->fadeout(0.1); // Stop all pending and currently playing voice lines
         }
         hybrid_font.PlayCommon(&SFX_death);
         return;
