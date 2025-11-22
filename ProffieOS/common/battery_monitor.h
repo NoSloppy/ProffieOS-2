@@ -4,6 +4,7 @@
 #ifndef NO_BATTERY_MONITOR
 
 #include "analog_read.h"
+#include "saber_base.h"
 
 class BatteryMonitor : Looper, CommandParser, StateMachine {
 public:
@@ -14,8 +15,20 @@ BatteryMonitor() : reader_(batteryLevelPin,
 #endif
    ) {}
   const char* name() override { return "BatteryMonitor"; }
+  
+  // Returns the load-compensated battery voltage
   float battery() const {
+    return last_voltage_compensated_;
+  }
+  
+  // Returns the raw measured voltage (for debugging)
+  float battery_raw() const {
     return last_voltage_;
+  }
+  
+  // Returns the estimated battery internal resistance in ohms
+  float battery_resistance() const {
+    return battery_resistance_;
   }
   void SetLoad(bool on) {
     loaded_ = on;
@@ -46,6 +59,11 @@ BatteryMonitor() : reader_(batteryLevelPin,
 protected:
   void Setup() override {
     last_voltage_ = battery_now();
+    last_voltage_compensated_ = last_voltage_;
+    last_voltage_before_change_ = last_voltage_;
+    last_current_estimate_ = 0.0;
+    battery_resistance_ = 0.1; // Initial estimate: 100 milliohms
+    calibration_count_ = 1; // Allow calibration from first measurement
     SetPinHigh(false);
   }
   void Loop() override {
@@ -68,6 +86,54 @@ protected:
       float mul = expf(logf(0.05) * (now - last_voltage_read_time_) / 1000000.0);
       last_voltage_read_time_ = now;
       last_voltage_ = last_voltage_ * mul + v * (1 - mul);
+      
+      // Skip load compensation if no battery detected (USB power)
+      if (last_voltage_ < 0.5) {
+        last_voltage_compensated_ = last_voltage_;
+        if (IsLow()) {
+          low_count_++;
+        } else {
+          low_count_ = 0;
+        }
+        continue;
+      }
+      
+      // Get current estimate from all saberbases
+      float current_ma = SaberBase::GetTotalCurrent();
+      
+      // Detect large changes in current for resistance calibration
+      float current_change = fabsf(current_ma - last_current_estimate_);
+      if (current_change > 100.0) { // Significant change (>100mA)
+        // Only calibrate if we have valid previous readings and enough time has passed
+        if (calibration_count_ > 0 && (now - last_calibration_time_) > 500000) { // 500ms
+          // Calculate resistance: R = (V_before - V_now) / (I_now - I_before)
+          // Use the stored voltage from before the change
+          // Convert current from mA to A for calculation
+          float voltage_change = last_voltage_before_change_ - last_voltage_;
+          float current_change_a = (current_ma - last_current_estimate_) / 1000.0;
+          
+          float new_resistance = voltage_change / current_change_a;
+          
+          // Sanity check: resistance should be between 10mΩ and 500mΩ
+          if (new_resistance > 0.01 && new_resistance < 0.5) {
+            // Smooth the resistance estimate
+            float r_mul = 0.3; // Weight new measurement at 30%
+            battery_resistance_ = battery_resistance_ * (1 - r_mul) + new_resistance * r_mul;
+            calibration_count_++;
+            last_calibration_time_ = now;
+          }
+        }
+        // Store state for next calibration (use current voltage before next change)
+        last_voltage_before_change_ = last_voltage_;
+      }
+      
+      last_current_estimate_ = current_ma;
+      
+      // Calculate load-compensated voltage
+      // V_ideal = V_measured + I * R_battery
+      // Current in mA, resistance in ohms, so: I(mA) / 1000 * R(ohms)
+      float compensation = (current_ma / 1000.0) * battery_resistance_;
+      last_voltage_compensated_ = last_voltage_ + compensation;
       if (IsLow()) {
         low_count_++;
       } else {
@@ -105,6 +171,19 @@ protected:
 #endif
       return true;
     }
+    if (!strcmp(cmd, "battery_info")) {
+      STDOUT.print("Battery voltage (compensated): ");
+      STDOUT.println(battery());
+      STDOUT.print("Battery voltage (raw): ");
+      STDOUT.println(battery_raw());
+      STDOUT.print("Battery resistance (ohms): ");
+      STDOUT.println(battery_resistance());
+      STDOUT.print("Current estimate (mA): ");
+      STDOUT.println(last_current_estimate_);
+      STDOUT.print("Calibration count: ");
+      STDOUT.println(calibration_count_);
+      return true;
+    }
 #if 0
     if (!strcmp(cmd, "bstate")) {
       STDOUT.print("Next state: ");
@@ -138,9 +217,15 @@ private:
 
   bool loaded_ = false;
   float last_voltage_ = 0.0;
+  float last_voltage_compensated_ = 0.0;
+  float last_voltage_before_change_ = 0.0;
+  float last_current_estimate_ = 0.0;
+  float battery_resistance_ = 0.1; // Internal resistance in ohms (initial estimate)
   uint32_t last_voltage_read_time_ = 0;
+  uint32_t last_calibration_time_ = 0;
   uint32_t last_print_millis_;
   uint32_t low_count_ = 0;
+  uint32_t calibration_count_ = 0;
   AnalogReader reader_;
 };
 

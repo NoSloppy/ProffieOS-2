@@ -1,0 +1,12 @@
+*.o
+*.d
+*.exe
+tests
+test2
+presets.ini
+presets.tmp
+presets.bak
+testconfig.ini
+testconfig.tmp
+build/
+test-*/
