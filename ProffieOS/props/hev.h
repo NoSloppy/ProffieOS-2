@@ -477,7 +477,10 @@ EFFECT(powerarmor_off);
 EFFECT(vitalsigns_on);
 EFFECT(vitalsigns_off);
 EFFECT(safe_day);
-
+// Forward declaration for hev_menu.h
+namespace hev_settings {
+  extern bool in_settings_menu;
+}
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
 
