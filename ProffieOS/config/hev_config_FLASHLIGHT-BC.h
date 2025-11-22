@@ -93,7 +93,7 @@ StylePtr<Layers<
   /* VolumeLevel */
   TransitionEffectL<TrConcat<TrSmoothFade<200>,Layers<Black,AlphaL<Gradient<Blue,Green>,SmoothStep<VolumeLevel,Int<-1>>>>,TrDelay<1000>,TrSmoothFade<500>>,EFFECT_VOLUME_LEVEL>,
   /* Battery Level */
-  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,1200>>,TrDelay<5500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
+  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Mix<Int<20000>,AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black>,1700>>,TrDelay<5500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
 >>(),
 
 StylePtr<Black>(),
@@ -159,7 +159,7 @@ StylePtr<Layers<
   /* VolumeLevel */
   TransitionEffectL<TrConcat<TrSmoothFade<200>,Layers<Black,AlphaL<Gradient<Blue,Green>,SmoothStep<VolumeLevel,Int<-1>>>>,TrDelay<1000>,TrSmoothFade<500>>,EFFECT_VOLUME_LEVEL>,
   /* Battery Level */
-  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,1200>>,TrDelay<5500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
+  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Mix<Int<20000>,AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black>,1700>>,TrDelay<5500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
 >>(),
 "hev"
 },
