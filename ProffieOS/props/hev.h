@@ -503,7 +503,8 @@ namespace hev_settings {
   bool armor_alerts_enabled = true;
   bool clash_damage_enabled = true;
   bool combat_mode = false;  // Real-time toggle: disables voice lines and effects
-  
+  bool in_settings_menu = false;  // True when user is in settings menu
+
   HevSettingsFile saved_settings;
   
   void SaveSettings() {
@@ -852,8 +853,12 @@ public:
 
   // Clashes
   void Clash(bool stab, float strength) override {
-    // Don't process clashes if in Standby Mode, in Volume Menu, dead, during cooldown, or when in settings menu.
-    if (!SaberBase::IsOn() || mode_volume_ || health_ == 0 || (timer_clash_.active_ && !timer_clash_.check())) {
+    // Don't process clashes if in Standby Mode, in Volume Menu, dead, in settings menu, or during clash cooldown.
+    if (!SaberBase::IsOn() ||
+        mode_volume_ ||
+        health_ == 0 ||
+        hev_settings::in_settings_menu ||
+        (timer_clash_.active_ && !timer_clash_.check())) {
       return;
     }
 
@@ -902,9 +907,13 @@ public:
 
   // Random Hazards
   void CheckRandomEvent() {
-    // Skip Hazard check if in Standby Mode, in Volume Menu, dead, during revive cooldown, or in settings menu.
+    // Skip Hazard check if in Standby Mode, in Volume Menu, dead, in settings menu, or during revive cooldown.
     // Note: hazards_enabled only affects audio/visual, not the actual hazard system
-    if (!SaberBase::IsOn() || mode_volume_ || health_ == 0 || !timer_hazard_after_revive_.check()) {
+    if (!SaberBase::IsOn() ||
+        mode_volume_ ||
+        health_ == 0 ||
+        hev_settings::in_settings_menu ||
+        !timer_hazard_after_revive_.check()) {
       return;
     }
 
