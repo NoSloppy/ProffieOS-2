@@ -80,7 +80,8 @@ WS2811_Blade(WS2811PIN* pin,
     Looper(NOLINK),
     poweroff_delay_ms_(poweroff_delay_ms),
     power_(power),
-    pin_(pin) {
+    pin_(pin),
+    colors_(nullptr) {
     }
   const char* name() override { return "WS2811_Blade"; }
 
@@ -145,6 +146,42 @@ WS2811_Blade(WS2811PIN* pin,
   }
   bool is_powered() const override {
     return powered_;
+  }
+
+  // Current estimation for load compensation
+  // Estimates current draw based on LED color values
+  float GetCurrentEstimate() override {
+    if (!powered_ || !colors_) return 0.0;
+    
+    // Sum up R, G, B values across all LEDs
+    uint32_t r_sum = 0, g_sum = 0, b_sum = 0;
+    for (int i = 0; i < pin_->num_leds(); i++) {
+      Color16* pos = colors_ + i;
+      if (colors_ >= color_buffer && colors_ < color_buffer + NELEM(color_buffer) &&
+          pos >= color_buffer + NELEM(color_buffer)) pos -= NELEM(color_buffer);
+      r_sum += pos->r;
+      g_sum += pos->g;
+      b_sum += pos->b;
+    }
+    
+    // Get battery voltage for current-dependent calculations
+    float voltage = battery_monitor.battery_raw();
+    if (voltage < 0.5) voltage = 3.7; // Default if battery not detected
+    
+    // LED current estimation based on voltage
+    // These are approximate curves for typical WS281x LEDs
+    // Current increases as voltage increases
+    // Values normalized to 65535 = full brightness
+    float i_red = (20.0 + voltage * 2.0) / 65535.0;    // ~28mA at 4.0V per LED at full brightness
+    float i_green = (20.0 + voltage * 2.0) / 65535.0;  // ~28mA at 4.0V per LED at full brightness  
+    float i_blue = (18.0 + voltage * 2.0) / 65535.0;   // ~26mA at 4.0V per LED at full brightness
+    float i_standby = 0.5; // ~0.5mA standby per LED
+    
+    // Total current in mA
+    float total_ma = i_red * r_sum + i_green * g_sum + i_blue * b_sum + 
+                     i_standby * pin_->num_leds();
+    
+    return total_ma;
   }
   void set(int led, Color16 c) override {
     Color16* pos = colors_ + led;

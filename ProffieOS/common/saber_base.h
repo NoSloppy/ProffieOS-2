@@ -422,6 +422,21 @@ public:
   virtual bool CheckBlade(EffectLocation location) { return true; }
   static EffectLocation location; // fallback
 
+  // Current estimation API for load-compensated battery monitoring
+  // Returns estimated current draw in milliamps
+  virtual float GetCurrentEstimate() { return 0.0; }
+
+  // Get total current estimate from all saberbases
+  static float GetTotalCurrent() {
+    float total = 0.0;
+    CHECK_LL(SaberBase, saberbases, next_saber_);
+    for (SaberBase *p = saberbases; p; p = p->next_saber_) {
+      total += p->GetCurrentEstimate();
+    }
+    CHECK_LL(SaberBase, saberbases, next_saber_);
+    return total;
+  }
+
 #define SABERFUN(NAME, TYPED_ARGS, ARGS)                        \
 private:                                                        \
   static void Do##NAME##Internal TYPED_ARGS {                   \
