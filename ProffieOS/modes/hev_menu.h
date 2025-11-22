@@ -253,6 +253,24 @@ struct HevSettingsMenu : public MenuEntryMenu<SPEC,
   HevArmorAlertsEntry<SPEC>,
   HevClashDamageEntry<SPEC>
 > {
+  void mode_activate(bool onreturn) override {
+    hev_settings::in_settings_menu = true;
+    MenuEntryMenu<SPEC,
+      HevHazardEntry<SPEC>,
+      HevHealthAlertsEntry<SPEC>,
+      HevArmorAlertsEntry<SPEC>,
+      HevClashDamageEntry<SPEC>>::mode_activate(onreturn);
+  }
+  
+  void mode_deactivate() override {
+    hev_settings::in_settings_menu = false;
+    MenuEntryMenu<SPEC,
+      HevHazardEntry<SPEC>,
+      HevHealthAlertsEntry<SPEC>,
+      HevArmorAlertsEntry<SPEC>,
+      HevClashDamageEntry<SPEC>>::mode_deactivate();
+  }
+  
   void exit() override {
     StopCurrentMenuSounds();
     STDOUT.println("Exiting HEV Settings menu. Have a safe day!");
