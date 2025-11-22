@@ -65,9 +65,27 @@ BatteryMonitor() : reader_(batteryLevelPin,
     }
   }
 protected:
+  // Helper method to apply exponential smoothing with time-based weighting
+  void ApplySmoothing(float& current_value, float new_value, uint32_t& last_time, uint32_t now, bool check_zero = true) {
+    if (check_zero && last_time == 0) {
+      last_time = now;
+      current_value = new_value;
+      return;
+    }
+    float mul = expf(smoothing_log_factor_ * (now - last_time) / 1000000.0);
+    current_value = current_value * mul + new_value * (1 - mul);
+    last_time = now;
+  }
+  
   void Setup() override {
     // Pre-calculate logarithm for smoothing to avoid redundant calculations
-    smoothing_log_factor_ = logf(BATTERY_VOLTAGE_SMOOTHING);
+    // Validate that BATTERY_VOLTAGE_SMOOTHING is in valid range (0, 1]
+    float smoothing = BATTERY_VOLTAGE_SMOOTHING;
+    if (smoothing <= 0.0f || smoothing > 1.0f) {
+      // Use default if invalid
+      smoothing = 0.01f;
+    }
+    smoothing_log_factor_ = logf(smoothing);
     
     last_voltage_ = battery_now();
     last_voltage_compensated_ = last_voltage_;
@@ -94,9 +112,7 @@ protected:
       float v = battery_now();
       uint32_t now = micros();
       // float mul = powf(BATTERY_VOLTAGE_SMOOTHING, (now - last_voltage_read_time_) / 1000000.0);
-      float mul = expf(smoothing_log_factor_ * (now - last_voltage_read_time_) / 1000000.0);
-      last_voltage_read_time_ = now;
-      last_voltage_ = last_voltage_ * mul + v * (1 - mul);
+      ApplySmoothing(last_voltage_, v, last_voltage_read_time_, now, false);
       
       // Skip load compensation if no battery detected (USB power)
       if (last_voltage_ < 0.5) {
@@ -148,14 +164,7 @@ protected:
       
       // Apply additional smoothing to compensated voltage for stability
       // Use a slower smoothing for the final output to reduce visible fluctuation
-      if (last_compensated_update_time_ == 0) {
-        last_compensated_update_time_ = now;
-        last_voltage_compensated_ = new_compensated;
-      } else {
-        float comp_mul = expf(smoothing_log_factor_ * (now - last_compensated_update_time_) / 1000000.0);
-        last_voltage_compensated_ = last_voltage_compensated_ * comp_mul + new_compensated * (1 - comp_mul);
-        last_compensated_update_time_ = now;
-      }
+      ApplySmoothing(last_voltage_compensated_, new_compensated, last_compensated_update_time_, now, true);
       
       if (IsLow()) {
         low_count_++;
