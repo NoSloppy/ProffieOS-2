@@ -66,6 +66,9 @@ BatteryMonitor() : reader_(batteryLevelPin,
   }
 protected:
   void Setup() override {
+    // Pre-calculate logarithm for smoothing to avoid redundant calculations
+    smoothing_log_factor_ = logf(BATTERY_VOLTAGE_SMOOTHING);
+    
     last_voltage_ = battery_now();
     last_voltage_compensated_ = last_voltage_;
     last_voltage_before_change_ = last_voltage_;
@@ -91,7 +94,7 @@ protected:
       float v = battery_now();
       uint32_t now = micros();
       // float mul = powf(BATTERY_VOLTAGE_SMOOTHING, (now - last_voltage_read_time_) / 1000000.0);
-      float mul = expf(logf(BATTERY_VOLTAGE_SMOOTHING) * (now - last_voltage_read_time_) / 1000000.0);
+      float mul = expf(smoothing_log_factor_ * (now - last_voltage_read_time_) / 1000000.0);
       last_voltage_read_time_ = now;
       last_voltage_ = last_voltage_ * mul + v * (1 - mul);
       
@@ -149,7 +152,7 @@ protected:
         last_compensated_update_time_ = now;
         last_voltage_compensated_ = new_compensated;
       } else {
-        float comp_mul = expf(logf(BATTERY_VOLTAGE_SMOOTHING) * (now - last_compensated_update_time_) / 1000000.0);
+        float comp_mul = expf(smoothing_log_factor_ * (now - last_compensated_update_time_) / 1000000.0);
         last_voltage_compensated_ = last_voltage_compensated_ * comp_mul + new_compensated * (1 - comp_mul);
         last_compensated_update_time_ = now;
       }
@@ -241,6 +244,7 @@ private:
   float last_voltage_before_change_ = 0.0;
   float last_current_estimate_ = 0.0;
   float battery_resistance_ = 0.1; // Internal resistance in ohms (initial estimate)
+  float smoothing_log_factor_ = 0.0; // Pre-calculated logf(BATTERY_VOLTAGE_SMOOTHING)
   uint32_t last_voltage_read_time_ = 0;
   uint32_t last_compensated_update_time_ = 0;
   uint32_t last_calibration_time_ = 0;
