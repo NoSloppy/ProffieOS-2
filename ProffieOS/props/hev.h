@@ -1,5 +1,3 @@
-// v5
-
 //=====================================================================//
 //                        H A L F - L I F E                            //
 //                      ─────────────────────                          //
@@ -713,8 +711,7 @@ public:
       SaberBase::DoNewFont();
     }
     TRACE(PROP, "end");
-    
-    // Also handle the boot case (when OFF, turn on)
+
     if (!SaberBase::IsOn()) {
       On();
     }
@@ -722,7 +719,6 @@ public:
     // Mark that we need to restore volume later (will be set in Loop once sound starts)
     restore_volume_time_ = 1;
   }
-
 
   // Calculate Physical and Hazard Damage
   void DoDamage(int damage, bool quiet = false, DamageType type = DAMAGE_PHYSICAL) {
@@ -773,7 +769,6 @@ public:
     if (armor_ < 0) armor_ = 0;
 
     // (HEV VOICE LINE) Logic for Armor Compromised
-    // if (previous_armor > 0 && armor_ == 0 && health_ == 0) {
     if (previous_armor > 0 && armor_ == 0 && hev_settings::armor_alerts_enabled && !hev_settings::combat_mode) {
       SaberBase::DoEffect(EFFECT_USER2, 0.0);
       PVLOG_NORMAL << "Armor Compromised!\n";
@@ -848,8 +843,6 @@ public:
       }
     } else {
       // If Armor is 0, immediately plays a warning sound.
-      // SFX_armor.SelectFloat(armor_ / 0.0);
-      // hybrid_font.PlayCommon(&SFX_armor);
       hybrid_font.PlayCommon(&SFX_armor_zero);
     }
   }
@@ -1487,7 +1480,7 @@ private:
   uint32_t restore_volume_time_ = 0;
 };
 
-// Implementation of HEV menu BoolSetting methods
+// HEV menu BoolSetting methods
 namespace mode {
 
 template<class SPEC>
