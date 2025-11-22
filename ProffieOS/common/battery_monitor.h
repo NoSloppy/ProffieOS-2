@@ -59,12 +59,12 @@ protected:
     float initial_voltage = battery_now();
     averaged_voltage_ = initial_voltage;
     sample_index_ = 0;
-    sample_count_ = 0;
-    samples_sum_ = 0.0;
     // Initialize all samples to current voltage for accurate averaging from start
     for (int i = 0; i < BATTERY_SAMPLE_SIZE; i++) {
       samples_[i] = initial_voltage;
     }
+    // Since buffer is pre-filled, initialize sum to match
+    samples_sum_ = initial_voltage * BATTERY_SAMPLE_SIZE;
     SetPinHigh(false);
   }
   void Loop() override {
@@ -87,22 +87,15 @@ protected:
       uint32_t now = micros();
       last_voltage_read_time_ = now;
       
-      // Update running sum by removing old value and adding new value
-      if (sample_count_ < BATTERY_SAMPLE_SIZE) {
-        // Buffer not yet full, just add new sample
-        samples_sum_ += v;
-        sample_count_++;
-      } else {
-        // Buffer full, replace oldest sample
-        samples_sum_ = samples_sum_ - samples_[sample_index_] + v;
-      }
+      // Update running sum by replacing old value with new value
+      samples_sum_ = samples_sum_ - samples_[sample_index_] + v;
       
       // Store the new sample in our circular buffer
       samples_[sample_index_] = v;
       sample_index_ = (sample_index_ + 1) % BATTERY_SAMPLE_SIZE;
       
-      // Calculate average using running sum
-      averaged_voltage_ = samples_sum_ / sample_count_;
+      // Calculate average using running sum (buffer always full)
+      averaged_voltage_ = samples_sum_ / BATTERY_SAMPLE_SIZE;
       
       if (IsLow()) {
         low_count_++;
@@ -177,7 +170,6 @@ private:
   float samples_[BATTERY_SAMPLE_SIZE];
   float samples_sum_ = 0.0;  // Running sum of all samples
   int sample_index_ = 0;  // Current position in circular buffer
-  int sample_count_ = 0;  // Number of samples collected (capped at BATTERY_SAMPLE_SIZE)
   uint32_t last_voltage_read_time_ = 0;
   uint32_t last_print_millis_;
   uint32_t low_count_ = 0;
