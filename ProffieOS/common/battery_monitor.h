@@ -6,6 +6,14 @@
 #include "analog_read.h"
 #include "saber_base.h"
 
+// Battery voltage smoothing time constant (0.0-1.0)
+// Lower values = more stable readings but slower response
+// Higher values = faster response but more fluctuation
+// Default 0.01 gives ~3 second settling time (95% of final value)
+#ifndef BATTERY_VOLTAGE_SMOOTHING
+#define BATTERY_VOLTAGE_SMOOTHING 0.01
+#endif
+
 class BatteryMonitor : Looper, CommandParser, StateMachine {
 public:
 BatteryMonitor() : reader_(batteryLevelPin,
@@ -82,8 +90,8 @@ protected:
       while (!reader_.Done()) YIELD();
       float v = battery_now();
       uint32_t now = micros();
-      // float mul = powf(0.05, (now - last_voltage_read_time_) / 1000000.0);
-      float mul = expf(logf(0.05) * (now - last_voltage_read_time_) / 1000000.0);
+      // float mul = powf(BATTERY_VOLTAGE_SMOOTHING, (now - last_voltage_read_time_) / 1000000.0);
+      float mul = expf(logf(BATTERY_VOLTAGE_SMOOTHING) * (now - last_voltage_read_time_) / 1000000.0);
       last_voltage_read_time_ = now;
       last_voltage_ = last_voltage_ * mul + v * (1 - mul);
       
@@ -133,7 +141,19 @@ protected:
       // V_ideal = V_measured + I * R_battery
       // Current in mA, resistance in ohms, so: I(mA) / 1000 * R(ohms)
       float compensation = (current_ma / 1000.0) * battery_resistance_;
-      last_voltage_compensated_ = last_voltage_ + compensation;
+      float new_compensated = last_voltage_ + compensation;
+      
+      // Apply additional smoothing to compensated voltage for stability
+      // Use a slower smoothing for the final output to reduce visible fluctuation
+      if (last_compensated_update_time_ == 0) {
+        last_compensated_update_time_ = now;
+        last_voltage_compensated_ = new_compensated;
+      } else {
+        float comp_mul = expf(logf(BATTERY_VOLTAGE_SMOOTHING) * (now - last_compensated_update_time_) / 1000000.0);
+        last_voltage_compensated_ = last_voltage_compensated_ * comp_mul + new_compensated * (1 - comp_mul);
+        last_compensated_update_time_ = now;
+      }
+      
       if (IsLow()) {
         low_count_++;
       } else {
@@ -222,6 +242,7 @@ private:
   float last_current_estimate_ = 0.0;
   float battery_resistance_ = 0.1; // Internal resistance in ohms (initial estimate)
   uint32_t last_voltage_read_time_ = 0;
+  uint32_t last_compensated_update_time_ = 0;
   uint32_t last_calibration_time_ = 0;
   uint32_t last_print_millis_;
   uint32_t low_count_ = 0;
