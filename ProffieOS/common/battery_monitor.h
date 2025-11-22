@@ -10,8 +10,12 @@
 // Lower values = more stable readings but slower response
 // Higher values = faster response but more fluctuation
 // Default 0.01 gives ~3 second settling time (95% of final value)
+#ifndef BATTERY_VOLTAGE_SMOOTHING_DEFAULT
+#define BATTERY_VOLTAGE_SMOOTHING_DEFAULT 0.01f
+#endif
+
 #ifndef BATTERY_VOLTAGE_SMOOTHING
-#define BATTERY_VOLTAGE_SMOOTHING 0.01
+#define BATTERY_VOLTAGE_SMOOTHING BATTERY_VOLTAGE_SMOOTHING_DEFAULT
 #endif
 
 class BatteryMonitor : Looper, CommandParser, StateMachine {
@@ -66,6 +70,13 @@ BatteryMonitor() : reader_(batteryLevelPin,
   }
 protected:
   // Helper method to apply exponential smoothing with time-based weighting
+  // Parameters:
+  //   current_value: The smoothed value to update (modified in-place)
+  //   new_value: The new raw measurement to incorporate
+  //   last_time: Timestamp of last update (modified in-place, in microseconds)
+  //   now: Current timestamp (in microseconds)
+  //   check_zero: If true, initializes on first call (when last_time == 0)
+  //               If false, assumes last_time is already initialized
   void ApplySmoothing(float& current_value, float new_value, uint32_t& last_time, uint32_t now, bool check_zero = true) {
     if (check_zero && last_time == 0) {
       last_time = now;
@@ -83,7 +94,7 @@ protected:
     float smoothing = BATTERY_VOLTAGE_SMOOTHING;
     if (smoothing <= 0.0f || smoothing > 1.0f) {
       // Use default if invalid
-      smoothing = 0.01f;
+      smoothing = BATTERY_VOLTAGE_SMOOTHING_DEFAULT;
     }
     smoothing_log_factor_ = logf(smoothing);
     
@@ -111,7 +122,6 @@ protected:
       while (!reader_.Done()) YIELD();
       float v = battery_now();
       uint32_t now = micros();
-      // float mul = powf(BATTERY_VOLTAGE_SMOOTHING, (now - last_voltage_read_time_) / 1000000.0);
       ApplySmoothing(last_voltage_, v, last_voltage_read_time_, now, false);
       
       // Skip load compensation if no battery detected (USB power)
