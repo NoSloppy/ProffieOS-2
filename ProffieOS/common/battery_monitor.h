@@ -11,6 +11,9 @@
 // Maximum number of samples to store (one per second for BATTERY_AVERAGING_SECONDS)
 #define BATTERY_SAMPLE_SIZE BATTERY_AVERAGING_SECONDS
 
+// Sample interval in microseconds (1 second)
+#define BATTERY_SAMPLE_INTERVAL_MICROSECONDS 1000000
+
 class BatteryMonitor : Looper, CommandParser, StateMachine {
 public:
 BatteryMonitor() : reader_(batteryLevelPin,
@@ -53,12 +56,13 @@ BatteryMonitor() : reader_(batteryLevelPin,
   }
 protected:
   void Setup() override {
-    averaged_voltage_ = battery_now();
+    float initial_voltage = battery_now();
+    averaged_voltage_ = initial_voltage;
     sample_index_ = 0;
     sample_count_ = 0;
-    // Initialize all samples to prevent undefined behavior
+    // Initialize all samples to current voltage for accurate averaging from start
     for (int i = 0; i < BATTERY_SAMPLE_SIZE; i++) {
-      samples_[i] = 0.0;
+      samples_[i] = initial_voltage;
     }
     SetPinHigh(false);
   }
@@ -73,8 +77,8 @@ protected:
     STATE_MACHINE_BEGIN();
     last_voltage_read_time_ = micros();
     while (true) {
-      // Wait 1 second between samples for averaging
-      while (micros() - last_voltage_read_time_ < 1000000) YIELD();
+      // Wait for sample interval (1 second between samples)
+      while (micros() - last_voltage_read_time_ < BATTERY_SAMPLE_INTERVAL_MICROSECONDS) YIELD();
       while (!reader_.Start()) YIELD();
       while (!reader_.Done()) YIELD();
       
