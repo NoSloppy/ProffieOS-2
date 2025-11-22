@@ -1173,8 +1173,6 @@ public:
 // Activate Standby Mode (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_ON):
         if (mode_volume_) return false;
-        SaberBase::DoBlast();
-
         if (current_hazard_) {
           current_hazard_ = HAZARD_NONE;
           SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
