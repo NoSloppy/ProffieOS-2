@@ -6,18 +6,6 @@
 #include "analog_read.h"
 #include "saber_base.h"
 
-// Battery voltage smoothing time constant (0.0-1.0)
-// Lower values = more stable readings but slower response
-// Higher values = faster response but more fluctuation
-// Default 0.01 gives ~3 second settling time (95% of final value)
-#ifndef BATTERY_VOLTAGE_SMOOTHING_DEFAULT
-#define BATTERY_VOLTAGE_SMOOTHING_DEFAULT 0.01f
-#endif
-
-#ifndef BATTERY_VOLTAGE_SMOOTHING
-#define BATTERY_VOLTAGE_SMOOTHING BATTERY_VOLTAGE_SMOOTHING_DEFAULT
-#endif
-
 // Microseconds per second for time-based calculations
 #define MICROSECONDS_PER_SECOND 1000000.0f
 
@@ -93,13 +81,8 @@ protected:
   
   void Setup() override {
     // Pre-calculate logarithm for smoothing to avoid redundant calculations
-    // Validate that BATTERY_VOLTAGE_SMOOTHING is in valid range (0, 1]
-    float smoothing = BATTERY_VOLTAGE_SMOOTHING;
-    if (smoothing <= 0.0f || smoothing > 1.0f) {
-      // Use default if invalid
-      smoothing = BATTERY_VOLTAGE_SMOOTHING_DEFAULT;
-    }
-    smoothing_log_factor_ = logf(smoothing);
+    // Smoothing constant: 0.005 gives ~6 second settling time (95% of final value)
+    smoothing_log_factor_ = logf(0.005f);
     
     last_voltage_ = battery_now();
     last_voltage_compensated_ = last_voltage_;
