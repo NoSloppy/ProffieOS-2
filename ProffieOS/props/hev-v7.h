@@ -1181,11 +1181,13 @@ public:
 
       // Start/stop track (Double-click POW)
       case EVENTID(BUTTON_POWER, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
+        if (mode_volume_) return false;
         StartOrStopTrack();
         return true;
     
       // Armor Readout (Double-click AUX)
       case EVENTID(BUTTON_AUX, EVENT_SECOND_SAVED_CLICK_SHORT, MODE_ANY_BUTTON | MODE_ON):
+        if (mode_volume_) return false;
         SaberBase::DoEffect(EFFECT_USER8, 0.0);
         armor_readout();
         return true;

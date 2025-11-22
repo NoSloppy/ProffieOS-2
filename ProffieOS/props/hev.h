@@ -476,6 +476,7 @@ EFFECT(powerarmor_on);
 EFFECT(powerarmor_off);
 EFFECT(vitalsigns_on);
 EFFECT(vitalsigns_off);
+EFFECT(safe_day);
 
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
@@ -529,6 +530,7 @@ namespace hev_settings {
 
 // HEV VOICE LINES
 EFFECT(armor);
+EFFECT(armor_hundred);
 EFFECT(health);
 EFFECT(armor_compromised);
 EFFECT(hazard);
@@ -664,10 +666,6 @@ public:
   int armor_ = 100;
   int injury_ = 0; // 0 = Lacerations, 1 = Fractures
   int impact_ = 0; // 0 = Minor, 1 = Major
-
-  // Combat Mode saved state
-  int saved_health_ = 100;
-  int saved_armor_ = 100;
 
   enum DamageType {
     DAMAGE_PHYSICAL,
@@ -835,15 +833,15 @@ public:
     int armor_to_variation = round((armor_ * 32765.0) / 100.0);
     SaberBase::SetVariation(armor_to_variation);
 
-    // Play random "fuzz" sound only if armor is above 0.
     if (armor_ > 0) {
       SOUNDQ->Play(&SFX_fuzz);
-
-      // Play Armor Readout
-      // SFX_armor.SelectFloat(armor_ / 100.0);
-      SOUNDQ->Play(&SFX_armor);
-      sound_library_.SayNumber(armor_, SAY_WHOLE);
-      sound_library_.SayPercent();
+      if (armor_ >= 100) {
+        SOUNDQ->Play(&SFX_armor_hundred);
+      } else {
+        SOUNDQ->Play(&SFX_armor);
+        sound_library_.SayNumber(armor_, SAY_WHOLE);
+        sound_library_.SayPercent();
+      }
     } else {
       // If Armor is 0, immediately plays a warning sound.
       // SFX_armor.SelectFloat(armor_ / 0.0);
@@ -854,7 +852,7 @@ public:
 
   // Clashes
   void Clash(bool stab, float strength) override {
-    // Don't process clashes if OFF, dead, during cooldown, or in Volume Menu
+    // Don't process clashes if in Standby Mode, in Volume Menu, dead, during cooldown, or when in settings menu.
     if (!SaberBase::IsOn() || mode_volume_ || health_ == 0 || (timer_clash_.active_ && !timer_clash_.check())) {
       return;
     }
@@ -904,7 +902,7 @@ public:
 
   // Random Hazards
   void CheckRandomEvent() {
-    // Skip Hazard check if OFF, dead, during revive cooldown, or in Volume Menu
+    // Skip Hazard check if in Standby Mode, in Volume Menu, dead, during revive cooldown, or in settings menu.
     // Note: hazards_enabled only affects audio/visual, not the actual hazard system
     if (!SaberBase::IsOn() || mode_volume_ || health_ == 0 || !timer_hazard_after_revive_.check()) {
       return;
@@ -1163,10 +1161,8 @@ public:
 // Activate Standby Mode (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_ON):
         if (mode_volume_) return false;
-        if (flashlight_on_) {
-          SaberBase::DoBlast();
-          flashlight_on_ = false;
-        }
+        SaberBase::DoBlast();
+
         if (current_hazard_) {
           current_hazard_ = HAZARD_NONE;
           SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
@@ -1181,6 +1177,8 @@ public:
         health_ = 100;
         armor_ = 100;
 #endif
+        timer_random_event_.reset();
+        timer_hazard_surge_.reset();
         SaberBase::DoEffect(EFFECT_USER7, 0.0);  // Power On Pulse
         On();
         return true;
@@ -1204,10 +1202,10 @@ public:
 // Flashlight ON/OFF (Short-click POW)
 // Volume Down
       case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_ON):
+      case EVENTID(BUTTON_POWER, EVENT_FIRST_SAVED_CLICK_SHORT, MODE_OFF):
         if (!mode_volume_) {
-          flashlight_on_ =!flashlight_on_;
           SaberBase::DoBlast();
-        }else {
+        } else {
           VolumeDown();
         }
         return true;
@@ -1280,11 +1278,13 @@ public:
 
 // Enter/Exit Volume Menu (Triple-click POW)
       case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
+      case EVENTID(BUTTON_POWER, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_OFF):
         VolumeMenu();
         return true;
 
 // Enter HEV Settings Menu (4x click POW or AUX)
       case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_ON):
+      case EVENTID(BUTTON_POWER, EVENT_FOURTH_SAVED_CLICK_SHORT, MODE_OFF):
         if (mode_volume_) return false;
         if (current_mode == this) {
           pushMode<MKSPEC<mode::HevMenuSpec>::HevSettingsMenu>();
@@ -1294,11 +1294,13 @@ public:
 
 // Spoken Battery Level in volts
       case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_ON):
+      case EVENTID(BUTTON_AUX, EVENT_THIRD_SAVED_CLICK_SHORT, MODE_OFF):
         DoSpokenBatteryLevel(false);
         return true;
 
 // Spoken Battery Level in percentage
       case EVENTID(BUTTON_AUX, EVENT_THIRD_HELD_MEDIUM, MODE_ON):
+      case EVENTID(BUTTON_AUX, EVENT_THIRD_HELD_MEDIUM, MODE_OFF):
         DoSpokenBatteryLevel(true);
         return true;
 
@@ -1309,18 +1311,10 @@ public:
         hev_settings::combat_mode = !hev_settings::combat_mode;
         if (hev_settings::combat_mode) {
           hybrid_font.PlayPolyphonic(&SFX_wpn_hudon);
-          // Entering Combat Mode - save current state
-          saved_health_ = health_;
-          saved_armor_ = armor_;
           PVLOG_NORMAL << "Combat Mode: ENABLED (voice/effects disabled)\n";
-          PVLOG_NORMAL << "  Saved state - Health: " << saved_health_ << ", Armor: " << saved_armor_ << "\n";
         } else {
           hybrid_font.PlayPolyphonic(&SFX_wpn_hudoff);
-          // Exiting Combat Mode - restore saved state
-          health_ = saved_health_;
-          armor_ = saved_armor_;
           PVLOG_NORMAL << "Combat Mode: DISABLED (voice/effects enabled)\n";
-          PVLOG_NORMAL << "  Restored state - Health: " << health_ << ", Armor: " << armor_ << "\n";
         }
         return true;
 
@@ -1479,9 +1473,9 @@ public:
 
 private:
   bool mode_volume_ = false;
-  bool flashlight_on_ = false;
   int saved_out_volume_ = -1;  // suppressed out.wav during boot
   uint32_t restore_volume_time_ = 0;
+  bool settings_menu_active_ = false;
 };
 
 // Implementation of HEV menu BoolSetting methods

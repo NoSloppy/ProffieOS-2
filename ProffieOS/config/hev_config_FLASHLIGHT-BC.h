@@ -30,14 +30,9 @@ const unsigned int maxLedsPerStrip = 144;
 
 Preset armor[] = {
 
-{ "hev;ProffieOS_V2_Voicepack_GladOS/common", "HEVcommon/tracks/hl1_ost/Valve_Theme-Extended.wav",
+{ "hev", "tracks/hl1_ost/Valve_Theme-Extended.wav",
 // Left front (inner LED =1)
 StylePtr<Layers<
-  // /* Flashlight */
-  // EffectSequence<EFFECT_BLAST,Mix<Int<16384>,Moccasin,Black>,Black>,
-  // /* Flashlight Turn On */
-  // TransitionEffectL<TrConcat<TrInstant,EffectSequence<EFFECT_BLAST,White,Black>,TrDelay<800>,TrSmoothFade<1200>>,EFFECT_BLAST>,
-
   /* Flashlight */
   EffectSequence<EFFECT_BLAST,Black,Mix<Int<16384>,Moccasin,Black>>,
   /* Flashlight Turn On */
@@ -93,9 +88,9 @@ StylePtr<Layers<
     Black,AlphaL<Orange,LinearSectionF<Int<5400>,Int<10900>>>>,TrDelay<50>,Black,TrDelay<100>,White,TrFade<500>,Orange,TrFade<500>>,TrInstant,SaberBase::LOCKUP_LIGHTNING_BLOCK>,
   TransitionEffectL<TrConcat<TrInstant,Strobe<Black,Orange,15,20>,TrDelay<200>,DeepSkyBlue,TrFade<500>,Black,TrInstant>,EFFECT_LB_END>,
   /* VolumeLevel */
-  TransitionEffectL<TrConcat<TrSmoothFade<200>,AlphaL<Gradient<Blue,Green>,SmoothStep<VolumeLevel,Int<-1>>>,TrDelay<1000>,TrSmoothFade<500>>,EFFECT_VOLUME_LEVEL>,
+  TransitionEffectL<TrConcat<TrSmoothFade<200>,Layers<Black,AlphaL<Gradient<Blue,Green>,SmoothStep<VolumeLevel,Int<-1>>>>,TrDelay<1000>,TrSmoothFade<500>>,EFFECT_VOLUME_LEVEL>,
   /* Battery Level */
-  TransitionEffectL<TrConcat<TrSmoothFade<500>,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,800>,TrDelay<2500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
+  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,800>>,TrDelay<2500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
 >>(),
 StylePtr<Black>(),
 
