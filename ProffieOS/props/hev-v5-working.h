@@ -866,7 +866,6 @@ public:
       if (queue_morphine_) {
         SOUNDQ->Play(SoundToPlay(&SFX_morphine));
         timer_cooldown_morphine_.start();
-        queue_morphine_ = false;
       }
     }
     timer_clash_.start();
