@@ -5,6 +5,9 @@
 
 #include "analog_read.h"
 
+// Forward declaration to avoid circular dependency
+class SaberBase;
+
 class BatteryMonitor : Looper, CommandParser, StateMachine {
 public:
 BatteryMonitor() : reader_(batteryLevelPin,
