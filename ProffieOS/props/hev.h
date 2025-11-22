@@ -1484,7 +1484,6 @@ private:
   bool mode_volume_ = false;
   int saved_out_volume_ = -1;  // suppressed out.wav during boot
   uint32_t restore_volume_time_ = 0;
-  bool settings_menu_active_ = false;
 };
 
 // Implementation of HEV menu BoolSetting methods
