@@ -18,6 +18,9 @@
 #define BATTERY_VOLTAGE_SMOOTHING BATTERY_VOLTAGE_SMOOTHING_DEFAULT
 #endif
 
+// Microseconds per second for time-based calculations
+#define MICROSECONDS_PER_SECOND 1000000.0f
+
 class BatteryMonitor : Looper, CommandParser, StateMachine {
 public:
 BatteryMonitor() : reader_(batteryLevelPin,
@@ -83,7 +86,7 @@ protected:
       current_value = new_value;
       return;
     }
-    float mul = expf(smoothing_log_factor_ * (now - last_time) / 1000000.0);
+    float mul = expf(smoothing_log_factor_ * (now - last_time) / MICROSECONDS_PER_SECOND);
     current_value = current_value * mul + new_value * (1 - mul);
     last_time = now;
   }
@@ -122,7 +125,9 @@ protected:
       while (!reader_.Done()) YIELD();
       float v = battery_now();
       uint32_t now = micros();
-      ApplySmoothing(last_voltage_, v, last_voltage_read_time_, now, false);
+      // Time is pre-initialized, so skip zero check
+      const bool kSkipInitCheck = false;
+      ApplySmoothing(last_voltage_, v, last_voltage_read_time_, now, kSkipInitCheck);
       
       // Skip load compensation if no battery detected (USB power)
       if (last_voltage_ < 0.5) {
@@ -174,7 +179,9 @@ protected:
       
       // Apply additional smoothing to compensated voltage for stability
       // Use a slower smoothing for the final output to reduce visible fluctuation
-      ApplySmoothing(last_voltage_compensated_, new_compensated, last_compensated_update_time_, now, true);
+      // Initialize on first call since compensated voltage starts at zero
+      const bool kEnableInitCheck = true;
+      ApplySmoothing(last_voltage_compensated_, new_compensated, last_compensated_update_time_, now, kEnableInitCheck);
       
       if (IsLow()) {
         low_count_++;
