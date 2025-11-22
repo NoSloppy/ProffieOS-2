@@ -153,6 +153,11 @@ WS2811_Blade(WS2811PIN* pin,
   float GetCurrentEstimate() override {
     if (!powered_ || !colors_) return 0.0;
     
+    // Get battery voltage for current-dependent calculations
+    float voltage = battery_monitor.battery_raw();
+    // If no battery detected (USB power), don't estimate current for compensation
+    if (voltage < 0.5) return 0.0;
+    
     // Sum up R, G, B values across all LEDs
     uint32_t r_sum = 0, g_sum = 0, b_sum = 0;
     for (int i = 0; i < pin_->num_leds(); i++) {
@@ -164,22 +169,25 @@ WS2811_Blade(WS2811PIN* pin,
       b_sum += pos->b;
     }
     
-    // Get battery voltage for current-dependent calculations
-    float voltage = battery_monitor.battery_raw();
-    if (voltage < 0.5) voltage = 3.7; // Default if battery not detected
-    
     // LED current estimation based on voltage
     // These are approximate curves for typical WS281x LEDs
     // Current increases as voltage increases
-    // Values normalized to 65535 = full brightness
-    float i_red = (20.0 + voltage * 2.0) / 65535.0;    // ~28mA at 4.0V per LED at full brightness
-    float i_green = (20.0 + voltage * 2.0) / 65535.0;  // ~28mA at 4.0V per LED at full brightness  
-    float i_blue = (18.0 + voltage * 2.0) / 65535.0;   // ~26mA at 4.0V per LED at full brightness
-    float i_standby = 0.5; // ~0.5mA standby per LED
+    // Base current in mA, voltage factor converts voltage to additional current
+    const float RED_BASE_CURRENT_MA = 20.0;
+    const float GREEN_BASE_CURRENT_MA = 20.0;
+    const float BLUE_BASE_CURRENT_MA = 18.0;
+    const float VOLTAGE_CURRENT_FACTOR = 2.0;  // mA per volt
+    const float LED_BRIGHTNESS_SCALE = 65535.0;  // 16-bit color scale
+    const float LED_STANDBY_CURRENT_MA = 0.5;
+    
+    // Current per full-brightness LED at current voltage
+    float i_red = (RED_BASE_CURRENT_MA + voltage * VOLTAGE_CURRENT_FACTOR) / LED_BRIGHTNESS_SCALE;
+    float i_green = (GREEN_BASE_CURRENT_MA + voltage * VOLTAGE_CURRENT_FACTOR) / LED_BRIGHTNESS_SCALE;
+    float i_blue = (BLUE_BASE_CURRENT_MA + voltage * VOLTAGE_CURRENT_FACTOR) / LED_BRIGHTNESS_SCALE;
     
     // Total current in mA
     float total_ma = i_red * r_sum + i_green * g_sum + i_blue * b_sum + 
-                     i_standby * pin_->num_leds();
+                     LED_STANDBY_CURRENT_MA * pin_->num_leds();
     
     return total_ma;
   }

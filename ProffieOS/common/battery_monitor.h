@@ -4,9 +4,7 @@
 #ifndef NO_BATTERY_MONITOR
 
 #include "analog_read.h"
-
-// Forward declaration to avoid circular dependency
-class SaberBase;
+#include "saber_base.h"
 
 class BatteryMonitor : Looper, CommandParser, StateMachine {
 public:
@@ -62,8 +60,10 @@ protected:
   void Setup() override {
     last_voltage_ = battery_now();
     last_voltage_compensated_ = last_voltage_;
+    last_voltage_before_change_ = last_voltage_;
     last_current_estimate_ = 0.0;
     battery_resistance_ = 0.1; // Initial estimate: 100 milliohms
+    calibration_count_ = 1; // Allow calibration from first measurement
     SetPinHigh(false);
   }
   void Loop() override {
@@ -87,6 +87,17 @@ protected:
       last_voltage_read_time_ = now;
       last_voltage_ = last_voltage_ * mul + v * (1 - mul);
       
+      // Skip load compensation if no battery detected (USB power)
+      if (last_voltage_ < 0.5) {
+        last_voltage_compensated_ = last_voltage_;
+        if (IsLow()) {
+          low_count_++;
+        } else {
+          low_count_ = 0;
+        }
+        continue;
+      }
+      
       // Get current estimate from all saberbases
       float current_ma = SaberBase::GetTotalCurrent();
       
@@ -96,6 +107,7 @@ protected:
         // Only calibrate if we have valid previous readings and enough time has passed
         if (calibration_count_ > 0 && (now - last_calibration_time_) > 500000) { // 500ms
           // Calculate resistance: R = (V_before - V_now) / (I_now - I_before)
+          // Use the stored voltage from before the change
           // Convert current from mA to A for calculation
           float voltage_change = last_voltage_before_change_ - last_voltage_;
           float current_change_a = (current_ma - last_current_estimate_) / 1000.0;
@@ -113,8 +125,9 @@ protected:
             }
           }
         }
-        // Store state for next calibration
+        // Store state for next calibration (use current voltage before next change)
         last_voltage_before_change_ = last_voltage_;
+        last_current_before_change_ = last_current_estimate_;
       }
       
       last_current_estimate_ = current_ma;
@@ -210,6 +223,7 @@ private:
   float last_voltage_compensated_ = 0.0;
   float last_voltage_before_change_ = 0.0;
   float last_current_estimate_ = 0.0;
+  float last_current_before_change_ = 0.0;
   float battery_resistance_ = 0.1; // Internal resistance in ohms (initial estimate)
   uint32_t last_voltage_read_time_ = 0;
   uint32_t last_calibration_time_ = 0;
