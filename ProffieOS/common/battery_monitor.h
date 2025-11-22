@@ -112,22 +112,19 @@ protected:
           float voltage_change = last_voltage_before_change_ - last_voltage_;
           float current_change_a = (current_ma - last_current_estimate_) / 1000.0;
           
-          if (fabsf(current_change_a) > 0.05) { // At least 50mA change
-            float new_resistance = voltage_change / current_change_a;
-            
-            // Sanity check: resistance should be between 10mΩ and 500mΩ
-            if (new_resistance > 0.01 && new_resistance < 0.5) {
-              // Smooth the resistance estimate
-              float r_mul = 0.3; // Weight new measurement at 30%
-              battery_resistance_ = battery_resistance_ * (1 - r_mul) + new_resistance * r_mul;
-              calibration_count_++;
-              last_calibration_time_ = now;
-            }
+          float new_resistance = voltage_change / current_change_a;
+          
+          // Sanity check: resistance should be between 10mΩ and 500mΩ
+          if (new_resistance > 0.01 && new_resistance < 0.5) {
+            // Smooth the resistance estimate
+            float r_mul = 0.3; // Weight new measurement at 30%
+            battery_resistance_ = battery_resistance_ * (1 - r_mul) + new_resistance * r_mul;
+            calibration_count_++;
+            last_calibration_time_ = now;
           }
         }
         // Store state for next calibration (use current voltage before next change)
         last_voltage_before_change_ = last_voltage_;
-        last_current_before_change_ = last_current_estimate_;
       }
       
       last_current_estimate_ = current_ma;
@@ -223,7 +220,6 @@ private:
   float last_voltage_compensated_ = 0.0;
   float last_voltage_before_change_ = 0.0;
   float last_current_estimate_ = 0.0;
-  float last_current_before_change_ = 0.0;
   float battery_resistance_ = 0.1; // Internal resistance in ohms (initial estimate)
   uint32_t last_voltage_read_time_ = 0;
   uint32_t last_calibration_time_ = 0;
