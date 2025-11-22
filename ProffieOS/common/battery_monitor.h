@@ -54,7 +54,12 @@ BatteryMonitor() : reader_(batteryLevelPin,
 protected:
   void Setup() override {
     averaged_voltage_ = battery_now();
+    sample_index_ = 0;
     sample_count_ = 0;
+    // Initialize all samples to prevent undefined behavior
+    for (int i = 0; i < BATTERY_SAMPLE_SIZE; i++) {
+      samples_[i] = 0.0;
+    }
     SetPinHigh(false);
   }
   void Loop() override {
@@ -78,16 +83,20 @@ protected:
       last_voltage_read_time_ = now;
       
       // Store the new sample in our circular buffer
-      samples_[sample_count_ % BATTERY_SAMPLE_SIZE] = v;
-      sample_count_++;
+      samples_[sample_index_] = v;
+      sample_index_ = (sample_index_ + 1) % BATTERY_SAMPLE_SIZE;
       
-      // Calculate the average of all samples (up to BATTERY_SAMPLE_SIZE)
+      // Track how many samples we have (up to BATTERY_SAMPLE_SIZE)
+      if (sample_count_ < BATTERY_SAMPLE_SIZE) {
+        sample_count_++;
+      }
+      
+      // Calculate the average of all samples we have so far
       float sum = 0.0;
-      int count = (sample_count_ < BATTERY_SAMPLE_SIZE) ? sample_count_ : BATTERY_SAMPLE_SIZE;
-      for (int i = 0; i < count; i++) {
+      for (int i = 0; i < sample_count_; i++) {
         sum += samples_[i];
       }
-      averaged_voltage_ = sum / count;
+      averaged_voltage_ = sum / sample_count_;
       
       if (IsLow()) {
         low_count_++;
@@ -160,7 +169,8 @@ private:
   bool loaded_ = false;
   float averaged_voltage_ = 0.0;
   float samples_[BATTERY_SAMPLE_SIZE];
-  uint32_t sample_count_ = 0;
+  int sample_index_ = 0;  // Current position in circular buffer
+  int sample_count_ = 0;  // Number of samples collected (capped at BATTERY_SAMPLE_SIZE)
   uint32_t last_voltage_read_time_ = 0;
   uint32_t last_print_millis_;
   uint32_t low_count_ = 0;
