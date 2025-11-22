@@ -1027,6 +1027,8 @@ public:
     if (health_ == 0) {
       timer_random_event_.reset();
       timer_hazard_surge_.reset();
+      SaberBase::DoEffect(EFFECT_USER4, 0.0);  // Toggle dead animation OFF
+      PVLOG_NORMAL << "** Stopping Death Animation\n";
     }
   }
 
@@ -1487,7 +1489,10 @@ public:
           SOUNDQ->clear_pending();
         }
         hybrid_font.PlayCommon(&SFX_death);
+        SaberBase::DoEffect(EFFECT_USER4, 0.0);  // Toggle dead animation ON
+        PVLOG_NORMAL << "** Starting Death Animation\n";
         return;
+
     }
   }
 

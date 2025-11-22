@@ -12,7 +12,7 @@ const unsigned int maxLedsPerStrip = 144;
 // #define HEV_RANDOM_EVENT_INTERVAL_MS 10000
 // #define HEV_RANDOM_HAZARD_CHANCE 95
 // #define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100  // defaults to 50%
-#define STANDBY_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
+// #define STANDBY_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
 #define MOUNT_SD_SETTING
 #define CONFIG_STARTUP_DELAY 4000
 
@@ -42,9 +42,11 @@ StylePtr<Layers<
   TransitionEffectL<TrConcat<TrInstant,White,TrDelay<800>,TrSmoothFade<1200>>,EFFECT_BOOT>,
   TransitionEffectL<TrConcat<TrInstant,White,TrDelay<800>,TrSmoothFade<1200>>,EFFECT_USER7>,
 
-  /*** Flashlight Primers *** This Blade Style only (a.k.a. control layers) */
+  /*** EffectSequence Primers *** This Blade Style only (a.k.a. control layers) */
   TransitionEffectL<TrDoEffect<TrInstant,EFFECT_BLAST>,EFFECT_NEWFONT>,
   TransitionEffectL<TrDoEffect<TrInstant,EFFECT_BLAST>,EFFECT_BOOT>,
+  TransitionEffectL<TrDoEffect<TrInstant,EFFECT_USER4>,EFFECT_NEWFONT>,
+  TransitionEffectL<TrDoEffect<TrInstant,EFFECT_USER4>,EFFECT_BOOT>,
 
   /* Hazards */
   AlphaL<ColorSelect<AltF,TrFade<300>,AlphaL<Black,Int<0>>,TransitionLoop<Black,TrConcat<TrInstant,AlphaL<ImperialYellow,LayerFunctions<LinearSectionF<Int<5400>,Int<10900>>,LinearSectionF<Int<27400>,Int<10900>>>>,TrDelay<333>,AlphaL<ImperialYellow,LinearSectionF<Int<16384>,Int<10900>>>,TrDelay<333>>>,RandomBlink<3000,Sparkle<Black,Green,3000,900>>,Pulsing<Mix<Int<16384>,Red,Black>,Black,800>,Pulsing<Gradient<Yellow,Black>,Gradient<Black,Black,Yellow>,800>,Pulsing<Gradient<Orange,Orange,Red,Red>,Gradient<Red,Red,Orange>,800>,Pulsing<Mix<Int<16384>,Black,Blue>,Black,800>>,Int<32768>>,
@@ -86,10 +88,12 @@ StylePtr<Layers<
     Black,AlphaL<White,LinearSectionF<Int<5400>,Int<10900>>>>,TrDelay<50>,Layers<
     Black,AlphaL<Orange,LinearSectionF<Int<5400>,Int<10900>>>>,TrDelay<50>,Black,TrDelay<100>,White,TrFade<500>,Orange,TrFade<500>>,TrInstant,SaberBase::LOCKUP_LIGHTNING_BLOCK>,
   TransitionEffectL<TrConcat<TrInstant,Strobe<Black,Orange,15,20>,TrDelay<200>,DeepSkyBlue,TrFade<500>,Black,TrInstant>,EFFECT_LB_END>,
+  /* Dead */
+  EffectSequence<EFFECT_USER4,AlphaL<Black,Int<0>>,ColorSequence<900,Red,Black,Red,Black>>,
   /* VolumeLevel */
   TransitionEffectL<TrConcat<TrSmoothFade<200>,Layers<Black,AlphaL<Gradient<Blue,Green>,SmoothStep<VolumeLevel,Int<-1>>>>,TrDelay<1000>,TrSmoothFade<500>>,EFFECT_VOLUME_LEVEL>,
   /* Battery Level */
-  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,800>>,TrDelay<2500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
+  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,1200>>,TrDelay<5500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
 >>(),
 
 StylePtr<Black>(),
@@ -150,10 +154,12 @@ StylePtr<Layers<
     Black,AlphaL<White,LinearSectionF<Int<5400>,Int<10900>>>>,TrDelay<50>,Layers<
     Black,AlphaL<Orange,LinearSectionF<Int<5400>,Int<10900>>>>,TrDelay<50>,Black,TrDelay<100>,White,TrFade<500>,Orange,TrFade<500>>,TrInstant,SaberBase::LOCKUP_LIGHTNING_BLOCK>,
   TransitionEffectL<TrConcat<TrInstant,Strobe<Black,Orange,15,20>,TrDelay<200>,DeepSkyBlue,TrFade<500>,Black,TrInstant>,EFFECT_LB_END>,
+  /* Dead */
+  EffectSequence<EFFECT_USER4,AlphaL<Black,Int<0>>,ColorSequence<900,Red,Black,Red,Black>>,
   /* VolumeLevel */
   TransitionEffectL<TrConcat<TrSmoothFade<200>,Layers<Black,AlphaL<Gradient<Blue,Green>,SmoothStep<VolumeLevel,Int<-1>>>>,TrDelay<1000>,TrSmoothFade<500>>,EFFECT_VOLUME_LEVEL>,
   /* Battery Level */
-  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,800>>,TrDelay<2500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
+  TransitionEffectL<TrConcat<TrSmoothFade<500>,Layers<Black,Pulsing<AlphaL<Mix<BatteryLevel,Red,Green>,SmoothStep<Scale<BatteryLevel,Int<0>,Int<35000>>,Int<-1>>>,Black,1200>>,TrDelay<5500>,TrSmoothFade<1000>>,EFFECT_BATTERY_LEVEL>
 >>(),
 "hev"
 },
