@@ -902,23 +902,7 @@ public:
         
         // 4. Health Alert (only if health dropped into a new tens range and is below 50)
         if (result.health_alert_triggered) {
-          SaberBase::DoEffect(EFFECT_USER1, 0.0, result.health_range);
-          
-          // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
-          int roll = random(100);
-          if (result.health_range < 3 && roll < 50) {
-            // Add cooldown check for health03 (Seek Medical Attention)
-            if (timer_cooldown_seek_medic_.check()) {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
-              SFX_health.Select(3);
-              SOUNDQ->Play(SoundToPlay(&SFX_health));
-              timer_cooldown_seek_medic_.start();
-            } else {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
-            }
-          } else if (result.health_range < 3) {
-            PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
-          }
+          QueueHealthAlert(result.health_range);
         }
         
         // 5. Morphine is handled inside EFFECT_USER3 if major injury played
@@ -1016,23 +1000,7 @@ public:
         
         // Health Alert (only if health dropped into a new tens range and is below 50)
         if (result.health_alert_triggered) {
-          SaberBase::DoEffect(EFFECT_USER1, 0.0, result.health_range);
-          
-          // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
-          int roll = random(100);
-          if (result.health_range < 3 && roll < 50) {
-            // Add cooldown check for health03 (Seek Medical Attention)
-            if (timer_cooldown_seek_medic_.check()) {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
-              SFX_health.Select(3);
-              SOUNDQ->Play(SoundToPlay(&SFX_health));
-              timer_cooldown_seek_medic_.start();
-            } else {
-              PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
-            }
-          } else if (result.health_range < 3) {
-            PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
-          }
+          QueueHealthAlert(result.health_range);
         }
       }
 
@@ -1535,6 +1503,27 @@ public:
   }
 
 private:
+  // Helper method to queue health alert with optional "Seek Medical Attention" append
+  void QueueHealthAlert(int health_range) {
+    SaberBase::DoEffect(EFFECT_USER1, 0.0, health_range);
+    
+    // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
+    int roll = random(100);
+    if (health_range < 3 && roll < 50) {
+      // Add cooldown check for health03 (Seek Medical Attention)
+      if (timer_cooldown_seek_medic_.check()) {
+        PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
+        SFX_health.Select(3);
+        SOUNDQ->Play(SoundToPlay(&SFX_health));
+        timer_cooldown_seek_medic_.start();
+      } else {
+        PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
+      }
+    } else if (health_range < 3) {
+      PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";
+    }
+  }
+
   bool mode_volume_ = false;
   int saved_out_volume_ = -1;  // suppressed out.wav during boot
   uint32_t restore_volume_time_ = 0;
