@@ -147,11 +147,6 @@ WS2811_Blade(WS2811PIN* pin,
   bool is_powered() const override {
     return powered_;
   }
-
-  // Current estimation for load compensation (placeholder for future use)
-  float GetCurrentEstimate() override {
-    return 0.0;
-  }
   void set(int led, Color16 c) override {
     Color16* pos = colors_ + led;
     if (colors_ >= color_buffer && colors_ < color_buffer + NELEM(color_buffer) &&
