@@ -10,3 +10,4 @@ testconfig.ini
 testconfig.tmp
 build/
 test-*/
+_codeql_detected_source_root
