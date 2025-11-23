@@ -886,10 +886,10 @@ public:
     if (hev_settings::clash_damage_enabled) {
       DamageResult result = DoDamage(damage, true);
       
-      // Queue effects in the correct order (only if not in combat mode)
+      // Queue effects in the correct order (only if not in combat mode and character is alive)
       // Reset morphine flag before queueing effects
       queue_morphine_ = false;
-      if (!hev_settings::combat_mode) {
+      if (!hev_settings::combat_mode && health_ != 0) {
         // 1. Injury Detected
         SaberBase::DoEffect(EFFECT_USER3, 0.0);
         
@@ -998,8 +998,8 @@ public:
       // Apply hazard damage
       DamageResult result = DoDamage(0, false, DAMAGE_HAZARD);
       
-      // For hazard damage, we should trigger armor compromised and health alerts if needed
-      if (!hev_settings::combat_mode) {
+      // For hazard damage, we should trigger armor compromised and health alerts if needed (only if alive)
+      if (!hev_settings::combat_mode && health_ != 0) {
         // Armor Compromised (only if armor just dropped to zero)
         if (result.armor_compromised) {
           SaberBase::DoEffect(EFFECT_USER2, 0.0);
