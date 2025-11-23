@@ -1208,6 +1208,8 @@ public:
           SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
           timer_random_event_.reset();
         }
+        // Stop voice reports
+        SOUNDQ->clear_pending();
         // Stop dead animation if showing.
         if (health_ == 0) SaberBase::DoEffect(EFFECT_USER4, 0.0);
         Off();
@@ -1495,13 +1497,12 @@ public:
       // (HEV UI SOUNDS) Death Sound
       case EFFECT_EMPTY:
         if (health_ == 0) {
-          SOUNDQ->fadeout(0.1); // Stop all pending and currently playing voice lines
+          SOUNDQ->clear_pending();
         }
         hybrid_font.PlayCommon(&SFX_death);
         SaberBase::DoEffect(EFFECT_USER4, 0.0);  // Toggle dead animation ON
         PVLOG_NORMAL << "** Starting Death Animation\n";
         return;
-
     }
   }
 

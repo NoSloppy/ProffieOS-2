@@ -33,8 +33,11 @@ Preset armor[] = {
 { "hev", "tracks/hl1_ost/Valve_Theme-Extended.wav",
 // Left front (inner LED =1)
 StylePtr<Layers<
-  /* Flashlight */
-  EffectSequence<EFFECT_BLAST,Black,Mix<Int<16384>,Moccasin,Black>>,
+  // /* Flashlight */
+  // EffectSequence<EFFECT_BLAST,Black,Mix<Int<16384>,Moccasin,Black>>,
+  /* Flashlight with Damage Flicker */
+  ColorSelect<IncrementWithReset<ThresholdPulseF<IncrementF<EffectPulseF<EFFECT_CLASH>,Int<8000>,Int<10000>,Int<1000>>,Int<7999>>,EffectPulseF<EFFECT_LB_END>,Int<2>>,TrInstant,EffectSequence<EFFECT_BLAST,Black,Mix<Int<16384>,Moccasin,Black>>,BlinkingX<EffectSequence<EFFECT_BLAST,Black,Mix<Int<16384>,Moccasin,Black>>,Black,RandomF,Int<500>>,BlinkingX<EffectSequence<EFFECT_BLAST,Black,Mix<Int<16384>,Moccasin,Black>>,Black,RandomF,Int<20>>>,
+
   /* Flashlight Turn On */
   TransitionEffectL<TrConcat<TrInstant,EffectSequence<EFFECT_BLAST,Black,White>,TrDelay<800>,TrSmoothFade<1200>>,EFFECT_BLAST>,
   /* Flashlight Pulses */
@@ -155,7 +158,7 @@ StylePtr<Layers<
     Black,AlphaL<Orange,LinearSectionF<Int<5400>,Int<10900>>>>,TrDelay<50>,Black,TrDelay<100>,White,TrFade<500>,Orange,TrFade<500>>,TrInstant,SaberBase::LOCKUP_LIGHTNING_BLOCK>,
   TransitionEffectL<TrConcat<TrInstant,Strobe<Black,Orange,15,20>,TrDelay<200>,DeepSkyBlue,TrFade<500>,Black,TrInstant>,EFFECT_LB_END>,
   /* Dead */
-  EffectSequence<EFFECT_USER4,AlphaL<Black,Int<0>>,ColorSequence<900,Red,Black,Red,Black>>,
+  AlphaL<EffectSequence<EFFECT_USER4,AlphaL<Black,Int<0>>,ColorSequence<900,Red,Black,Red,Black>>,Int<32768>>,
   /* VolumeLevel */
   TransitionEffectL<TrConcat<TrSmoothFade<200>,Layers<Black,AlphaL<Gradient<Blue,Green>,SmoothStep<VolumeLevel,Int<-1>>>>,TrDelay<1000>,TrSmoothFade<500>>,EFFECT_VOLUME_LEVEL>,
   /* Battery Level */
