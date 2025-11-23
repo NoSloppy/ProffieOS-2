@@ -12,7 +12,7 @@ const unsigned int maxLedsPerStrip = 144;
 // #define HEV_RANDOM_EVENT_INTERVAL_MS 10000
 // #define HEV_RANDOM_HAZARD_CHANCE 95
 // #define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100  // defaults to 50%
-// #define STANDBY_RESETS_HEALTH_ARMOR  // if not defined, resumes levels where you left off
+// #define STANDBY_NO_RESET_HEALTH_ARMOR  // if defined, resumes levels where you left off
 #define MOUNT_SD_SETTING
 #define CONFIG_STARTUP_DELAY 4000
 

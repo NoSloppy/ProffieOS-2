@@ -788,7 +788,7 @@ public:
     if (!quiet && !hev_settings::combat_mode) SaberBase::DoEffect(EFFECT_STUN, 0.0);
     
     // (HEV UI SOUNDS) Logic for Death Sound
-    if (health_ == 0 && previous_health > 0 && !hev_settings::combat_mode) {
+    if (health_ == 0 && previous_health > 0) {
       result.death_occurred = true;
       SaberBase::DoEffect(EFFECT_EMPTY, 0.0);
       return result;
@@ -1208,12 +1208,14 @@ public:
           SaberBase::DoEffect(EFFECT_ALT_SOUND, 0.0, current_hazard_);
           timer_random_event_.reset();
         }
+        // Stop dead animation if showing.
+        if (health_ == 0) SaberBase::DoEffect(EFFECT_USER4, 0.0);
         Off();
         return true;
 
 // Deactivate Standby Mode (Long-click POW)
       case EVENTID(BUTTON_POWER, EVENT_FIRST_CLICK_LONG, MODE_OFF):
-#ifdef STANDBY_RESETS_HEALTH_ARMOR
+#ifndef STANDBY_NO_RESET_HEALTH_ARMOR
         health_ = 100;
         armor_ = 100;
 #endif
