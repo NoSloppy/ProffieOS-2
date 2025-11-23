@@ -136,3 +136,42 @@ This will:
 - After 8 more clashes (16 total): transition to Green (counter wraps again, pulse generated)
 - Stay at Green (outer counter capped at 2) until EFFECT_LB_END
 - After EFFECT_LB_END: reset to Red
+
+## Adjusting the Number of Clashes Per Color
+
+To change the number of clashes needed for each color transition, you need to adjust **three** related parameters in the `IncrementF` and `ThresholdPulseF`:
+
+**For 8 clashes per color (current):**
+```
+IncrementF<EffectPulseF<EFFECT_CLASH>, Int<8000>, Int<10000>, Int<1000>>
+ThresholdPulseF<..., Int<7999>>
+```
+
+**For 5 clashes per color:**
+```
+IncrementF<EffectPulseF<EFFECT_CLASH>, Int<5000>, Int<6000>, Int<1000>>
+ThresholdPulseF<..., Int<4999>>
+```
+
+**Complete blade style for 5 clashes:**
+```
+ColorSelect<IncrementWithReset<ThresholdPulseF<IncrementF<EffectPulseF<EFFECT_CLASH>,Int<5000>,Int<6000>,Int<1000>>,Int<4999>>,EffectPulseF<EFFECT_LB_END>,Int<2>>,TrInstant,Red,Yellow,Green>
+```
+
+### Parameters Explained:
+- **First Int (threshold)**: `5000` = when to trigger pulse (5 clashes × 1000)
+- **Second Int (max)**: `6000` = wrap point (should be threshold + 1000)
+- **Third Int (increment)**: `1000` = amount to increment per clash (keep at 1000)
+- **ThresholdPulseF Int**: `4999` = slightly below threshold for clean crossing detection
+
+### General Formula:
+For **N** clashes per color:
+- Threshold: `N * 1000`
+- Max: `(N + 1) * 1000`
+- Increment: `1000`
+- ThresholdPulseF: `(N * 1000) - 1`
+
+**Examples:**
+- 3 clashes: `IncrementF<..., Int<3000>, Int<4000>, Int<1000>>` + `ThresholdPulseF<..., Int<2999>>`
+- 5 clashes: `IncrementF<..., Int<5000>, Int<6000>, Int<1000>>` + `ThresholdPulseF<..., Int<4999>>`
+- 10 clashes: `IncrementF<..., Int<10000>, Int<11000>, Int<1000>>` + `ThresholdPulseF<..., Int<9999>>`
