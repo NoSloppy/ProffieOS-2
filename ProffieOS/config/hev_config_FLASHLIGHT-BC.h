@@ -30,7 +30,7 @@ const unsigned int maxLedsPerStrip = 144;
 
 Preset armor[] = {
 
-{ "hev", "tracks/hl1_ost/Valve_Theme-Extended.wav",
+{ "hev", "hev/tracks/hl1_ost/Valve_Theme-Extended1.wav",
 // Left front (inner LED =1)
 StylePtr<Layers<
   // /* Flashlight */
