@@ -394,6 +394,24 @@
 #ifndef HEV_RANDOM_HAZARD_CHANCE
 #define HEV_RANDOM_HAZARD_CHANCE 15
 #endif
+#ifndef HEV_MEDKIT_INTERVAL_MIN_MS
+#define HEV_MEDKIT_INTERVAL_MIN_MS 600000
+#endif
+#ifndef HEV_MEDKIT_INTERVAL_MAX_MS
+#define HEV_MEDKIT_INTERVAL_MAX_MS 1200000
+#endif
+#ifndef HEV_MEDKIT_CHANCE
+#define HEV_MEDKIT_CHANCE 100
+#endif
+#ifndef HEV_BATTERY_INTERVAL_MIN_MS
+#define HEV_BATTERY_INTERVAL_MIN_MS 600000
+#endif
+#ifndef HEV_BATTERY_INTERVAL_MAX_MS
+#define HEV_BATTERY_INTERVAL_MAX_MS 1200000
+#endif
+#ifndef HEV_BATTERY_CHANCE
+#define HEV_BATTERY_CHANCE 100
+#endif
 #ifndef HEV_HAZARD_DELAY_MS
 #define HEV_HAZARD_DELAY_MS 6000
 #endif
@@ -419,49 +437,52 @@
 #define HEV_ARMOR_INCREASE_MS 100
 #endif
 #ifndef HEV_CLASH_MINOR_LACERATION_CHANCE
-#define HEV_CLASH_MINOR_LACERATION_CHANCE 100
+#define HEV_CLASH_MINOR_LACERATION_CHANCE 50
 #endif
 #ifndef HEV_CLASH_MINOR_FRACTURE_CHANCE
-#define HEV_CLASH_MINOR_FRACTURE_CHANCE 100
+#define HEV_CLASH_MINOR_FRACTURE_CHANCE 50
 #endif
 #ifndef HEV_CLASH_MAJOR_LACERATION_CHANCE
-#define HEV_CLASH_MAJOR_LACERATION_CHANCE 100
+#define HEV_CLASH_MAJOR_LACERATION_CHANCE 50
 #endif
 #ifndef HEV_CLASH_MAJOR_FRACTURE_CHANCE
-#define HEV_CLASH_MAJOR_FRACTURE_CHANCE 100
+#define HEV_CLASH_MAJOR_FRACTURE_CHANCE 50
 #endif
-#ifndef HEV_HEALTH_ANNOUNCEMENT_CHANCE
-#define HEV_HEALTH_ANNOUNCEMENT_CHANCE 100
+#ifndef HEV_HEALTH_SEEK_MEDIC_CHANCE
+#define HEV_HEALTH_SEEK_MEDIC_CHANCE 55
+#endif
+#ifndef HEV_HEALTH_CRITICAL_CHANCE
+#define HEV_HEALTH_CRITICAL_CHANCE 65
+#endif
+#ifndef HEV_HEALTH_DEATH_IMMINENT_CHANCE
+#define HEV_HEALTH_DEATH_IMMINENT_CHANCE 90
 #endif
 #ifndef HEV_COOLDOWN_SEEK_MEDIC_MS
-#define HEV_COOLDOWN_SEEK_MEDIC_MS 20000
+#define HEV_COOLDOWN_SEEK_MEDIC_MS 40000
 #endif
 #ifndef HEV_COOLDOWN_HEALTH_CRITICAL_MS
-#define HEV_COOLDOWN_HEALTH_CRITICAL_MS 20000
+#define HEV_COOLDOWN_HEALTH_CRITICAL_MS 40000
 #endif
 #ifndef HEV_COOLDOWN_DEATH_IMMINENT_MS
-#define HEV_COOLDOWN_DEATH_IMMINENT_MS 10000
-#endif
-#ifndef HEV_COOLDOWN_HAZARD_ALERT_MS
-#define HEV_COOLDOWN_HAZARD_ALERT_MS 10000
+#define HEV_COOLDOWN_DEATH_IMMINENT_MS 40000
 #endif
 #ifndef HEV_COOLDOWN_MINOR_LACERATION_MS
-#define HEV_COOLDOWN_MINOR_LACERATION_MS 25000
+#define HEV_COOLDOWN_MINOR_LACERATION_MS 30000
 #endif
 #ifndef HEV_COOLDOWN_MINOR_FRACTURE_MS
-#define HEV_COOLDOWN_MINOR_FRACTURE_MS 25000
+#define HEV_COOLDOWN_MINOR_FRACTURE_MS 30000
 #endif
 #ifndef HEV_COOLDOWN_MAJOR_LACERATION_MS
-#define HEV_COOLDOWN_MAJOR_LACERATION_MS 25000
+#define HEV_COOLDOWN_MAJOR_LACERATION_MS 30000
 #endif
 #ifndef HEV_COOLDOWN_MAJOR_FRACTURE_MS
-#define HEV_COOLDOWN_MAJOR_FRACTURE_MS 25000
+#define HEV_COOLDOWN_MAJOR_FRACTURE_MS 30000
 #endif
 #ifndef HEV_COOLDOWN_MORPHINE_MS
-#define HEV_COOLDOWN_MORPHINE_MS 25000
+#define HEV_COOLDOWN_MORPHINE_MS 30000
 #endif
 #ifndef HEV_MORPHINE_CHANCE
-#define HEV_MORPHINE_CHANCE 100
+#define HEV_MORPHINE_CHANCE 75
 #endif
 
 #include "prop_base.h"
@@ -619,6 +640,8 @@ public:
 
   HEVTimerBase timer_clash_;
   HEVTimerBase timer_random_event_;
+  HEVTimerBase timer_random_medkit_;
+  HEVTimerBase timer_random_battery_;
   HEVTimerBase timer_hazard_delay_;
   HEVTimerBase timer_hazard_surge_;
   HEVTimerBase timer_hazard_after_revive_;
@@ -645,7 +668,6 @@ public:
     timer_cooldown_seek_medic_.configure(HEV_COOLDOWN_SEEK_MEDIC_MS);
     timer_cooldown_health_critical_.configure(HEV_COOLDOWN_HEALTH_CRITICAL_MS);
     timer_cooldown_death_imminent_.configure(HEV_COOLDOWN_DEATH_IMMINENT_MS);
-    timer_cooldown_hazard_alert_.configure(HEV_COOLDOWN_HAZARD_ALERT_MS);
     timer_cooldown_minor_laceration_.configure(HEV_COOLDOWN_MINOR_LACERATION_MS);
     timer_cooldown_minor_fracture_.configure(HEV_COOLDOWN_MINOR_FRACTURE_MS);
     timer_cooldown_major_laceration_.configure(HEV_COOLDOWN_MAJOR_LACERATION_MS);
@@ -734,7 +756,6 @@ public:
     DamageResult result;
     int previous_health = health_;
     int previous_armor = armor_;
-    int tens = health_ / 10;
     int log_hazard_damage = 0;
 
     // Damage type and calculation
@@ -795,22 +816,17 @@ public:
     }
     
     // (HEV VOICE LINE) Logic for Health Alert
-    // Only plays when Health enters a new multiple of 10
-    // and only if alive and health is less than 50. (avoid 50 silent wavs)
-    // Configurable chance to announce and reduce spam.
-    int new_tens = health_ / 10;
-    if (tens != new_tens && health_ != 0 && health_ < 50 && hev_settings::health_alerts_enabled && !hev_settings::combat_mode) {
-      if (random(100) < HEV_HEALTH_ANNOUNCEMENT_CHANCE) {
-        // Map health ranges to announcements
-        result.health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
-        result.health_alert_triggered = true;
-        const char* health_message = (result.health_range == 3) ? "Seek Medical Attention" : 
-                                     (result.health_range == 2) ? "Vital Signs Critical" : 
-                                     "User Death Imminent";
-        
-        PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << result.health_range 
-                     << " (" << health_message << ")\n";
-      }
+    // Plays a certain alert when Health is below 50. (avoid 50 silent wavs)
+    if (health_ != 0 && health_ < 50 && hev_settings::health_alerts_enabled && !hev_settings::combat_mode) {
+      // Map health ranges to announcements
+      result.health_range = (health_ >= 31) ? 3 : (health_ >= 11) ? 2 : 1;
+      result.health_alert_triggered = true;
+      const char* health_message = (result.health_range == 3) ? "Seek Medical Attention" : 
+                                    (result.health_range == 2) ? "Vital Signs Critical" : 
+                                    "User Death Imminent";
+      
+      PVLOG_NORMAL << "Health Alert: health=" << health_ << " range=" << result.health_range 
+                    << " (" << health_message << ")\n";
     }
 
     // Print Damage, Health and Armor
@@ -835,7 +851,9 @@ public:
         SOUNDQ->Play(&SFX_armor_hundred);
       } else {
         SOUNDQ->Play(&SFX_armor);
-        sound_library_.SayNumber(armor_, SAY_WHOLE);
+        // Round armor to nearest 5 for voice line
+        int armor_rounded = (armor_ + 2) / 5 * 5;
+        sound_library_.SayNumber(armor_rounded, SAY_WHOLE);
         sound_library_.SayPercent();
       }
     } else {
@@ -903,7 +921,7 @@ public:
           SaberBase::DoEffect(EFFECT_USER2, 0.0);
         }
         
-        // 4. Health Alert (only if health dropped into a new tens range and is below 50)
+        // 4. Health Alert (only if health dropped below 50)
         if (result.health_alert_triggered) {
           QueueHealthAlert(result.health_range);
         }
@@ -923,9 +941,9 @@ public:
     PropBase::DoMotion(Vec3(0), clear);
   }
 
-  // Random Hazards
+  // Random Hazards, Medkits and Batteries
   void CheckRandomEvent() {
-    // Skip Hazard check if in Standby Mode, in Volume Menu, dead, in settings menu, or during revive cooldown.
+    // Skip check if in Standby Mode, in Volume Menu, dead, in settings menu, or during revive cooldown.
     // Note: hazards_enabled only affects audio/visual, not the actual hazard system
     if (!SaberBase::IsOn() ||
         mode_volume_ ||
@@ -935,12 +953,13 @@ public:
       return;
     }
 
-    // Initialize timer. Stops immediate Hazard at boot
+    // Initialize timer. Stops immediate check at boot
     if (!timer_random_event_.active_) {
       timer_random_event_.start();
       return;
     }
 
+    // --- Hazard ---
     // Check for new Hazard if timer expired and no current Hazard
     if (timer_random_event_.check() && current_hazard_ == HAZARD_NONE) {
             
@@ -955,6 +974,46 @@ public:
       } else {
         PVLOG_NORMAL << "Skipping Hazard.\n";
         timer_random_event_.start();
+      }
+    }
+
+    // --- Medkit ---
+    if (!timer_random_medkit_.active_) {
+      timer_random_medkit_.configure_random(
+      HEV_MEDKIT_INTERVAL_MIN_MS,
+      HEV_MEDKIT_INTERVAL_MAX_MS
+      );
+      timer_random_medkit_.start();
+    }
+    if (random(100) < HEV_MEDKIT_CHANCE) {
+      if (timer_random_medkit_.check()) {
+        PVLOG_NORMAL << "Random Medkit event triggered.\n";
+        ItemMedkit();
+        timer_random_medkit_.configure_random(
+          HEV_MEDKIT_INTERVAL_MIN_MS,
+          HEV_MEDKIT_INTERVAL_MAX_MS
+        );
+        timer_random_medkit_.start();
+      }
+    }
+
+    // --- Battery ---
+    if (!timer_random_battery_.active_) {
+      timer_random_battery_.configure_random(
+      HEV_BATTERY_INTERVAL_MIN_MS,
+      HEV_BATTERY_INTERVAL_MAX_MS
+      );
+      timer_random_battery_.start();
+    }
+    if (random(100) < HEV_BATTERY_CHANCE) {
+      if (timer_random_battery_.check()) {
+        PVLOG_NORMAL << "Random Battery event triggered.\n";
+        ItemBattery();
+        timer_random_battery_.configure_random(
+          HEV_BATTERY_INTERVAL_MIN_MS,
+          HEV_BATTERY_INTERVAL_MAX_MS
+        );
+        timer_random_battery_.start();
       }
     }
   }
@@ -1006,7 +1065,7 @@ public:
           SaberBase::DoEffect(EFFECT_USER2, 0.0);
         }
         
-        // Health Alert (only if health dropped into a new tens range and is below 50)
+        // Health Alert (only if health dropped below 50)
         if (result.health_alert_triggered) {
           QueueHealthAlert(result.health_range);
         }
@@ -1076,6 +1135,34 @@ public:
     PVLOG_NORMAL << "Armor: " << armor_ << "\n";
   }
 
+  // Instantly heal 15 Health (Medkit)
+  void ItemMedkit() {
+    if (health_ < 100) {
+      int heal = std::min(15, 100 - health_);
+      health_ += heal;
+      PVLOG_NORMAL << "Medkit used: +" << heal << " Health (" << health_ << ")\n";
+      hybrid_font.PlayCommon(&SFX_medkit);
+    } else {
+      // Already at max Health
+      hybrid_font.PlayCommon(&SFX_endlock);
+    }
+  }
+
+  // Instantly recharge 15 Armor (Battery)
+  void ItemBattery() {
+    if (armor_ < 100) {
+      int recharge = std::min(15, 100 - armor_);
+      armor_ += recharge;
+      PVLOG_NORMAL << "Battery used: +" << recharge << " Armor (" << armor_ << ")\n";
+      hybrid_font.PlayCommon(&SFX_battery);
+      // Call armor readout to let user know new armor value
+      armor_readout();
+    } else {
+      // Already at max Armor
+      hybrid_font.PlayCommon(&SFX_endlb);
+    }
+  }
+
 // Volume Menu
   void VolumeMenu() {
     // if (combat_mode_) return;
@@ -1097,6 +1184,8 @@ public:
         beeper.Beep(0.1, 2000);
         beeper.Beep(0.1, 1000);
       }
+      timer_hazard_delay_.reset();
+      timer_hazard_surge_.reset();
       PVLOG_NORMAL << "** Exit Volume Menu\n";
     }
   }
@@ -1458,18 +1547,21 @@ public:
           // Files are 1-indexed (health01.wav, health02.wav,health03.wav) but selection is 0-indexed
           int idx = (int)SaberBase::sound_number - 1;
           bool can_play = true;
-          // Check cooldowns for each health alert
+          // Roll then check cooldowns for each health alert
           switch (idx) {
             case 0: // health01
-              if (!timer_cooldown_death_imminent_.check()) can_play = false;
+              if (random(100) >= HEV_HEALTH_DEATH_IMMINENT_CHANCE) can_play = false;
+              else if (!timer_cooldown_death_imminent_.check()) can_play = false;
               else timer_cooldown_death_imminent_.start();
               break;
             case 1: // health02
-              if (!timer_cooldown_health_critical_.check()) can_play = false;
+              if (random(100) >= HEV_HEALTH_CRITICAL_CHANCE) can_play = false;
+              else if (!timer_cooldown_health_critical_.check()) can_play = false;
               else timer_cooldown_health_critical_.start();
               break;
             case 2: // health03
-              if (!timer_cooldown_seek_medic_.check()) can_play = false;
+              if (random(100) >= HEV_HEALTH_SEEK_MEDIC_CHANCE) can_play = false;
+              else if (!timer_cooldown_seek_medic_.check()) can_play = false;
               else timer_cooldown_seek_medic_.start();
               break;
             default:
@@ -1523,17 +1615,16 @@ private:
   void QueueHealthAlert(int health_range) {
     SaberBase::DoEffect(EFFECT_USER1, 0.0, health_range);
     
-    // For health ranges 1 and 2, 50% chance to append "Seek Medical Attention"
-    int roll = random(100);
-    if (health_range < 3 && roll < 50) {
-      // Add cooldown check for health03 (Seek Medical Attention)
+    // For health ranges 1 and 2, chance to append "Seek Medical Attention"
+    if (health_range < 3 && random(100) < HEV_HEALTH_SEEK_MEDIC_CHANCE) {
+      // Check cooldown before playing health03 (Seek Medical Attention)
       if (timer_cooldown_seek_medic_.check()) {
-        PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [PLAYING, cooldown started]\n";
+        PVLOG_NORMAL << "  + Cooldown PASSED. Appending health03 (Seek Medical Attention)\n";
         SFX_health.Select(3);
         SOUNDQ->Play(SoundToPlay(&SFX_health));
         timer_cooldown_seek_medic_.start();
       } else {
-        PVLOG_NORMAL << "  + Appending health03 (Seek Medical Attention) [BLOCKED by cooldown]\n";
+        PVLOG_NORMAL << "  + Cooldown BLOCKED. Appending health03 (Seek Medical Attention)\n";
       }
     } else if (health_range < 3) {
       PVLOG_NORMAL << "  + NO append health03 (failed 50% chance roll)\n";

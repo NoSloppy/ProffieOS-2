@@ -26,7 +26,8 @@
 \*-----------------------------------------------------------------*/
 
 // ************************** GitHub/ProffieOS-2
-                                                                     #define CONFIG_FILE "config/hev_config_FLASHLIGHT-BC.h"
+                                                                     //#define CONFIG_FILE "config/hev_config_FLASHLIGHT-BC.h"
+                                                                     #define CONFIG_FILE "config/BC_Dark_Katana_8.x.h"
 
 // #define CONFIG_FILE "config/default_proffieboard_config.h"
 // #define CONFIG_FILE "config/proffieboard_v1_test_bench_config.h"
