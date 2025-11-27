@@ -499,6 +499,7 @@ EFFECT(safe_day);
 // Forward declaration for hev_menu.h
 namespace hev_settings {
   extern bool in_settings_menu;
+  void ResetHevTimers();
 }
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
@@ -1684,5 +1685,13 @@ void ClashDamageEnabledSetting<SPEC>::set(bool value) {
 }
 
 }  // namespace mode
+
+// Implementation of ResetHevTimers (called when exiting HEV settings menu)
+namespace hev_settings {
+  void ResetHevTimers() {
+    getPtr<PROP_TYPE>()->timer_random_event_.reset();
+    getPtr<PROP_TYPE>()->timer_hazard_surge_.reset();
+  }
+}
 
 #endif
