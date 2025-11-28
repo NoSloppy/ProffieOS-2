@@ -270,8 +270,10 @@ struct HevSettingsMenu : public MenuEntryMenu<SPEC,
   }
   void exit() override {
     StopCurrentMenuSounds();
-    STDOUT.println("Exiting HEV Settings menu. Have a safe day!");
+    PVLOG_NORMAL << "Exiting HEV Settings menu. Have a safe day.\n";
     if (random(100) < 50) hybrid_font.PlayCommon(&SFX_safe_day);
+    hev_settings::ResetHevTimers();
+    PVLOG_NORMAL << "** RESETTING random_event and hazard surge timers.\n";
     getSL<SPEC>()->SayExit();
     popMode();
   }
