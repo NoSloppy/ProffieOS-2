@@ -272,8 +272,7 @@ struct HevSettingsMenu : public MenuEntryMenu<SPEC,
     StopCurrentMenuSounds();
     PVLOG_NORMAL << "Exiting HEV Settings menu. Have a safe day.\n";
     if (random(100) < 50) hybrid_font.PlayCommon(&SFX_safe_day);
-    hev_settings::ResetHevTimers();
-    PVLOG_NORMAL << "** RESETTING random_event and hazard surge timers.\n";
+    hev_settings::reset_timers_requested = true;
     getSL<SPEC>()->SayExit();
     popMode();
   }

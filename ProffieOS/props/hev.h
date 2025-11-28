@@ -499,7 +499,7 @@ EFFECT(safe_day);
 // Forward declaration for hev_menu.h
 namespace hev_settings {
   extern bool in_settings_menu;
-  void ResetHevTimers();
+  extern bool reset_timers_requested;
 }
 #include "../modes/hev_menu.h"
 #include "../common/config_file.h"
@@ -527,6 +527,8 @@ namespace hev_settings {
   bool clash_damage_enabled = true;
   bool combat_mode = false;  // Real-time toggle: disables voice lines and effects
   bool in_settings_menu = false;  // True when user is in settings menu
+  bool reset_timers_requested = false;  // Timer reset from mode menu
+
 
   HevSettingsFile saved_settings;
   
@@ -1259,6 +1261,13 @@ public:
 
   // Main Loop
   void Loop() override {
+    // Timer reset from HEV settings menu
+    if (hev_settings::reset_timers_requested) {
+      timer_hazard_delay_.reset();
+      timer_hazard_surge_.reset();
+      hev_settings::reset_timers_requested = false;
+      PVLOG_NORMAL << "** Resetting hazard_delay and hazard_surge timers\n";
+    }
     CheckRandomEvent();
     HazardDecrease();
     IncreaseHealth();
