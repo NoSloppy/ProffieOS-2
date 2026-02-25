@@ -3,6 +3,7 @@
 
 // Update SPEC and sound_library_ defines before we use them.
 #include "../sound/sound_library.h"
+#include "../common/sd_log.h"
 
 #ifndef PROP_INHERIT_PREFIX
 #define PROP_INHERIT_PREFIX
@@ -1291,6 +1292,23 @@ public:
       FindBladeAgain();
       return true;
     }
+#ifdef ENABLE_SD
+#ifndef DISABLE_DIAGNOSTIC_COMMANDS
+    if (!strcmp(cmd, "startlogging")) {
+      if (sd_serial_log.start(arg ? arg : "SERIAL.LOG")) {
+        STDOUT.println("Logging started.");
+      } else {
+        STDOUT.println("Failed to start logging.");
+      }
+      return true;
+    }
+    if (!strcmp(cmd, "stoplogging")) {
+      sd_serial_log.stop();
+      STDOUT.println("Logging stopped.");
+      return true;
+    }
+#endif  // DISABLE_DIAGNOSTIC_COMMANDS
+#endif  // ENABLE_SD
     if (!strcmp(cmd, "on")) {
       On();
       return true;
@@ -1851,6 +1869,19 @@ public:
   }
 
   virtual bool mode_Event2(enum BUTTON button, EVENT event, uint32_t modifiers) {
+#ifdef ENABLE_SD
+#ifndef DISABLE_DIAGNOSTIC_COMMANDS
+    // 4-click POWER while off: log a scanid to SERIAL.LOG on the SD card.
+    if (EVENTID(button, event, modifiers) ==
+        EVENTID(BUTTON_POWER, EVENT_FOURTH_CLICK_SHORT, MODE_OFF)) {
+      if (sd_serial_log.start("SERIAL.LOG")) {
+        FindBladeAgain();
+        sd_serial_log.stop();
+      }
+      return true;
+    }
+#endif  // DISABLE_DIAGNOSTIC_COMMANDS
+#endif  // ENABLE_SD
     return Event2(button, event, modifiers);
   }
   virtual bool Event2(enum BUTTON button, EVENT event, uint32_t modifiers) = 0;
