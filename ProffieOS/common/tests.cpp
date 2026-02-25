@@ -101,6 +101,7 @@ void PrintQuotedValue(const char *name, const char* str) {
 #include "current_preset.h"
 #include "color.h"
 #include "fuse.h"
+#include "sd_log.h"
 
 SaberBase* saberbases = NULL;
 SaberBase::LockupType SaberBase::lockup_ = SaberBase::LOCKUP_NONE;
@@ -854,12 +855,39 @@ void test_command_line_capture() {
     
 };
 
+void test_sd_log() {
+  const char* test_file = "test_sd_log.txt";
+  LSFS::Remove(test_file);
+
+  CHECK(!sd_serial_log.active());
+  CHECK(sd_serial_log.start(test_file));
+  CHECK(sd_serial_log.active());
+
+  STDOUT << "hello\n";
+  STDOUT << "world\n";
+
+  sd_serial_log.stop();
+  CHECK(!sd_serial_log.active());
+
+  // Verify file contents.
+  LSFS::FILE f = LSFS::Open(test_file);
+  CHECK(f);
+  char buf[64];
+  memset(buf, 0, sizeof(buf));
+  f.read((uint8_t*)buf, sizeof(buf) - 1);
+  f.close();
+  CHECK_STREQ(buf, "hello\nworld\n");
+
+  LSFS::Remove(test_file);
+}
+
 int main() {
   test_command_line_capture();
   test_patterns();
   test_effect_location();
   test_cyclint();
   command_parser_test();
+  test_sd_log();
   
   extras = false;
   test_current_preset();
